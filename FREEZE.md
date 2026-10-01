@@ -1,12 +1,7 @@
-# FROZEN — 2026-09-29 23:29 EDT
+# UNFROZEN — 2026-10-01 17:46 EDT
 
-Andrew Hubbard locked HVAC Legends.
+Andrew Hubbard unfroze HVAC Legends.
 
-Do not edit this repo until he unfreezes it.
-No new cards. No overlay scripts. No branding changes.
-Do not copy HVAC Allstars patches into this twin.
-
-Live Allstars work stays on:
-https://andrewhubbard215-eng.github.io/
-
-Unfreeze only when Andrew says so.
+Build on the top-right preview he likes. Do not copy the older Allstars GitHub Pages site over this tree.
+No Lincoln Tech name, logos, HCR catalog, or campus photos.
+Size stays. Recovery hoses drag like Land Lugs. Sandbox layout from the preview stays.
