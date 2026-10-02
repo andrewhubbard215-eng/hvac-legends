@@ -12,9 +12,9 @@ fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac598
   .then(function (r) { return r.text(); })
   .then(function (t) {
     var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
-    var hook = '<script src="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@main/parts-mover.js?v=2"><' + '/script>';
+    var hook = '<script src="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@cd4ef3837a5c442dc6337ad4b9fcb2fdb460edae/parts-mover.js"><' + '/script>';
     t = t.replace('<base href="/legends/" />', base);
-    t = t.replace("</body>", hook + "</body>");
+    if (t.indexOf("parts-mover.js") === -1) t = t.replace("</body>", hook + "</body>");
     document.open();
     document.write(t);
     document.close();
