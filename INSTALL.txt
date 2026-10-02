@@ -1,0 +1,12 @@
+ONE-CLICK INSTALL
+
+From the unzipped folder (one level above this game folder):
+
+  Windows → double-click  PLAY.bat
+  Mac     → double-click  PLAY.command
+  Linux   → run           ./PLAY.sh
+
+That is the full install. See the root INSTALL.txt for phone setup,
+troubleshooting, and pinning as an app.
+
+You can also open this folder's index.html directly in Chrome or Edge.

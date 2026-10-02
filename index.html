@@ -2,156 +2,661 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#0b0c10" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>HVAC Legends</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="recovery.css" />
+  <base href="/legends/" />
+  <script src="sku.js?v=13"></script>
+  <script src="a11y.js?v=1"></script>
+  <meta name="description" content="HVAC Legends — daily vocational trainer. Mini-split, sandbox, EPA 608, service calls." />
+  <meta http-equiv="Permissions-Policy" content="magnetometer=(self), accelerometer=(self), gyroscope=(self), microphone=(self)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="HVAC Legends" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=262" />
+  <script src="preview-bridge.js?v=1"></script>
 </head>
 <body>
   <div id="app">
-    <!-- SHOP FLOOR -->
-    <section id="screen-shop" class="screen active" aria-label="Shop floor">
-      <header class="hub-head">
-        <p class="eyebrow">Shop floor</p>
-        <h1>HVAC Legends</h1>
-        <p class="lede">Pick a bay. Recovery first — hoses drag like Land Lugs.</p>
-      </header>
-      <div class="hub-grid" role="list">
-        <button type="button" class="mode-card" data-go="recovery" role="listitem">
-          <img src="assets/card-recovery.svg" alt="" class="contain" width="400" height="120" />
-          <div>
-            <h3>Recovery</h3>
-            <p>Tank on scale · blue LO · red HI · stop at 22.2 lb R-410A</p>
-          </div>
-        </button>
-        <button type="button" class="mode-card" data-go="lugs" role="listitem">
-          <img src="assets/card-lugs.svg" alt="" class="contain" width="400" height="120" />
-          <div>
-            <h3>Land Lugs</h3>
-            <p>Electrical wire land — next bay (stub)</p>
-          </div>
-        </button>
+    <!-- TITLE -->
+    <section id="screen-title" class="screen active">
+      <div class="bg-plate bg-lincoln" style="background-image:url(lincoln-tech.jpg)"></div>
+      <div class="vignette"></div>
+      <div class="title-hero">
+        <img src="hub-portrait.jpg?v=3" alt="Professor HUB" class="title-hero-face" />
+        <p class="eyebrow">Vocational HVAC trainer</p>
+        <h1>HVAC <span class="lt-red">Legends</span></h1>
+        <p class="lede">Clock In — shop floor.</p>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <button class="btn primary btn-clock-hero" id="btn-start" type="button">Clock In</button>
+          <button class="btn" id="btn-hub-voice" type="button">Hear HUB</button>
+        </div>
+        <audio id="hub-voice" preload="none" src="hub-welcome.mp3?v=1"></audio>
+        <script>
+          document.getElementById("btn-hub-voice").addEventListener("click", function () {
+            var a = document.getElementById("hub-voice");
+            if (!a) return;
+            if (!a.paused) { a.pause(); a.currentTime = 0; return; }
+            a.play();
+          });
+        </script>
       </div>
-      <footer class="app-foot">HVAC Legends · 1.0</footer>
     </section>
 
-    <!-- RECOVERY -->
-    <section id="screen-recovery" class="screen" aria-label="Recovery bay" hidden>
-      <header class="bay-head">
-        <button type="button" class="btn ghost" data-go="shop" id="rc-back">← Shop</button>
-        <h2>Recovery</h2>
-        <span class="bay-chip">R-410A · 22.2 lb</span>
+    <!-- CHARACTER -->
+    <section id="screen-character" class="screen">
+      <div class="bg-plate bg-allstars" style="background-image:url(hvac-allstars-cover.jpg?v=1)"></div>
+      <div class="vignette"></div>
+      <div class="panel char-panel">
+        <button type="button" class="card-close" id="btn-char-back" aria-label="Close" onclick="window.ltGo && window.ltGo('title')">×</button>
+        <div class="brand-bar" style="justify-content:flex-start;margin-bottom:10px">
+          <div class="brand-mark">HL</div>
+          <div class="brand-word">
+            <strong>HVAC LEGENDS</strong>
+            <span>Create your student account</span>
+          </div>
+        </div>
+        <p class="eyebrow">Locker · photo · campus</p>
+        <h2>Build your tech</h2>
+        <div class="char-photo-row">
+          <img id="char-preview" class="char-preview char-preview-empty" alt="No photo yet" />
+          <div>
+            <label class="btn char-photo-btn">Add your picture
+              <input id="char-photo" type="file" accept="image/*" hidden />
+            </label>
+            <p class="char-photo-hint">Optional. Starts blank — not Professor HUB. Selfie stays on this device.</p>
+          </div>
+        </div>
+        <label>Callsign / name
+          <input id="callsign" maxlength="16" placeholder="Your name on the floor" value="" />
+        </label>
+        <label>Password
+          <input id="acct-pass" type="password" autocomplete="off" placeholder="Min 4 characters" />
+        </label>
+        <label id="acct-pass2-wrap">Confirm password
+          <input id="acct-pass2" type="password" autocomplete="off" placeholder="Re-type to create locker" />
+        </label>
+        <p class="char-photo-hint" id="acct-hint">New name creates a locker. Existing name logs you in. You pick the password — HUB included.</p>
+        <button type="button" class="btn" id="acct-reset">Forgot password · reset this locker on this device</button>
+        <label>Shop
+          <select id="campus">
+            <option value="shop" selected>The shop</option>
+            <option value="residential">Residential crew</option>
+            <option value="commercial">Commercial crew</option>
+            <option value="other">Other shop</option>
+          </select>
+        </label>
+        <label>Class / section (optional)
+          <input id="class-section" maxlength="24" placeholder="Day class · evening" />
+        </label>
+        <label>Specialization
+          <select id="spec">
+            <option value="residential">Residential</option>
+            <option value="commercial">Commercial</option>
+            <option value="refrigeration">Refrigeration</option>
+          </select>
+        </label>
+        <p class="eyebrow">Look</p>
+        <div class="char-looks" id="char-looks">
+          <button type="button" class="char-look on" data-look="hardhat">Hard hat</button>
+          <button type="button" class="char-look" data-look="hoodie">Hoodie</button>
+          <button type="button" class="char-look" data-look="coveralls">Coveralls</button>
+          <button type="button" class="char-look" data-look="glasses">Safety glasses</button>
+        </div>
+        <button class="btn primary" id="btn-clockin" disabled>Create locker · clock in to shop floor</button>
+        <button type="button" class="btn" id="hub-logout">Log out · back to Clock In</button>
+        <p class="char-photo-hint">No games on this screen. After clock in you land on the shop floor — sandbox, quiz, electrical.</p>
+      </div>
+    </section>
+
+    <!-- HUB -->
+    <section id="screen-hub" class="screen">
+      <div class="bg-plate dark"></div>
+      <header class="hub-head">
+        <div class="hub-head-left">
+          <img src="hub-portrait.jpg?v=3" alt="Professor Andrew Hubbard" class="hub-avatar" />
+          <img id="hub-student" class="hub-student-av hidden" alt="Student" />
+          <div>
+            <div class="brand-bar" style="justify-content:flex-start;margin-bottom:6px">
+              <div class="brand-mark" style="width:28px;height:28px;font-size:14px">HL</div>
+              <div class="brand-word">
+                <strong style="font-size:15px">HVAC LEGENDS</strong>
+                <span>Shop floor · Professor Andrew Hubbard</span>
+              </div>
+            </div>
+            <p class="eyebrow">On the clock</p>
+            <h2 id="hub-name">Tech</h2>
+            <p id="hub-meta" class="hub-meta"></p>
+          </div>
+        </div>
+        <div class="hub-stats">
+          <span id="hub-cash">$0</span>
+          <span id="hub-jobs">0 jobs</span>
+          <span id="hub-xp">0 XP</span>
+          <span id="hub-rank">Helper</span>
+        </div>
+        <div class="hub-actions">
+          <a class="btn primary" id="hub-desk" href="desk.html">Instructor Desk</a>
+          <button type="button" class="btn" id="hub-howto">How to</button>
+          <button type="button" class="btn" id="hub-form-toggle">PC bench</button>
+          <button type="button" class="btn" id="hub-locker">Locker</button>
+          <button type="button" class="btn" id="hub-install-app">Install</button>
+          <button type="button" class="btn" data-hubai-toggle id="hub-ai-toggle">HUB AI - On</button>
+        </div>
       </header>
-      <p id="rc-line" class="shop-line" role="status">Tank on the scale first. Then blue → LO, red → HI.</p>
-      <div class="rc-layout">
-        <aside class="rc-tray" aria-label="Tool tray">
-          <p class="rc-label">Tray</p>
-          <button type="button" class="rc-chip" data-part="tank" id="rc-chip-tank">
-            <img src="assets/tank.svg" alt="" width="44" height="55" />
-            <span>Tank</span>
-          </button>
-          <button type="button" class="rc-chip rc-hose rc-hose-blue" data-hose="blue" id="rc-hose-blue">
-            <img src="assets/hose-blue.svg" alt="" width="44" height="44" />
-            <span>Blue LO</span>
-          </button>
-          <button type="button" class="rc-chip rc-hose rc-hose-red" data-hose="red" id="rc-hose-red">
-            <img src="assets/hose-red.svg" alt="" width="44" height="44" />
-            <span>Red HI</span>
-          </button>
-          <button type="button" class="rc-chip rc-hose rc-hose-yellow" data-hose="yellow" id="rc-hose-yellow">
-            <img src="assets/hose-yellow.svg" alt="" width="44" height="44" />
-            <span>Yellow Vac</span>
-          </button>
-          <button type="button" class="rc-chip" data-part="machine" id="rc-chip-machine">
-            <img src="assets/machine.svg" alt="" width="44" height="40" />
-            <span>Machine</span>
-          </button>
-          <button type="button" class="rc-chip" data-part="scale" id="rc-chip-scale">
-            <img src="assets/scale.svg" alt="" width="52" height="32" />
-            <span>Scale</span>
-          </button>
-        </aside>
-        <div class="rc-bay">
-          <div class="rc-unit-stage" id="rc-stage">
-            <img src="assets/unit.svg" alt="Outdoor unit" class="rc-unit" width="240" height="240" />
-            <div class="rc-ports">
-              <button type="button" class="rc-port rc-port-blue" data-port="lo" id="rc-port-lo">LO</button>
-              <button type="button" class="rc-port rc-port-red" data-port="hi" id="rc-port-hi">HI</button>
-              <button type="button" class="rc-port rc-port-yellow" data-port="vac" id="rc-port-vac">VAC</button>
-            </div>
-            <div class="rc-hooks" aria-hidden="true">
-              <div class="rc-hook" data-hook="scale" id="rc-hook-scale" hidden>
-                <img src="assets/scale.svg" alt="" width="72" height="44" />
-              </div>
-              <div class="rc-hook" data-hook="tank" id="rc-hook-tank" hidden>
-                <img src="assets/tank.svg" alt="" width="48" height="60" />
-              </div>
-              <div class="rc-hook" data-hook="machine" id="rc-hook-machine" hidden>
-                <img src="assets/machine.svg" alt="" width="64" height="56" />
-              </div>
-            </div>
-            <div class="rc-drop" data-drop="scale" id="rc-drop-scale" title="Scale pad"></div>
-            <div class="rc-drop" data-drop="tank-on-scale" id="rc-drop-tank" title="Tank on scale"></div>
-            <div class="rc-drop" data-drop="machine" id="rc-drop-machine" title="Recovery machine"></div>
+      <section class="floor-start" aria-label="Start here">
+        <p class="eyebrow">Show this first</p>
+        <h3>Ten minutes. Four labs.</h3>
+        <p class="floor-controls">Tap a picture. One gold line is the next move. Shop floor always brings you home.</p>
+        <button type="button" class="start-door call-door" data-mode="call"><b>Tap · Take the call</b><span>Hear it. Say the first move.</span></button>
+        <div class="floor-start-row">
+          <button type="button" class="start-door" data-mode="cutaway"><b>1 · Tap · See inside</b><span>Watch the refrigerant</span></button>
+          <button type="button" class="start-door" data-mode="elguide"><b>2 · Drag · Land lugs</b><span>Wire onto the screw</span></button>
+          <button type="button" class="start-door" data-mode="defusal"><b>3 · Tap · Saturday</b><span>Meter, then replace</span></button>
+          <button type="button" class="start-door" data-mode="sandbox"><b>4 · Drag · Build</b><span>Drop the part. Read gauges</span></button>
+        </div>
+      </section>
+      <div id="hub-tip" class="hub-tip hidden">
+        <strong>How to use this app</strong>
+        <p>Start with the four labs in the gold bar. The rest of the floor is there when you want it. Instructor Desk is its own app.</p>
+        <button type="button" class="btn primary" id="hub-tip-tour">Start tour</button>
+        <button type="button" class="btn" id="hub-tip-dismiss">I know the floor</button>
+      </div>
+      <div id="badge-rack"></div>
+      <div id="daily-root"></div>
+      <div id="hub-commandments" class="hidden"></div>
+      <div id="hub-pt" class="hidden"></div>
+      <p class="hub-section">Shop floor</p>
+      <nav class="edition-bar" aria-label="Which app">
+        <a data-ed="campus" href="/allstars/index.html?play=1&sku=campus">Lincoln Tech</a>
+        <a data-ed="legends" href="/legends/index.html?play=1">HVAC Legends</a>
+      </nav>
+      <div class="hub-grid hub-nav" id="hub-options">
+        <a class="mode-card" id="btn-shopschool" href="desk.html">
+          <img src="hub-portrait.jpg" alt="" />
+          <h3>Instructor Desk</h3>
+          <p>Today, labs, keys.</p>
+        </a>
+        <button class="mode-card mode-card-hero" data-mode="call" type="button">
+          <img src="parts/gauges.png" alt="" class="contain" />
+          <h3>Take the call</h3>
+          <p>Hear it. Call the first move.</p>
+        </button>
+        <button class="mode-card mode-card-hero" data-mode="sandbox" id="btn-sandbox-card" type="button">
+          <img src="parts/condenser.png" alt="" class="contain" />
+          <h3>System sandbox</h3>
+          <p>Drop the part. Gauges move.</p>
+        </button>
+        <button class="mode-card mode-card-hero" data-mode="quiz" id="btn-quiz-box" type="button">
+          <img src="career-paths.jpg" alt="" />
+          <h3>All-Star Exam</h3>
+          <p>Shop questions. Pass the bay.</p>
+        </button>
+        <button class="mode-card mode-card-hero" data-mode="bible" id="btn-bible" type="button">
+          <img src="parts/compressor.png" alt="" class="contain" />
+          <h3>The HVAC Bible</h3>
+          <p>Look it up before you condemn it.</p>
+        </button>
+        <button class="mode-card mode-card-hero" data-mode="factory" id="btn-factory" type="button">
+          <img src="parts/contactor.png" alt="" class="contain" />
+          <h3>Factory apps</h3>
+          <p>Brand software. Gauges still win.</p>
+        </button>
+        <button class="mode-card mode-card-hero" data-mode="fieldsoft" id="btn-fieldsoft" type="button">
+          <img src="parts/metering.png" alt="" class="contain" />
+          <h3>Field software</h3>
+          <p>Charge call. TXV turn.</p>
+        </button>
+        <button class="mode-card" data-mode="electrical" type="button">
+          <img src="parts/thermostat.png" alt="" class="contain" />
+          <h3>Follow the call</h3>
+          <p>Walk the 24-volt string.</p>
+        </button>
+        <button class="mode-card" data-mode="defusal" id="btn-defusal" type="button">
+          <img src="parts/pressuresw.png" alt="" class="contain" />
+          <h3>Saturday callback</h3>
+          <p>Meter the open. Then replace it.</p>
+        </button>
+        <button class="mode-card" data-mode="service" type="button">
+          <img src="parts/gauges.png" alt="" class="contain" />
+          <h3>Service calls</h3>
+          <p>Read the gauges. Pick the move.</p>
+        </button>
+        <button class="mode-card" data-mode="minisplit" type="button">
+          <img src="ms/tools/level.jpg" alt="" />
+          <h3>Mini-split install</h3>
+          <p>Right tool. Picture shows the result.</p>
+        </button>
+        <button class="mode-card" data-mode="compchange" id="btn-compchange" type="button">
+          <img src="parts/compressor.png" alt="" class="contain" />
+          <h3>Compressor change-out</h3>
+          <p>Recover, lock out, braze, weigh in.</p>
+        </button>
+        <button class="mode-card" data-mode="furnace" id="btn-furnace" type="button">
+          <img src="parts/relay.png" alt="" class="contain" />
+          <h3>Furnace SOO</h3>
+          <p>Prove each step before the valve.</p>
+        </button>
+        <button class="mode-card" data-mode="cutaway" id="btn-cutaway" type="button">
+          <img src="parts/evaporator.png" alt="" class="contain" />
+          <h3>Component film</h3>
+          <p>Clear shell. Watch it move.</p>
+        </button>
+        <button class="mode-card" data-mode="epa608" id="btn-epa608" type="button">
+          <img src="recover/tank.jpg" alt="" />
+          <h3>EPA 608 tutor</h3>
+          <p>Core, then Type I, II, III.</p>
+        </button>
+        <button class="mode-card" data-mode="commandments" type="button">
+          <img src="hvac-jesus-gauges.jpg" alt="" />
+          <h3>HVAC Commandments</h3>
+          <p>Ten shop rules.</p>
+        </button>
+        <button class="mode-card" data-mode="elguide" id="btn-elguide" type="button">
+          <img src="parts/contactor.png" alt="" class="contain" />
+          <h3>Land lugs</h3>
+          <p>Wire color onto the screw.</p>
+        </button>
+        <button class="mode-card" data-mode="recover" id="btn-recover" type="button">
+          <img src="recover/hoses.jpg" alt="" />
+          <h3>Recovery room</h3>
+          <p>Hoses, scale, ice, vacuum.</p>
+        </button>
+        <button class="mode-card" data-mode="rapture" id="card-rapture" type="button">
+          <img src="hvac-jesus-gauges.jpg" alt="" />
+          <h3>HVAC Jesus</h3>
+          <p id="rapture-copy">The gauges of God.</p>
+        </button>
+        <button class="mode-card" data-mode="gauges" id="btn-gauges" type="button">
+          <img src="parts/gauges.png" alt="" class="contain" />
+          <h3>Manifold school</h3>
+          <p>Blue on suction. Red on liquid.</p>
+        </button>
+        <button class="mode-card" data-mode="voltmeter" id="btn-voltmeter" type="button">
+          <img src="parts/dmm.png" alt="" class="contain" />
+          <h3>Multimeter school</h3>
+          <p>Red and black on the screws.</p>
+        </button>
+        <button class="mode-card" data-mode="phonetools" id="btn-phonetools" type="button">
+          <img src="ms/tools/meter.jpg" alt="" />
+          <h3>Phone testers</h3>
+          <p>Tap it. Read the unit.</p>
+        </button>
+        <button class="mode-card" data-mode="ohms" id="btn-ohms" type="button">
+          <img src="parts/dmm.png" alt="" class="contain" />
+          <h3>Ohm's Law</h3>
+          <p>Volts, amps, ohms on a real load.</p>
+        </button>
+        <button class="mode-card" data-mode="ptchart" type="button">
+          <img src="parts/gauges.png" alt="" class="contain" />
+          <h3>P/T charts</h3>
+          <p>Pressure. Saturation. That gas.</p>
+        </button>
+        <button class="mode-card" data-mode="flare" id="btn-flare" type="button">
+          <img src="ms/tools/flare.jpg" alt="" />
+          <h3>Flaring lab</h3>
+          <p>Nut on first.</p>
+        </button>
+        <button class="mode-card" data-mode="braze" id="btn-braze" type="button">
+          <img src="ms/tools/n2.jpg" alt="" />
+          <h3>Brazing lab</h3>
+          <p>Nitrogen on. Then the torch.</p>
+        </button>
+        <button class="mode-card" data-mode="tutorial" type="button">
+          <img src="hub-portrait.jpg" alt="" />
+          <h3>How to use the app</h3>
+          <p>Hub walks the shop.</p>
+        </button>
+        <button class="mode-card" data-mode="curriculum" type="button">
+          <img src="career-paths.jpg" alt="" />
+          <h3>Curriculum</h3>
+          <p>Finish the lab. Earn the credit.</p>
+        </button>
+        <button class="mode-card" data-mode="compete" type="button">
+          <img src="arena.jpg" alt="" />
+          <h3>Online arena</h3>
+          <p>Class PIN.</p>
+        </button>
+        <button class="mode-card" data-mode="network" type="button">
+          <img src="arena.jpg" alt="" />
+          <h3>Classroom Wi-Fi</h3>
+          <p>Start the class PIN.</p>
+        </button>
+        <button class="mode-card" data-mode="iconnect" id="btn-iconnect" type="button">
+          <img src="ms/tools/meter.jpg" alt="" />
+          <h3>iConnect lab</h3>
+          <p>Meter the trainer plate.</p>
+        </button>
+        <button class="mode-card" type="button" id="opt-locker" data-mode="character">
+          <h3>Locker</h3>
+          <p>Your name, photo, and password.</p>
+        </button>
+        <label class="mode-card opt-spicy" title="Mute procedural SFX">
+          <div class="mode-icon" aria-hidden="true">🔊</div>
+          <div>
+            <h3>Sound effects</h3>
+            <p>Uncheck to mute beeps in class</p>
+            <input type="checkbox" id="hub-sfx" checked />
           </div>
-          <div class="rc-readout">
-            <div class="panel rc-manifold">
-              <p class="rc-label">Manifold</p>
-              <div class="rc-gauges">
-                <div class="rc-g">
-                  <span class="rc-g-lab lp">LP</span>
-                  <strong id="rc-lp">118</strong><span class="rc-unit-lbl">psig</span>
-                </div>
-                <div class="rc-g">
-                  <span class="rc-g-lab hp">HP</span>
-                  <strong id="rc-hp">312</strong><span class="rc-unit-lbl">psig</span>
-                </div>
-              </div>
-              <img src="assets/manifold.svg" alt="" class="rc-manif-art" width="100" height="56" />
-            </div>
-            <div class="panel">
-              <p class="rc-label">Scale</p>
-              <strong id="rc-scale-lb">0.0</strong><span class="rc-unit-lbl"> lb</span>
-              <div class="rc-scale-track"><div id="rc-scale-bar"></div></div>
-              <p id="rc-stop" class="rc-stop" hidden>STOP — 80% · ~17.8 lb</p>
-            </div>
-            <div class="panel rc-micron" id="rc-micron-panel" hidden>
-              <p class="rc-label">Micron</p>
-              <strong id="rc-micron">—</strong><span class="rc-unit-lbl"> µm</span>
-              <p class="rc-muted">Vacuum only</p>
+        </label>
+        <label class="mode-card opt-spicy" title="Phone vibration on land / trip">
+          <div class="mode-icon" aria-hidden="true">📳</div>
+          <div>
+            <h3>Haptics</h3>
+            <p>Buzz when a part seats, a wire lands, or HPC cuts out</p>
+            <input type="checkbox" id="hub-haptic" checked />
+            <span class="haptic-pats" id="haptic-pats"></span>
+          </div>
+        </label>
+        <div class="mode-card opt-spicy opt-diff" title="Lab difficulty">
+          <div class="mode-icon" aria-hidden="true">🎚️</div>
+          <div>
+            <h3>Difficulty</h3>
+            <p id="hub-diff-label">Medium — live needles, you call it.</p>
+            <div class="diff-row" id="hub-diff">
+              <button type="button" class="btn" data-diff="easy">Easy</button>
+              <button type="button" class="btn primary" data-diff="medium">Medium</button>
+              <button type="button" class="btn" data-diff="spicy">Spicy</button>
             </div>
           </div>
-          <div class="rc-switches">
-            <button type="button" class="btn primary" id="rc-start" disabled>Start recovery</button>
-            <button type="button" class="btn" id="rc-vac" disabled>Vacuum mode</button>
-            <button type="button" class="btn ghost" id="rc-reset">Reset bay</button>
+        </div>
+        <label class="mode-card opt-spicy opt-roast" title="HUB roast intensity">
+          <div class="mode-icon" aria-hidden="true">🌶️</div>
+          <div>
+            <h3>HUB roast</h3>
+            <p id="hub-roast-label">Mild — shop talk, 608 stays clean</p>
+            <input type="range" id="hub-roast" min="0" max="3" step="1" value="1" />
+            <span class="roast-ticks">Classroom · Mild · Spicy · Extra</span>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <!-- ELECTRICAL SIM -->
+    <section id="screen-electrical" class="screen">
+      <div id="electrical-root"></div>
+    </section>
+
+    <section id="screen-braze" class="screen">
+      <div id="braze-root"></div>
+    </section>
+
+    <section id="screen-flare" class="screen">
+      <div id="flare-root"></div>
+    </section>
+
+    <section id="screen-furnace" class="screen">
+      <div id="furnace-root"></div>
+    </section>
+
+    <section id="screen-iconnect" class="screen">
+      <div id="iconnect-root"></div>
+    </section>
+
+    <section id="screen-recover" class="screen">
+      <div id="recover-root"></div>
+    </section>
+
+    <!-- HVAC SANDBOX -->
+    <section id="screen-sandbox" class="screen">
+      <div id="sandbox-root"></div>
+    </section>
+
+    <!-- AI INSTALL / TROUBLESHOOT HELPER -->
+    <section id="screen-aihelper" class="screen">
+      <div id="aihelper-root"></div>
+    </section>
+
+    <!-- MINI-SPLIT INSTALL -->
+    <section id="screen-minisplit" class="screen">
+      <div id="minisplit-root"></div>
+    </section>
+    <section id="screen-compchange" class="screen">
+      <div id="compchange-root"></div>
+    </section>
+
+    <!-- CURRICULUM TRAINING -->
+    <section id="screen-curriculum" class="screen">
+      <div id="curriculum-root"></div>
+    </section>
+
+    <!-- QUIZ ARENA -->
+    <section id="screen-quiz" class="screen">
+      <div id="quiz-root"></div>
+    </section>
+
+    <!-- ONLINE COMPETE -->
+    <section id="screen-compete" class="screen">
+      <div id="compete-root"></div>
+    </section>
+
+    <section id="screen-network" class="screen">
+      <div id="network-root"></div>
+    </section>
+
+    <section id="screen-phonetools" class="screen">
+      <div id="phonetools-root"></div>
+    </section>
+
+    <section id="screen-commandments" class="screen">
+      <div id="commandments-root"></div>
+    </section>
+
+    <section id="screen-bible" class="screen">
+      <div id="bible-root"></div>
+    </section>
+
+    <section id="screen-factory" class="screen">
+      <div id="factory-root"></div>
+    </section>
+
+    <section id="screen-fieldsoft" class="screen">
+      <div id="fieldsoft-root"></div>
+    </section>
+
+    <section id="screen-ohms" class="screen">
+      <div id="ohms-root"></div>
+    </section>
+
+    <section id="screen-voltmeter" class="screen">
+      <div id="voltmeter-root"></div>
+    </section>
+
+    <section id="screen-gauges" class="screen">
+      <div id="gauges-root"></div>
+    </section>
+
+    <section id="screen-ptchart" class="screen">
+      <div id="ptchart-root"></div>
+    </section>
+
+    <section id="screen-shopschool" class="screen">
+      <div id="shopschool-root"></div>
+    </section>
+
+    <section id="screen-call" class="screen">
+      <div id="call-root"></div>
+    </section>
+
+    <section id="screen-cutaway" class="screen">
+      <div id="cutaway-root"></div>
+    </section>
+
+    <section id="screen-epa608" class="screen">
+      <div id="epa608-root"></div>
+    </section>
+
+    <!-- RAPTURE -->
+    <section id="screen-rapture" class="screen">
+      <div class="heaven-sky" id="heaven-sky">
+        <div class="god-rays"></div>
+        <div class="heaven-clouds"></div>
+        <video id="heaven-vid" src="hvac-jesus-gauges.mp4?v=1" muted playsinline loop poster="hvac-jesus-gauges.jpg" onerror="this.style.display='none'"></video>
+      </div>
+      <div class="vignette"></div>
+      <p class="cut-kicker" id="cut-kicker">Rooftop · the heavens open</p>
+      <img id="jesus-sprite" src="jesus.png" alt="HVAC Jesus" />
+      <div class="gauges-god" id="gauges-god">
+        <img src="gauges.png" alt="Gauges of God" />
+        <span>Gauges of God</span>
+      </div>
+      <div class="panel bottom rapture-lore" id="rapture-lore">
+        <div class="rapture-lore-body">
+          <p class="eyebrow">HVAC Jesus · Quiz Champion</p>
+          <h2 id="rapture-h2">The Gauges of God</h2>
+          <blockquote class="jesus-speak" id="jesus-speak">
+            “You won. I am HVAC Jesus. Receive the Gauges of God — SH and SC will never be a coin flip again.”
+          </blockquote>
+          <ol class="cmd-list compact" id="rapture-commandments"></ol>
+        </div>
+        <div class="row rapture-actions">
+          <button class="btn primary" id="btn-accept">I receive the Gauges of God</button>
+          <button class="btn" id="btn-skip-cut">Skip</button>
+          <button class="btn" id="btn-rapture-hub">Shop floor</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICE CALLS -->
+    <section id="screen-service" class="screen">
+      <div class="bg-plate dark"></div>
+      <div class="svc-wrap">
+        <header class="svc-top">
+          <div>
+            <p class="eyebrow" id="svc-eyebrow">Service call</p>
+            <h2 id="svc-title">Dispatch</h2>
+          </div>
+          <div class="svc-meters">
+            <span id="svc-score">Call 0</span>
+            <span id="svc-rating">★ ★ ★ ★ ★</span>
+            <label class="spicy-toggle" title="HUB roast intensity">
+              <span>🌶️ Roast</span>
+              <input type="range" id="svc-roast" min="0" max="3" step="1" value="1" />
+            </label>
+          </div>
+        </header>
+        <div class="svc-card">
+          <div class="svc-customer">
+            <div class="svc-avatar" id="svc-avatar">👤</div>
+            <div>
+              <p class="svc-name" id="svc-name">Customer</p>
+              <p class="svc-job" id="svc-job">Address · complaint</p>
+            </div>
+          </div>
+          <blockquote class="svc-quote" id="svc-quote">“…”</blockquote>
+          <div class="svc-vitals" id="svc-vitals"></div>
+          <p class="svc-prompt" id="svc-prompt">What do you do?</p>
+          <div id="svc-choices" class="svc-choices"></div>
+          <p id="svc-feedback" class="svc-feedback"></p>
+          <div class="svc-nav">
+            <button class="btn" id="btn-svc-hub">Shop floor</button>
           </div>
         </div>
       </div>
-      <footer class="app-foot">HVAC Legends · 1.0</footer>
     </section>
 
-    <!-- LAND LUGS STUB -->
-    <section id="screen-lugs" class="screen" aria-label="Land Lugs" hidden>
-      <header class="bay-head">
-        <button type="button" class="btn ghost" data-go="shop">← Shop</button>
-        <h2>Land Lugs</h2>
-        <span class="bay-chip">Next</span>
-      </header>
-      <div class="stub-card">
-        <img src="assets/card-lugs.svg" alt="" width="400" height="120" />
-        <h3>Wire land bay — next</h3>
-        <p>Same drag as Recovery: pick a wire, land on the matching lug. Full electrical bay ships next.</p>
-        <button type="button" class="btn primary" data-go="recovery">Open Recovery instead</button>
-      </div>
-      <footer class="app-foot">HVAC Legends · 1.0</footer>
-    </section>
+
+  <p class="version-strip">HVAC Legends · 1.0 · Easy/Medium/Spicy · live service calls · HUB · <a href="privacy.html">Privacy</a> · <a href="support.html">Support</a></p>
   </div>
-
-  <div id="lg-ghost" class="lg-ghost" aria-hidden="true"></div>
-
-  <script src="app.js"></script>
-  <script src="recovery.js"></script>
+  <div id="tutorial-root" class="tut-overlay hidden"></div>
+  <script>
+    window.ltCloseCard = function () {
+      var c = document.getElementById("title-card");
+      if (c) {
+        c.classList.add("hidden");
+        c.style.display = "none";
+      }
+      var m = document.getElementById("btn-clockin-mini");
+      if (m) m.classList.remove("hidden");
+    };
+    window.ltPlay = function (mode) {
+      if (window.ltPlayGo) return window.ltPlayGo(mode);
+      window.__ltPlayWait = mode;
+    };
+    window.ltGo = function (id) {
+      document.querySelectorAll(".screen").forEach(function (s) {
+        s.classList.remove("active");
+      });
+      var el = document.getElementById("screen-" + id);
+      if (el) el.classList.add("active");
+    };
+  </script>
+  <script src="sku.js?v=13"></script>
+  <script src="commandments.js?v=119"></script>
+  <script src="pt-chart.js?v=7"></script>
+  <script src="fieldsoft.js?v=5"></script>
+  <script src="shopschool.js?v=38"></script>
+  <script src="thecall.js?v=2"></script>
+  <script src="cutaway.js?v=25"></script>
+  <script src="epa608.js?v=17"></script>
+  <script src="e608lab.js?v=2"></script>
+  <script src="epa608-exam.js?v=2"></script>
+  <script src="haptic.js?v=7"></script>
+  <script src="dragdrop.js?v=53"></script>
+  <script src="drip.js?v=3"></script>
+  <script src="electrical.js?v=156"></script>
+  <script src="webgl-cycle.js?v=57"></script>
+  <script src="shop-bg.js?v=1"></script>
+  <script src="manifold.js?v=1"></script>
+  <script src="gaugeschool.js?v=11"></script>
+  <script src="brazing.js?v=7"></script>
+  <script src="flare.js?v=5"></script>
+  <script src="furnace.js?v=2"></script>
+  <script src="iconnect.js?v=6"></script>
+  <script src="recover.js?v=24"></script>
+  <script src="room.js?v=6"></script>
+  <script src="bible.js?v=3"></script>
+  <script src="factory.js?v=2"></script>
+  <script src="ohms.js?v=8"></script>
+  <script src="voltmeter.js?v=9"></script>
+  <script src="sandbox.js?v=156"></script>
+  <script src="minisplit.js?v=15"></script>
+  <script src="compchange.js?v=6"></script>
+  <script src="ai-helper.js?v=2"></script>
+  <script src="service.js?v=105"></script>
+  <script src="instructor.js?v=96"></script>
+  <script src="hub-ai.js?v=88"></script>
+  <script src="quiz-arena.js?v=107"></script>
+  <script src="class-lab.js?v=2"></script>
+  <script src="classroom-net.js?v=3"></script>
+  <script src="compete.js?v=95"></script>
+  <script src="outbox.js?v=1"></script>
+  <script src="chat.js?v=109"></script>
+  <script src="badges.js?v=95"></script>
+  <script src="curriculum.js?v=11"></script>
+  <script src="canvas.js?v=3"></script>
+  <script src="review.js?v=4"></script>
+  <script src="daily.js"></script>
+  <script src="tutorial.js?v=100"></script>
+  <script src="phone-tools.js?v=105"></script>
+  <script src="game.js?v=174"></script>
+  <script>
+    (function () {
+      window.addEventListener("error", function (e) {
+        if (e && e.message) console.warn("allstars", e.message);
+      });
+      window.addEventListener("unhandledrejection", function (e) {
+        console.warn("allstars promise", e && e.reason);
+      });
+      function killWanted() {
+        document.querySelectorAll("#epa-wanted, .epa-wanted, .epa-stars, .epa-actions").forEach(function (n) {
+          n.remove();
+        });
+      }
+      killWanted();
+      setInterval(killWanted, 400);
+      if ("serviceWorker" in navigator && window.top === window) {
+        var hadWorker = !!navigator.serviceWorker.controller;
+        navigator.serviceWorker.addEventListener("controllerchange", function () {
+          if (hadWorker) window.location.reload();
+        });
+        navigator.serviceWorker.register("sw.js").then(function (reg) { reg.update(); }).catch(function () {});
+      }
+    })();
+  </script>
 </body>
 </html>

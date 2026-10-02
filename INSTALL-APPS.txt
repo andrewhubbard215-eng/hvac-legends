@@ -1,0 +1,19 @@
+HVAC Legends HVAC Allstars — Android + Windows
+
+Same game as the website. No store listing required.
+
+WINDOWS (fastest)
+  1. Double-click  START-WINDOWS-APP.bat
+     (opens a frameless Edge/Chrome app window)
+  2. Or in Edge/Chrome open https://andrewhubbard215-eng.github.io/
+     Address bar → Install HVAC Allstars  (pins to Start / desktop)
+  3. Optional desktop shell: native/windows  (Electron)  npm start
+
+ANDROID (phone / tablet)
+  1. Chrome → https://andrewhubbard215-eng.github.io/
+  2. Menu ⋮  →  Add to Home screen  /  Install app
+  3. Icon appears like any other app. Works offline after first load.
+  4. Optional Android Studio project: native/android (WebView wrapper)
+
+SHOP FLOOR
+  After Clock In, tap  Install app  if your browser offers it.

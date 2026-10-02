@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Gauges of God — HVAC Jesus</title>
+  <meta name="theme-color" content="#0e1420" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="game" width="960" height="540"></canvas>
+
+  <div id="hud" hidden>
+    <span id="hud-rec">Recovery 0</span>
+    <span id="hud-lives">Lives 3</span>
+    <span id="hud-tip">A/D move · Space jump · stomp iced coils</span>
+  </div>
+
+  <a id="back" href="../index.html">Shop floor</a>
+
+  <div id="start" class="overlay">
+    <img src="../jesus.png" alt="HVAC Jesus" class="start-face" />
+    <p class="eyebrow">DLC · not the shop floor</p>
+    <h1>Gauges of God</h1>
+    <p class="lede">HVAC Jesus runs the condenser pad. Recover the charge. Stomp iced coils. Seat the gauges on the RTU.</p>
+    <button type="button" id="btn-play" class="play">Run the pad</button>
+    <p class="hint">← → or A D · Space / W jump · tap buttons on a phone</p>
+  </div>
+
+  <div id="end" class="overlay hidden">
+    <h1 id="end-title">Gauges seated</h1>
+    <p id="end-copy" class="lede"></p>
+    <button type="button" id="btn-again" class="play">Run it again</button>
+    <a class="text-link" href="../index.html">Back to Clock In</a>
+  </div>
+
+  <div id="touch" hidden>
+    <button type="button" data-act="left" aria-label="Left">◀</button>
+    <button type="button" data-act="right" aria-label="Right">▶</button>
+    <button type="button" data-act="jump" class="jump" aria-label="Jump">Jump</button>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

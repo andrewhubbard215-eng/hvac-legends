@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>HVAC Legends · The Pitch</title>
+  <link rel="icon" type="image/png" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --red: #CE0034;
+      --red-dark: #8e0024;
+      --ink: #0c1014;
+      --char: #161b21;
+      --paper: #f4efe6;
+      --cream: #efe6d4;
+      --gold: #d4b45a;
+      --muted: #9aa3ad;
+      --line: rgba(255,255,255,.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: var(--ink); color: var(--paper); font-family: "IBM Plex Sans", system-ui, sans-serif; overflow: hidden; }
+    button:not(:disabled), [role="button"] { cursor: pointer; }
+    .deck { height: 100%; width: 100%; position: relative; }
+    .slide {
+      position: absolute; inset: 0;
+      display: none;
+      padding: 28px 32px 72px;
+      overflow: hidden;
+    }
+    .slide.on { display: grid; align-content: start; }
+    .slide.cover.on, .slide.split.on { display: grid; }
+    .bg {
+      position: absolute; inset: 0;
+      background: #0c1014 center/cover no-repeat;
+      filter: saturate(.85);
+    }
+    .bg::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(90deg, rgba(12,16,20,.94) 0%, rgba(12,16,20,.72) 42%, rgba(12,16,20,.35) 100%);
+    }
+    .slide.dark .bg::after {
+      background: linear-gradient(180deg, rgba(12,16,20,.55) 0%, rgba(12,16,20,.88) 100%);
+    }
+    .kicker {
+      position: relative;
+      font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+      color: var(--gold); font-weight: 700; margin-bottom: 10px;
+    }
+    h1, h2 { font-family: "Bebas Neue", Impact, sans-serif; letter-spacing: .02em; line-height: .92; }
+    h1 { font-size: clamp(52px, 10vw, 108px); }
+    h1 span { color: var(--red); }
+    h2 { font-size: clamp(36px, 6.4vw, 72px); max-width: 16ch; }
+    .lede { position: relative; max-width: 36ch; font-size: clamp(16px, 2.1vw, 22px); line-height: 1.45; color: #d8dde3; margin-top: 16px; font-weight: 500; }
+    .meta { position: relative; margin-top: 22px; color: var(--muted); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+    .shot {
+      position: relative;
+      margin-top: 22px;
+      max-width: min(720px, 92vw);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,.45);
+    }
+    .shot img { display: block; width: 100%; height: auto; }
+    .grid2 { position: relative; display: grid; gap: 14px; margin-top: 22px; grid-template-columns: 1fr; }
+    @media (min-width: 820px) {
+      .grid2 { grid-template-columns: 1fr 1fr; }
+      .slide.split.on { grid-template-columns: 1.05fr .95fr; gap: 28px; align-items: center; }
+    }
+    .card {
+      background: rgba(22,27,33,.82);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+    }
+    .card h3 { font-family: "Bebas Neue", Impact, sans-serif; font-size: 28px; color: #fff; margin-bottom: 6px; }
+    .card p { color: #c9d0d6; font-size: 15px; line-height: 1.45; }
+    .card b { color: var(--gold); font-weight: 600; }
+    ul.prove { position: relative; margin-top: 18px; list-style: none; max-width: 42ch; }
+    ul.prove li { padding: 8px 0 8px 22px; position: relative; font-size: 17px; line-height: 1.4; color: #e6eaee; }
+    ul.prove li::before { content: ""; position: absolute; left: 0; top: 16px; width: 10px; height: 2px; background: var(--red); }
+    .sku { display: grid; gap: 12px; margin-top: 20px; }
+    @media (min-width: 720px) { .sku { grid-template-columns: 1fr 1fr; } }
+    .sku article { border-radius: 14px; padding: 18px; border: 1px solid var(--line); }
+    .sku .campus { background: #CE0034; color: #fff; }
+    .sku .store { background: #1b2229; }
+    .sku h3 { font-family: "Bebas Neue", Impact, sans-serif; font-size: 32px; margin-bottom: 8px; }
+    .sku p { font-size: 15px; line-height: 1.45; opacity: .95; }
+    .face {
+      position: absolute; right: 6%; bottom: 70px;
+      width: min(280px, 34vw); border-radius: 8px;
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 50px rgba(0,0,0,.5);
+    }
+    @media (max-width: 700px) { .face { display: none; } }
+    .nav {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, transparent, rgba(12,16,20,.92));
+    }
+    .dots { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; flex: 1; }
+    .dots button {
+      width: 8px; height: 8px; border-radius: 99px; border: 0; background: #44505a;
+    }
+    .dots button.on { width: 22px; background: var(--red); }
+    .nav .btn {
+      height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line);
+      background: #1c232b; color: #fff; font: 600 13px/1 "IBM Plex Sans", sans-serif;
+    }
+    .nav .btn.primary { background: var(--red); border-color: var(--red); }
+    .count { position: relative; color: var(--muted); font-size: 12px; letter-spacing: .14em; }
+    a.play {
+      display: inline-flex; margin-top: 22px; height: 44px; align-items: center;
+      padding: 0 18px; background: var(--red); color: #fff; text-decoration: none;
+      font-weight: 700; border-radius: 8px; letter-spacing: .04em;
+    }
+    .tiny { position: relative; margin-top: 14px; font-size: 12px; color: var(--muted); max-width: 48ch; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div class="deck" id="deck">
+
+    <section class="slide cover dark on" data-slide>
+      <div class="bg" style="background-image:url(pitch/media/wife-title.png)"></div>
+      <p class="kicker">Vocational HVAC trainer</p>
+      <h1>HVAC <span>Legends</span></h1>
+      <p class="lede">A first-year tech learns a prove path — not a video-game trick. Clock in. Run the floor. Leave knowing why the gauges said what they said.</p>
+      <p class="meta">Professor Andrew Hubbard · HVAC Legends</p>
+      <img class="face" src="pitch/media/hub-portrait.jpg?v=3" alt="Professor HUB" />
+    </section>
+
+    <section class="slide" data-slide>
+      <div class="bg" style="background-image:url(pitch/media/lincoln-tech.jpg)"></div>
+      <p class="kicker">The hole in the shop</p>
+      <h2>They shotgun parts. Then they sit 608.</h2>
+      <ul class="prove">
+        <li>Add gas to a dirty filter because the suction looked low.</li>
+        <li>Replace a pressure switch because the LED said so — trap was full.</li>
+        <li>Pass a cram test and still cannot walk a 24-volt string.</li>
+      </ul>
+      <p class="lede">School needs a floor they can run every morning. Same jobs as the truck. No combat. No driving game.</p>
+    </section>
+
+    <section class="slide split" data-slide>
+      <div>
+        <p class="kicker">Clock in</p>
+        <h2>Shop floor is the map.</h2>
+        <p class="lede">Tap Clock In. Labs are full screen — phone or desk. Locker is optional. HUB talks shop-floor, not a textbook.</p>
+      </div>
+      <div class="shot"><img src="pitch/media/tablet-hub.png" alt="Shop floor" /></div>
+    </section>
+
+    <section class="slide split" data-slide>
+      <div>
+        <p class="kicker">System sandbox</p>
+        <h2>Live SH, SC, P and T.</h2>
+        <p class="lede">Four-part diamond: compressor, condenser, metering, evaporator. Parts tray stays left so a tech can drag them onto the boxes. Faults fingerprint like the real system — HPC actually cuts the compressor.</p>
+      </div>
+      <div class="shot"><img src="pitch/media/gauges-healthy.png" alt="Healthy R-410A gauges" /></div>
+    </section>
+
+    <section class="slide" data-slide>
+      <p class="kicker">Electrical</p>
+      <h2>Follow the call. Then land the lugs.</h2>
+      <div class="grid2">
+        <article class="card">
+          <h3>24-volt ladder</h3>
+          <p>R through the safeties into the coil. <b>Gold is live. Dark is dead.</b> The first dark node after a gold one is the open.</p>
+        </article>
+        <article class="card">
+          <h3>Land lugs</h3>
+          <p>Zoomed close-up of the device. <b>Black = hot. Off-white = neutral. Green = ground.</b> Drag onto the matching screw.</p>
+        </article>
+        <article class="card">
+          <h3>Saturday callback</h3>
+          <p>Timed no-cool. Meter the open, then replace. <b>Not a movie bomb.</b></p>
+        </article>
+        <article class="card">
+          <h3>No-cool sheet</h3>
+          <p>Call → 240 → disconnect → R–C → Y → HPC → LPC → float → coil → T1 → compressor.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="slide split" data-slide>
+      <div>
+        <p class="kicker">EPA Section 608</p>
+        <h2>Tutor, then the exam.</h2>
+        <p class="lede">Core, Type I, II, III. Vacuum table you can run — house 410A is 0 psig, a 200 lb rack is 10 inches. Stamp at 80%, then sit the All-Star Exam with why-right and why-wrong.</p>
+        <p class="tiny">Training aid. Official card is still an EPA-approved proctor. Door card / CFR wins.</p>
+      </div>
+      <div class="shot"><img src="pitch/media/qa-open-epa608.png" alt="608 tutor" /></div>
+    </section>
+
+    <section class="slide" data-slide>
+      <p class="kicker">The rest of the week</p>
+      <h2>Same week a shop actually has.</h2>
+      <div class="grid2">
+        <article class="card"><h3>Service calls</h3><p>Customer talk. Gauges. Diagnose. HUB grades the call — venting still costs you.</p></article>
+        <article class="card"><h3>Mini-split lab</h3><p>11-step install: flare, nitrogen, vacuum, valves, commission.</p></article>
+        <article class="card"><h3>HVAC Commandments</h3><p>Ten shop laws. Recover first. Nut on the tube. Microns, not vibes. Airflow before charge.</p></article>
+        <article class="card"><h3>Professor HUB</h3><p>AI helper on every lab. Roast slider for class. 608 answers stay clean.</p></article>
+      </div>
+    </section>
+
+    <section class="slide" data-slide>
+      <p class="kicker">One trainer</p>
+      <h2>The shop, without a school catalog.</h2>
+      <div class="sku">
+        <article class="store">
+          <h3>HVAC Legends</h3>
+          <p>Same labs, same physics, same 608 tutor. No campus logos and no course-code pack. A tech can buy it and run the floor.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="slide" data-slide>
+      <p class="kicker">What they walk out knowing</p>
+      <h2>A prove path.</h2>
+      <ul class="prove">
+        <li>Verify the call. Air first. Then electric. Then refrigerant.</li>
+        <li>SH and SC only together — never one number.</li>
+        <li>Pressure switch: hose, trap, vent, vacuum vs rating. Switch last.</li>
+        <li>Don’t vent. Gray/yellow bottle. 80%. Card to buy gas.</li>
+      </ul>
+    </section>
+
+    <section class="slide cover dark" data-slide>
+      <div class="bg" style="background-image:url(pitch/media/jesus.png); background-position: 70% 20%;"></div>
+      <p class="kicker">Ready when you are</p>
+      <h1>Clock <span>in.</span></h1>
+      <p class="lede">The listing pack is written. You still click Publish on your Google account. HVAC Jesus keeps the Gauges of God as DLC. The labs are the product.</p>
+      <a class="play" href="index.html">Open the shop floor</a>
+      <p class="tiny">Professor Andrew Hubbard · HVAC Legends · not an EPA-approved exam · not legal advice</p>
+    </section>
+  </div>
+
+  <nav class="nav">
+    <button class="btn" id="prev" type="button">Back</button>
+    <div class="dots" id="dots"></div>
+    <span class="count" id="count">1 / 10</span>
+    <button class="btn primary" id="next" type="button">Next</button>
+  </nav>
+
+  <script>
+    (function () {
+      const slides = [...document.querySelectorAll("[data-slide]")];
+      const dots = document.getElementById("dots");
+      const count = document.getElementById("count");
+      let i = 0;
+      slides.forEach((_, n) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.setAttribute("aria-label", "Slide " + (n + 1));
+        b.onclick = () => go(n);
+        dots.appendChild(b);
+      });
+      function go(n) {
+        i = Math.max(0, Math.min(slides.length - 1, n));
+        slides.forEach((s, k) => s.classList.toggle("on", k === i));
+        [...dots.children].forEach((d, k) => d.classList.toggle("on", k === i));
+        count.textContent = (i + 1) + " / " + slides.length;
+        document.getElementById("prev").disabled = i === 0;
+        document.getElementById("next").textContent = i === slides.length - 1 ? "Open shop" : "Next";
+      }
+      document.getElementById("prev").onclick = () => go(i - 1);
+      document.getElementById("next").onclick = () => {
+        if (i === slides.length - 1) location.href = "index.html";
+        else go(i + 1);
+      };
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); document.getElementById("next").click(); }
+        if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); go(i - 1); }
+      });
+      let x0 = 0;
+      document.addEventListener("touchstart", (e) => { x0 = e.changedTouches[0].clientX; }, { passive: true });
+      document.addEventListener("touchend", (e) => {
+        const dx = e.changedTouches[0].clientX - x0;
+        if (dx < -40) document.getElementById("next").click();
+        if (dx > 40) go(i - 1);
+      }, { passive: true });
+      go(0);
+    })();
+  </script>
+</body>
+</html>

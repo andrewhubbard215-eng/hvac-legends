@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Instructor Desk · HVAC Legends</title>
+  <base href="/legends/" />
+  <meta name="description" content="Instructor Desk. Separate from the HVAC Legends student trainer." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Instructor Desk" />
+  <meta name="theme-color" content="#0b1218" />
+  <link rel="manifest" href="desk.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=257" />
+  <style>
+    html, body { margin: 0; height: 100%; background: #0b1218; color: #e8edf2; }
+    #desk { height: 100%; overflow: auto; }
+  </style>
+</head>
+<body>
+  <div id="desk"></div>
+  <script src="sku.js?v=13"></script>
+  <script src="curriculum.js?v=4"></script>
+  <script src="canvas.js?v=2"></script>
+  <script src="review.js?v=3"></script>
+  <script src="cache.js?v=3"></script>
+  <script src="shopschool.js?v=38"></script>
+  <script>
+    try {
+      var saved = JSON.parse(localStorage.getItem("lt-shop-school-v1") || "{}");
+      saved.instructor = true;
+      localStorage.setItem("lt-shop-school-v1", JSON.stringify(saved));
+    } catch (e) {}
+    if (window.ShopSchool) {
+      window.ShopSchool.start(document.getElementById("desk"), {
+        hubLabel: "Student app",
+        onHub: function () {
+          var sku = (window.LtBrand && window.LtBrand.sku) || "campus";
+          location.href = "index.html?play=1&sku=" + sku;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HVAC Legends · PC classroom</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    (function () {
+      try { localStorage.setItem("lt-form", "pc"); } catch (e) {}
+      var q = location.search || "";
+      if (q.indexOf("form=") < 0) q += (q ? "&" : "?") + "form=pc";
+      location.replace("index.html" + q + (location.hash || ""));
+    })();
+  </script>
+</head>
+<body style="background:#14171a;color:#fff;font-family:system-ui;padding:32px">
+  <p>Opening the PC classroom bench…</p>
+  <p><a href="index.html?form=pc" style="color:#e8c450">Continue</a></p>
+</body>
+</html>

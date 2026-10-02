@@ -1,0 +1,14 @@
+HVAC Allstars — PC classroom
+============================
+
+1. Unzip this folder to the Desktop.
+2. Double-click  PLAY-PC.bat
+3. Leave the black window open.
+4. Clock In. You are on the PC bench (parts | system | gauges).
+
+START-WINDOWS-APP.bat  = Edge/Chrome app window (needs the site or PLAY-PC running)
+pc.html                = always opens the PC layout
+
+Phone students: same Wi-Fi address without /pc.html
+
+If Windows blocks the .bat: right-click → Properties → Unblock → Run anyway.
