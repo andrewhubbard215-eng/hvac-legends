@@ -1,38 +1,27 @@
-/* Shop cards stay tiles. Guide bar stays one line. Black title screen cannot cover the floor. */
+/* Shop cards stay tiles. Parts tray scrolls. Guide bar stays one line. */
 (function () {
   var css = document.createElement("style");
   css.id = "pc-card-fix";
   css.textContent = [
-    "#screen-title:not(.active) { display: none !important; height: 0 !important; min-height: 0 !important; overflow: hidden !important; }",
-    "#screen-hub.screen.active { display: block !important; position: relative !important; min-height: 100vh; background: #14171a; }",
-    "#screen-hub #hub-options.hub-grid, .hub-grid.hub-nav { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important; justify-content: start !important; }",
-    "#screen-hub #hub-options .mode-card, #screen-hub #hub-options .mode-card-hero { grid-column: auto !important; flex-direction: column !important; max-width: none !important; width: auto !important; min-height: 0 !important; }",
-    ".mode-card img, .start-door img { width: 100% !important; height: 96px !important; max-height: 96px !important; object-fit: cover !important; }",
-    "#student-dock { position: fixed !important; left: 8px !important; right: 8px !important; bottom: 8px !important; height: auto !important; max-height: 64px !important; overflow: hidden !important; z-index: 40 !important; pointer-events: none !important; display: flex !important; gap: 8px; align-items: center; background: #14110c; border: 1px solid #c9a227; border-radius: 12px; padding: 6px; }",
+    "#screen-title:not(.active) { display: none !important; height: 0 !important; }",
+    "#sb-palette, .sb-palette { max-height: 42vh !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }",
+    "#sb-items, .sb-items, #sb-xtra { overflow-y: auto !important; overflow-x: hidden !important; -webkit-overflow-scrolling: touch !important; touch-action: pan-y !important; max-height: 36vh !important; min-height: 120px !important; padding-bottom: 12px !important; }",
+    ".sb-rail { overflow-x: auto !important; overflow-y: hidden !important; -webkit-overflow-scrolling: touch !important; touch-action: pan-x !important; max-height: 96px !important; }",
+    "#student-dock { position: fixed !important; left: 8px !important; right: 8px !important; bottom: 8px !important; max-height: 56px !important; overflow: hidden !important; z-index: 30 !important; pointer-events: none !important; display: flex !important; gap: 8px; align-items: center; background: #14110c; border: 1px solid #c9a227; border-radius: 12px; padding: 6px; }",
     "#student-dock[hidden] { display: none !important; }",
-    "#student-dock .btn, #student-dock button { pointer-events: auto !important; min-height: 44px; }",
-    "#student-dock span { pointer-events: none !important; flex: 1; font-size: 12px; line-height: 1.2; color: #f3e2b0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }",
-    "body.student-on { padding-bottom: 76px; }"
+    "#student-dock button { pointer-events: auto !important; min-height: 44px; }",
+    "#student-dock span { pointer-events: none !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f3e2b0; font-size: 12px; }",
+    "#screen-sandbox { padding-bottom: 64px !important; }"
   ].join("");
   document.head.appendChild(css);
 
-  function unblock() {
-    var hub = document.getElementById("screen-hub");
-    var title = document.getElementById("screen-title");
-    if (hub && hub.classList.contains("active") && title) {
-      title.classList.remove("active");
-      title.style.display = "none";
-      title.style.height = "0";
-    }
-    var dock = document.getElementById("student-dock");
-    if (dock) {
-      dock.style.maxHeight = "64px";
-      dock.style.pointerEvents = "none";
-      var btns = dock.querySelectorAll("button");
-      for (var i = 0; i < btns.length; i++) btns[i].style.pointerEvents = "auto";
-    }
+  function scrollTray() {
+    var box = document.getElementById("sb-items") || document.querySelector(".sb-items");
+    if (!box) return;
+    box.style.overflowY = "auto";
+    box.style.webkitOverflowScrolling = "touch";
+    box.style.touchAction = "pan-y";
+    box.style.maxHeight = "36vh";
   }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", unblock);
-  else unblock();
-  setInterval(unblock, 700);
+  setInterval(scrollTray, 800);
 })();
