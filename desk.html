@@ -1,44 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Instructor Desk · HVAC Legends</title>
-  <base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/" />
-  <meta name="description" content="Instructor Desk. Separate from the HVAC Legends student trainer." />
-  <link rel="stylesheet" href="style.css?v=257" />
-  <style>
-    html, body { margin: 0; height: 100%; background: #0b1218; color: #e8edf2; }
-    #desk { height: 100%; overflow: auto; padding: 12px; }
-    #desk-miss { margin: 16px; color: #f3e2b0; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Instructor Desk · HVAC Legends</title>
 </head>
 <body>
-  <div id="desk"><p id="desk-miss">Opening Instructor Desk…</p></div>
-  <script src="sku.js?v=13"></script>
-  <script src="curriculum.js?v=4"></script>
-  <script src="canvas.js?v=2"></script>
-  <script src="review.js?v=3"></script>
-  <script src="cache.js?v=3"></script>
-  <script src="shopschool.js?v=38"></script>
-  <script>
-    try {
-      var saved = JSON.parse(localStorage.getItem("lt-shop-school-v1") || "{}");
-      saved.instructor = true;
-      localStorage.setItem("lt-shop-school-v1", JSON.stringify(saved));
-    } catch (e) {}
-    var root = document.getElementById("desk");
-    if (window.ShopSchool && root) {
-      root.innerHTML = "";
-      window.ShopSchool.start(root, {
-        hubLabel: "Student app",
-        onHub: function () {
-          location.href = "https://htmlpreview.github.io/?https://github.com/andrewhubbard215-eng/hvac-legends/blob/main/index.html";
-        }
-      });
-    } else if (root) {
-      root.innerHTML = "<p id=desk-miss>Instructor Desk did not load. Close this tab and open the desk link again.</p>";
-    }
-  </script>
+<p id="boot">Opening Instructor Desk…</p>
+<script>
+fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/desk.html")
+  .then(function (r) { return r.text(); })
+  .then(function (t) {
+    var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
+    t = t.replace('<base href="/legends/" />', base);
+    document.open();
+    document.write(t);
+    document.close();
+  })
+  .catch(function () {
+    var n = document.getElementById("boot");
+    if (n) n.textContent = "Instructor Desk did not load. Close this tab and open the new link.";
+  });
+</script>
 </body>
 </html>
