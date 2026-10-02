@@ -8,16 +8,20 @@
 <body>
 <p id="boot">Opening the shop floor…</p>
 <script>
+var FIX = '<div id="parts-real" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:200;background:#121820;border-top:1px solid #c9a227;padding:8px">'
+  + '<div style="display:flex;gap:8px;margin-bottom:6px"><button type="button" id="parts-left" style="min-height:44px;flex:1">More left</button><button type="button" id="parts-right" style="min-height:44px;flex:1">More right</button></div>'
+  + '<div id="parts-row" style="display:flex;gap:8px;overflow-x:auto"></div></div>'
+  + '<script>(function(){var names=["Compressor","Condenser","TXV","Evaporator","Disconnect","Contactor","Capacitor","Transformer","Filter drier","Accumulator"];'
+  + 'function fill(){var row=document.getElementById("parts-row");if(!row||row.childNodes.length)return;names.forEach(function(name){var b=document.createElement("button");b.type="button";b.textContent=name;b.style.cssText="flex:0 0 auto;min-width:120px;min-height:44px;background:#1c2630;color:#f3e2b0;border:1px solid #3d4a58;border-radius:8px";b.onclick=function(){var found=null;document.querySelectorAll(".sb-item,button").forEach(function(el){if(!found&&el.id!=="parts-left"&&el.id!=="parts-right"&&(el.textContent||"").toLowerCase().indexOf(name.toLowerCase().slice(0,5))>=0)found=el;});if(found)found.click();};row.appendChild(b);});document.getElementById("parts-left").onclick=function(){row.scrollLeft-=180;};document.getElementById("parts-right").onclick=function(){row.scrollLeft+=180;};}'
+  + 'function show(){var s=document.getElementById("screen-sandbox");var box=document.getElementById("parts-real");if(box)box.style.display=(s&&s.classList.contains("active"))?"block":"none";}'
+  + 'setInterval(function(){fill();show();},700);})();<\/script>';
 fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/index.html")
   .then(function (r) { return r.text(); })
   .then(function (t) {
     var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
-    var hook = '<script src="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@cd4ef3837a5c442dc6337ad4b9fcb2fdb460edae/parts-mover.js"><' + '/script>';
     t = t.replace('<base href="/legends/" />', base);
-    if (t.indexOf("parts-mover.js") === -1) t = t.replace("</body>", hook + "</body>");
-    document.open();
-    document.write(t);
-    document.close();
+    t = t.replace("</body>", FIX + "</body>");
+    document.open(); document.write(t); document.close();
   })
   .catch(function () {
     var n = document.getElementById("boot");
