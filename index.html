@@ -9,17 +9,13 @@
   <p id="boot">Opening the shop floor…</p>
   <script>
     var FIX = '<style id="phone-unblock">'
-      + '#screen-title:not(.active){display:none !important;height:0 !important;}'
-      + '#screen-hub.screen.active{display:block !important;position:absolute;inset:0;overflow:auto;background:#14171a;}'
       + '#student-dock{display:none !important;}'
-      + '#sandbox-root .sb-palette{max-height:36vh !important;min-height:140px !important;overflow:auto !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-x pan-y !important;z-index:60 !important;}'
-      + '#sandbox-root .sb-items,#sandbox-root #sb-items{display:flex !important;flex-wrap:nowrap !important;overflow-x:auto !important;touch-action:pan-x !important;gap:8px !important;}'
-      + '#sandbox-root .sb-item{flex:0 0 auto !important;min-width:108px !important;}'
-      + '#sandbox-root .sb-slot{background:#101820 !important;}'
+      + '#sandbox-root .sb-palette,#sb-palette,#sb-rail,.sb-rail{position:relative !important;z-index:80 !important;max-height:42vh !important;min-height:132px !important;overflow-x:auto !important;overflow-y:auto !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-x pan-y !important;}'
+      + '#sandbox-root .sb-items,#sandbox-root #sb-items,#sb-items,.sb-items{display:flex !important;flex-direction:row !important;flex-wrap:nowrap !important;overflow-x:scroll !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-x !important;gap:8px !important;width:100% !important;max-width:100% !important;}'
+      + '#sandbox-root .sb-item,.sb-item{flex:0 0 128px !important;min-width:128px !important;width:128px !important;touch-action:pan-x !important;}'
       + '</style>'
       + '<script>'
-      + '(function(){var photos={compressor:"parts/compressor.png",condenser:"parts/condenser.png",metering:"parts/metering.png",evaporator:"parts/evaporator.png",disconnect:"parts/pressuresw.png",contactor:"parts/contactor.png",capacitor:"parts/dmm.png",transformer:"parts/relay.png",filter:"parts/metering.png",accumulator:"parts/compressor.png"};'
-      + 'function paint(){document.querySelectorAll(".sb-slot,.sb-item").forEach(function(el){var name=(el.textContent||"").toLowerCase();var key="";Object.keys(photos).forEach(function(k){if(!key&&name.indexOf(k)>=0)key=k;});if(!key)return;if(!el.querySelector("img.part-face")){var img=document.createElement("img");img.className="part-face";img.alt="";img.src=photos[key];img.style.cssText="width:72px;height:52px;object-fit:contain;display:block;margin:0 auto 4px;pointer-events:none;";el.insertBefore(img,el.firstChild);}if(el.classList.contains("sb-slot")){el.style.borderColor=/compressor|condenser|filter/.test(name)?"#c44e52":"#3d8bfd";}});var tray=document.querySelector("#sandbox-root .sb-items");if(tray){tray.style.overflowX="auto";tray.style.flexWrap="nowrap";}}setInterval(paint,700);})();'
+      + '(function(){function arm(){var trays=document.querySelectorAll("#sb-items,.sb-items,#sb-palette,.sb-palette,#sb-rail,.sb-rail");for(var i=0;i<trays.length;i++){var tray=trays[i];tray.style.overflowX="scroll";tray.style.webkitOverflowScrolling="touch";tray.style.touchAction="pan-x pan-y";if(tray.dataset.scrollArmed)continue;tray.dataset.scrollArmed="1";tray.addEventListener("touchmove",function(e){e.stopPropagation();},{passive:true});}}var items=document.querySelectorAll(".sb-item");for(var j=0;j<items.length;j++){items[j].style.flex="0 0 128px";items[j].style.minWidth="128px";}}setInterval(arm,500);})();'
       + '<\/script>';
     fetch('https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/index.html')
       .then(function (r) { return r.text(); })
