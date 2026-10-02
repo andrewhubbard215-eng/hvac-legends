@@ -9,13 +9,12 @@
   <p id="boot">Opening the shop floor…</p>
   <script>
     var FIX = '<style id="phone-unblock">'
-      + '#screen-title:not(.active){display:none !important;height:0 !important;min-height:0 !important;overflow:hidden !important;}'
+      + '#screen-title:not(.active){display:none !important;height:0 !important;}'
       + '#screen-hub.screen.active{display:block !important;position:absolute;inset:0;overflow:auto;background:#14171a;}'
-      + '#student-dock{position:fixed !important;left:8px;right:8px;bottom:8px;max-height:52px !important;height:52px !important;overflow:hidden !important;z-index:30 !important;display:flex !important;flex-direction:row !important;align-items:center !important;pointer-events:none !important;background:#14110c;padding:6px !important;}'
-      + '#student-dock .btn,#student-dock button{pointer-events:auto !important;min-height:40px !important;}'
-      + '#student-dock span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;}'
-      + '.sb-palette,.sb-items{position:relative;z-index:40;}'
-      + '.sb-labboard{display:none !important;}'
+      + '#student-dock{display:none !important;}'
+      + '#sandbox-root .sb-palette{position:relative !important;z-index:60 !important;max-height:34vh !important;min-height:128px !important;overflow-x:auto !important;overflow-y:auto !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-x pan-y !important;padding-bottom:12px !important;}'
+      + '#sandbox-root .sb-items,#sandbox-root #sb-items{display:flex !important;flex-direction:row !important;flex-wrap:nowrap !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-x !important;gap:8px !important;width:100% !important;padding-bottom:10px !important;}'
+      + '#sandbox-root .sb-item{flex:0 0 auto !important;min-width:124px !important;touch-action:pan-x !important;}'
       + '</style>';
     fetch('https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/index.html')
       .then(function (r) { return r.text(); })
