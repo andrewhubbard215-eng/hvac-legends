@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0b0c10" />
+  <title>HVAC Legends</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="recovery.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- SHOP FLOOR -->
+    <section id="screen-shop" class="screen active" aria-label="Shop floor">
+      <header class="hub-head">
+        <p class="eyebrow">Shop floor</p>
+        <h1>HVAC Legends</h1>
+        <p class="lede">Pick a bay. Recovery first — hoses drag like Land Lugs.</p>
+      </header>
+      <div class="hub-grid" role="list">
+        <button type="button" class="mode-card" data-go="recovery" role="listitem">
+          <img src="assets/card-recovery.svg" alt="" class="contain" width="400" height="120" />
+          <div>
+            <h3>Recovery</h3>
+            <p>Tank on scale · blue LO · red HI · stop at 22.2 lb R-410A</p>
+          </div>
+        </button>
+        <button type="button" class="mode-card" data-go="lugs" role="listitem">
+          <img src="assets/card-lugs.svg" alt="" class="contain" width="400" height="120" />
+          <div>
+            <h3>Land Lugs</h3>
+            <p>Electrical wire land — next bay (stub)</p>
+          </div>
+        </button>
+      </div>
+      <footer class="app-foot">HVAC Legends · 1.0</footer>
+    </section>
+
+    <!-- RECOVERY -->
+    <section id="screen-recovery" class="screen" aria-label="Recovery bay" hidden>
+      <header class="bay-head">
+        <button type="button" class="btn ghost" data-go="shop" id="rc-back">← Shop</button>
+        <h2>Recovery</h2>
+        <span class="bay-chip">R-410A · 22.2 lb</span>
+      </header>
+      <p id="rc-line" class="shop-line" role="status">Tank on the scale first. Then blue → LO, red → HI.</p>
+      <div class="rc-layout">
+        <aside class="rc-tray" aria-label="Tool tray">
+          <p class="rc-label">Tray</p>
+          <button type="button" class="rc-chip" data-part="tank" id="rc-chip-tank">
+            <img src="assets/tank.svg" alt="" width="44" height="55" />
+            <span>Tank</span>
+          </button>
+          <button type="button" class="rc-chip rc-hose rc-hose-blue" data-hose="blue" id="rc-hose-blue">
+            <img src="assets/hose-blue.svg" alt="" width="44" height="44" />
+            <span>Blue LO</span>
+          </button>
+          <button type="button" class="rc-chip rc-hose rc-hose-red" data-hose="red" id="rc-hose-red">
+            <img src="assets/hose-red.svg" alt="" width="44" height="44" />
+            <span>Red HI</span>
+          </button>
+          <button type="button" class="rc-chip rc-hose rc-hose-yellow" data-hose="yellow" id="rc-hose-yellow">
+            <img src="assets/hose-yellow.svg" alt="" width="44" height="44" />
+            <span>Yellow Vac</span>
+          </button>
+          <button type="button" class="rc-chip" data-part="machine" id="rc-chip-machine">
+            <img src="assets/machine.svg" alt="" width="44" height="40" />
+            <span>Machine</span>
+          </button>
+          <button type="button" class="rc-chip" data-part="scale" id="rc-chip-scale">
+            <img src="assets/scale.svg" alt="" width="52" height="32" />
+            <span>Scale</span>
+          </button>
+        </aside>
+        <div class="rc-bay">
+          <div class="rc-unit-stage" id="rc-stage">
+            <img src="assets/unit.svg" alt="Outdoor unit" class="rc-unit" width="240" height="240" />
+            <div class="rc-ports">
+              <button type="button" class="rc-port rc-port-blue" data-port="lo" id="rc-port-lo">LO</button>
+              <button type="button" class="rc-port rc-port-red" data-port="hi" id="rc-port-hi">HI</button>
+              <button type="button" class="rc-port rc-port-yellow" data-port="vac" id="rc-port-vac">VAC</button>
+            </div>
+            <div class="rc-hooks" aria-hidden="true">
+              <div class="rc-hook" data-hook="scale" id="rc-hook-scale" hidden>
+                <img src="assets/scale.svg" alt="" width="72" height="44" />
+              </div>
+              <div class="rc-hook" data-hook="tank" id="rc-hook-tank" hidden>
+                <img src="assets/tank.svg" alt="" width="48" height="60" />
+              </div>
+              <div class="rc-hook" data-hook="machine" id="rc-hook-machine" hidden>
+                <img src="assets/machine.svg" alt="" width="64" height="56" />
+              </div>
+            </div>
+            <div class="rc-drop" data-drop="scale" id="rc-drop-scale" title="Scale pad"></div>
+            <div class="rc-drop" data-drop="tank-on-scale" id="rc-drop-tank" title="Tank on scale"></div>
+            <div class="rc-drop" data-drop="machine" id="rc-drop-machine" title="Recovery machine"></div>
+          </div>
+          <div class="rc-readout">
+            <div class="panel rc-manifold">
+              <p class="rc-label">Manifold</p>
+              <div class="rc-gauges">
+                <div class="rc-g">
+                  <span class="rc-g-lab lp">LP</span>
+                  <strong id="rc-lp">118</strong><span class="rc-unit-lbl">psig</span>
+                </div>
+                <div class="rc-g">
+                  <span class="rc-g-lab hp">HP</span>
+                  <strong id="rc-hp">312</strong><span class="rc-unit-lbl">psig</span>
+                </div>
+              </div>
+              <img src="assets/manifold.svg" alt="" class="rc-manif-art" width="100" height="56" />
+            </div>
+            <div class="panel">
+              <p class="rc-label">Scale</p>
+              <strong id="rc-scale-lb">0.0</strong><span class="rc-unit-lbl"> lb</span>
+              <div class="rc-scale-track"><div id="rc-scale-bar"></div></div>
+              <p id="rc-stop" class="rc-stop" hidden>STOP — 80% · ~17.8 lb</p>
+            </div>
+            <div class="panel rc-micron" id="rc-micron-panel" hidden>
+              <p class="rc-label">Micron</p>
+              <strong id="rc-micron">—</strong><span class="rc-unit-lbl"> µm</span>
+              <p class="rc-muted">Vacuum only</p>
+            </div>
+          </div>
+          <div class="rc-switches">
+            <button type="button" class="btn primary" id="rc-start" disabled>Start recovery</button>
+            <button type="button" class="btn" id="rc-vac" disabled>Vacuum mode</button>
+            <button type="button" class="btn ghost" id="rc-reset">Reset bay</button>
+          </div>
+        </div>
+      </div>
+      <footer class="app-foot">HVAC Legends · 1.0</footer>
+    </section>
+
+    <!-- LAND LUGS STUB -->
+    <section id="screen-lugs" class="screen" aria-label="Land Lugs" hidden>
+      <header class="bay-head">
+        <button type="button" class="btn ghost" data-go="shop">← Shop</button>
+        <h2>Land Lugs</h2>
+        <span class="bay-chip">Next</span>
+      </header>
+      <div class="stub-card">
+        <img src="assets/card-lugs.svg" alt="" width="400" height="120" />
+        <h3>Wire land bay — next</h3>
+        <p>Same drag as Recovery: pick a wire, land on the matching lug. Full electrical bay ships next.</p>
+        <button type="button" class="btn primary" data-go="recovery">Open Recovery instead</button>
+      </div>
+      <footer class="app-foot">HVAC Legends · 1.0</footer>
+    </section>
+  </div>
+
+  <div id="lg-ghost" class="lg-ghost" aria-hidden="true"></div>
+
+  <script src="app.js"></script>
+  <script src="recovery.js"></script>
+</body>
+</html>
