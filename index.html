@@ -8,19 +8,8 @@
 <body>
 <p id="boot">Opening the shop floor…</p>
 <script>
-var FIX = '<script src="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@main/txv-see.js"><\/script>';
-fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/index.html")
-  .then(function (r) { return r.text(); })
-  .then(function (t) {
-    var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
-    t = t.replace('<base href="/legends/" />', base);
-    t = t.replace("</body>", FIX + "</body>");
-    document.open(); document.write(t); document.close();
-  })
-  .catch(function () {
-    var n = document.getElementById("boot");
-    if (n) n.textContent = "Shop floor did not load. Close this tab and open the new link.";
-  });
+var FIX = '<style id="phone-unblock">#screen-title:not(.active){display:none !important;height:0 !important}#student-dock,.sb-labboard{display:none !important}#sandbox-root .sb-items,#sandbox-root #sb-items,#sb-items{display:flex !important;flex-wrap:nowrap !important;overflow-x:scroll !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-x !important;width:100% !important}#sandbox-root .sb-item{flex:0 0 128px !important;min-width:128px !important}</style><script src="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@584c5c8dfa3f9eb8d092b5a11b0649490e035f71/cutaway-txv.js"><\/script>';
+fetch('https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/index.html').then(function(r){return r.text()}).then(function(t){var base='<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';t=t.replace('<base href="/legends/" />',base);t=t.replace('</body>',FIX+'</body>');document.open();document.write(t);document.close()}).catch(function(){var n=document.getElementById('boot');if(n)n.textContent='Shop floor did not load. Close this tab and open the new link.';});
 </script>
 </body>
 </html>
