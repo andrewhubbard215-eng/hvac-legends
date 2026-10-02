@@ -1,11 +1,11 @@
 /* Recovery room. The bench, then the drills that belong in that bay. */
 (function () {
   var STATIONS = [
-    { id: "bench", name: "Recovery bench", line: "Pull the charge into a DOT tank. 0 psig on a split. Never vent." },
-    { id: "n2", name: "Nitrogen hold", line: "Pressure-test with nitrogen. A falling needle is a leak. Oxygen is not a test gas." },
-    { id: "decay", name: "Decay test", line: "Pull a vacuum, valve off the pump, and watch the microns. A leak does not level off." },
-    { id: "weigh", name: "Weigh the charge", line: "The condenser already holds the 15 ft. This lineset is 40 ft. Add only the extra." },
-    { id: "leak", name: "Find the leak", line: "A sniffer screams at the whole cabinet. Soap shows you the joint." },
+    { id: "bench", name: "Recovery bench", line: "Pull the charge into a DOT tank. Never vent.", img: "recover/hoses.jpg" },
+    { id: "n2", name: "Nitrogen hold", line: "Pressure-test with nitrogen. A falling needle is a leak.", img: "ms/tools/n2.jpg" },
+    { id: "decay", name: "Decay test", line: "Pull a vacuum, valve off, watch the microns.", img: "ms/tools/micron.jpg" },
+    { id: "weigh", name: "Weigh the charge", line: "Add only the lineset extra. Not the whole nameplate.", img: "recover/tank-scale.jpg" },
+    { id: "leak", name: "Find the leak", line: "Soap shows the joint. A sniffer does not.", img: "ms/tools/soap.jpg" },
   ];
 
   function esc(s) {
@@ -175,7 +175,7 @@
         '<p class="rr-lead">Five stations. Pull the charge into a DOT tank. 0 psig on a split is the level before you open the system. It does not mean the circuit is empty of liquid if that weight never hit the scale. Then prove it tight, then weigh the new charge.</p>' +
         '<div class="rr-grid">' +
         STATIONS.map(function (s) {
-          return '<button type="button" class="mode-card" data-st="' + s.id + '"><h3>' + esc(s.name) + "</h3><p>" + esc(s.line) + "</p></button>";
+          return '<button type="button" class="mode-card" data-st="' + s.id + '"><img src="' + s.img + '" alt="" /><h3>' + esc(s.name) + "</h3><p>" + esc(s.line) + "</p></button>";
         }).join("") +
         "</div>" + noteBox();
       var hub = root.querySelector("#rr-hub");

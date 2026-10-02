@@ -4166,15 +4166,26 @@ html[data-app="legends"] .edition-bar a[data-ed="legends"] {
 .floor-start > p { margin: 0; color: #d5dde4; font-size: 15px; }
 .floor-start-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
 .start-door {
+  cursor: pointer;
+  pointer-events: auto;
   text-align: left;
   background: #1c1814;
   color: #fff;
   border: 1px solid #6a5a32;
   border-radius: 12px;
   padding: 12px;
-  cursor: pointer;
   min-height: 76px;
 }
+.start-door img, .rr-grid .mode-card img {
+  width: 100%;
+  height: 72px;
+  object-fit: contain;
+  background: #10161c;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  pointer-events: none;
+}
+.mode-card, .start-door, .rr-grid button { cursor: pointer; touch-action: manipulation; }
 .start-door b { display: block; font-size: 15px; color: #f0d878; }
 .start-door span { display: block; color: #c5ced6; font-size: 13px; margin-top: 4px; line-height: 1.3; }
 .start-door:hover, .start-door:focus-visible { border-color: #e8c450; outline: none; }
