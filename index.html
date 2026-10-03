@@ -12,12 +12,12 @@ fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac598
   .then(function (r) { return r.text(); })
   .then(function (t) {
     var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
-    var hook = '<style id="layout-fit">#student-dock,.sb-labboard{display:none !important}#clock-in-now{position:fixed;left:12px;right:12px;bottom:16px;z-index:120;min-height:48px;border:0;border-radius:12px;background:#e23b4a;color:#fff;font-weight:700;font-size:18px}#sandbox-root .sb-items,#sb-items,.sb-items{display:flex !important;flex-wrap:nowrap !important;overflow-x:auto !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-x !important}</style><script>setInterval(function(){var door=document.getElementById("screen-title")||document.getElementById("title-card");var onDoor=door&&!door.classList.contains("hidden")&&door.offsetParent!==null;var b=document.getElementById("clock-in-now");if(!onDoor){if(b)b.style.display="none";return;}if(!b){b=document.createElement("button");b.id="clock-in-now";b.type="button";b.textContent="Clock In";b.onclick=function(){var old=document.querySelector("#btn-clockin,.btn-clockin,[data-clockin]");if(old){old.click();return;}if(window.ltCloseCard)window.ltCloseCard();if(window.ltGo)window.ltGo("hub");b.style.display="none";};document.body.appendChild(b);}b.style.display="block";},600);<' + '/script>';
+    var hook = '<style>#ms-how{position:fixed;left:8px;right:8px;bottom:8px;z-index:140;max-height:42vh;overflow:auto;background:#14110c;color:#f3e2b0;border:1px solid #c9a227;border-radius:12px;padding:8px;font-size:14px}#ms-how button{min-height:44px}</style>'
+      + '<script>var MS=["1 Mount the indoor head. Level it. The drill does not level the head.","2 Core the wall on the marked spot. Sleeve the hole.","3 Set the condenser on a pad. Level it. Keep the service valves clear.","4 Run the line set. Put the flare nut on before you cut.","5 Flare: nut on, square cut, deburr the ID, then flare.","6 Torque the flare nuts to 12 ft-lb. Use a backup wrench. 20 ft-lb fails.","7 Pressure test with dry nitrogen only. Never oxygen. Never shop air.","8 Pull to 500 microns. Isolate. A rise is a leak or moisture. It does not pass.","9 Weigh the lineset adder. Do not charge until it sweats.","10 Open the service valves after the vacuum holds.","11 Run it. Read superheat and subcooling. Do not add gas for low superheat."];'
+      + 'setInterval(function(){var s=document.getElementById("screen-minisplit")||document.getElementById("screen-install");var on=s&&s.classList.contains("active");var box=document.getElementById("ms-how");if(!on){if(box)box.style.display="none";return;}if(!box){box=document.createElement("div");box.id="ms-how";var h="<strong>Mini-split · each step</strong><button type=button id=ms-close style=float:right>Close</button><ol>";MS.forEach(function(line){h+="<li>"+line+"</li>";});h+="</ol>";box.innerHTML=h;document.body.appendChild(box);document.getElementById("ms-close").onclick=function(){box.style.display="none";box.dataset.shut="1";};}if(box.dataset.shut)return;box.style.display="block";},700);<' + '/script>';
     t = t.replace('<base href="/legends/" />', base);
-    t = t.replace("</head>", hook + "</head>");
-    document.open();
-    document.write(t);
-    document.close();
+    t = t.replace("</body>", hook + "</body>");
+    document.open(); document.write(t); document.close();
   })
   .catch(function () {
     var n = document.getElementById("boot");
