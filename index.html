@@ -12,12 +12,11 @@ fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac598
   .then(function (r) { return r.text(); })
   .then(function (t) {
     var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
-    var hook = '<style id="meter-fit">#screen-voltmeter,#screen-ohms{overflow:auto !important}#screen-voltmeter .vm-meter,#screen-voltmeter .vm-face,#screen-voltmeter .vm-body,#screen-voltmeter svg,#screen-voltmeter canvas,#screen-voltmeter .meter{max-height:26vh !important;max-width:70vw !important;height:auto !important;width:auto !important}#screen-voltmeter .vm-layout,#screen-voltmeter .vm-app{transform:scale(0.82);transform-origin:top center}#what-close{position:absolute;top:6px;right:6px;z-index:9;min-height:44px;background:#e23b4a;color:#fff;border:0;border-radius:8px}</style><script>setInterval(function(){var root=document.getElementById("screen-voltmeter");if(root&&root.classList.contains("active")){var face=root.querySelector("svg,canvas,.vm-meter,.vm-face,.meter");if(face){face.style.maxHeight="26vh";face.style.maxWidth="70vw";face.style.height="auto";}}var dock=document.getElementById("student-dock");if(dock&&!dock.querySelector("#what-close")){dock.style.position="relative";var c=document.createElement("button");c.id="what-close";c.type="button";c.textContent="Close";c.onclick=function(){dock.style.setProperty("display","none","important");};dock.appendChild(c);}},600);<' + '/script>';
+    var hook = '<style id="meter-fit">#voltmeter-root{transform:scale(0.72);transform-origin:top center;max-height:100dvh}#voltmeter-root .el-zoom-work{height:140px !important}#voltmeter-root .el-lead-lcd{font-size:18px !important}#voltmeter-root .vm-coach{max-height:36px !important;overflow:hidden !important}#screen-voltmeter #student-dock{display:none !important}</style>'
+      + '<script>setInterval(function(){var root=document.getElementById("voltmeter-root");if(!root)return;root.style.transform="scale(0.72)";root.style.transformOrigin="top center";var work=root.querySelector(".el-zoom-work");if(work)work.style.height="140px";var dock=document.getElementById("student-dock");if(dock)dock.style.setProperty("display","none","important");},600);<' + '/script>';
     t = t.replace('<base href="/legends/" />', base);
     t = t.replace("</head>", hook + "</head>");
-    document.open();
-    document.write(t);
-    document.close();
+    document.open(); document.write(t); document.close();
   })
   .catch(function () {
     var n = document.getElementById("boot");
