@@ -12,9 +12,9 @@ fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac598
   .then(function (r) { return r.text(); })
   .then(function (t) {
     var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
-    var hook = '<style id="layout-fit">#student-dock,.sb-labboard{display:none !important}#sandbox-root{padding-bottom:12px !important}#sandbox-root .sb-board-grid,#sandbox-root .sb-slots{display:grid !important;grid-template-columns:1fr 1fr !important;gap:8px !important}#sandbox-root .sb-slot{min-height:72px !important;max-height:110px !important;font-size:13px !important}#sandbox-root .sb-palette,#sb-palette{max-height:34vh !important;overflow:hidden !important}#sandbox-root .sb-items,#sb-items,.sb-items{display:flex !important;flex-wrap:nowrap !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-x !important;width:100% !important;gap:8px !important;padding:8px 8px 16px !important}#sandbox-root .sb-item,.sb-item{flex:0 0 120px !important;min-width:120px !important;max-width:120px !important;min-height:64px !important}</style>';
+    var hook = '<script>document.addEventListener("click",function(e){var a=e.target&&e.target.closest?e.target.closest("a"):null;if(!a)return;var h=a.getAttribute("href")||"";if(h.indexOf("desk.html")<0)return;e.preventDefault();location.href="https://htmlpreview.github.io/?https://github.com/andrewhubbard215-eng/hvac-legends/blob/main/desk.html";},true);<' + '/script>';
     t = t.replace('<base href="/legends/" />', base);
-    t = t.replace("</head>", hook + "</head>");
+    t = t.replace("</body>", hook + "</body>");
     document.open();
     document.write(t);
     document.close();
