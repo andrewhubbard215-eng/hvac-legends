@@ -8,35 +8,21 @@
 <body>
 <p id="boot">Opening the shop floor…</p>
 <script>
-(function () {
-  var href = String(location.href || "");
-  var m = href.match(/hvac-legends\/(?:blob|raw|tree)\/([^/?#]+)\//i);
-  var ref = (m && m[1]) ? m[1] : "main";
-  var cdn = "https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@" + ref + "/";
-  var raw = "https://raw.githubusercontent.com/andrewhubbard215-eng/hvac-legends/" + ref + "/";
-  function show(t, base) {
-    var baseTag = '<base href="' + base + '">';
-    var hook = '<script>document.addEventListener("click",function(e){var a=e.target&&e.target.closest?e.target.closest("a"):null;if(!a)return;var h=a.getAttribute("href")||"";if(h.indexOf("desk.html")<0)return;e.preventDefault();location.href="https://htmlpreview.github.io/?https://github.com/andrewhubbard215-eng/hvac-legends/blob/main/desk.html";},true);<' + '/script>';
-    if (t.indexOf('<base href="/legends/" />') >= 0) t = t.replace('<base href="/legends/" />', baseTag);
-    else if (t.indexOf("<head>") >= 0) t = t.replace("<head>", "<head>" + baseTag);
-    t = t.replace("</body>", hook + "</body>");
+fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/index.html")
+  .then(function (r) { return r.text(); })
+  .then(function (t) {
+    var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
+    var hook = '<style id="layout-fit">#student-dock,.sb-labboard{display:none !important}#sandbox-root{padding-bottom:12px !important}#sandbox-root .sb-board-grid,#sandbox-root .sb-slots{display:grid !important;grid-template-columns:1fr 1fr !important;gap:8px !important}#sandbox-root .sb-slot{min-height:72px !important;max-height:110px !important;font-size:13px !important}#sandbox-root .sb-palette,#sb-palette{max-height:34vh !important;overflow:hidden !important}#sandbox-root .sb-items,#sb-items,.sb-items{display:flex !important;flex-wrap:nowrap !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-x !important;width:100% !important;gap:8px !important;padding:8px 8px 16px !important}#sandbox-root .sb-item,.sb-item{flex:0 0 120px !important;min-width:120px !important;max-width:120px !important;min-height:64px !important}</style>';
+    t = t.replace('<base href="/legends/" />', base);
+    t = t.replace("</head>", hook + "</head>");
     document.open();
     document.write(t);
     document.close();
-  }
-  function load(url, base) {
-    return fetch(url).then(function (r) {
-      if (!r.ok) throw new Error(String(r.status));
-      return r.text();
-    }).then(function (t) { show(t, base); });
-  }
-  load(cdn + "play.html", cdn).catch(function () {
-    return load(raw + "play.html", raw);
-  }).catch(function () {
+  })
+  .catch(function () {
     var n = document.getElementById("boot");
     if (n) n.textContent = "Shop floor did not load. Close this tab and open the new link.";
   });
-})();
 </script>
 </body>
 </html>
