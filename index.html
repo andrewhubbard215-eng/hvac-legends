@@ -12,13 +12,11 @@ fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac598
   .then(function (r) { return r.text(); })
   .then(function (t) {
     var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
-    var hook = '<script>document.addEventListener("click",function(e){var a=e.target&&e.target.closest?e.target.closest("a"):null;if(!a)return;var h=a.getAttribute("href")||"";if(h.indexOf("desk.html")<0)return;e.preventDefault();location.href="https://htmlpreview.github.io/?https://github.com/andrewhubbard215-eng/hvac-legends/blob/main/desk.html";},true);<' + '/script>';
-    hook += '<script src="https://raw.githubusercontent.com/andrewhubbard215-eng/hvac-legends/a45acd59cfc287802bab31d97dd5d9d877aadcf5/parts-tray-scroll.js"><' + '/script>';
+    var hook = '<button id="clock-in-now" type="button" style="position:fixed;left:16px;right:16px;bottom:24px;z-index:300;min-height:52px;background:#c0392b;color:#fff;border:0;border-radius:12px;font-size:20px;font-weight:700">Clock In</button>'
+      + '<script>setInterval(function(){var b=document.getElementById("clock-in-now");if(!b)return;var floor=document.getElementById("screen-hub");var on=floor&&floor.classList.contains("active");b.style.display=on?"none":"block";if(b.dataset.armed)return;b.dataset.armed="1";b.onclick=function(){var found=null;document.querySelectorAll("button,a").forEach(function(el){if(!found&&(el.textContent||"").toLowerCase().indexOf("clock")>=0&&el!==b)found=el;});if(found)found.click();else if(window.ltPlay)window.ltPlay("hub");};},500);document.addEventListener("click",function(e){var a=e.target&&e.target.closest?e.target.closest("a"):null;if(!a)return;if((a.getAttribute("href")||"").indexOf("desk.html")<0)return;e.preventDefault();location.href="https://htmlpreview.github.io/?https://github.com/andrewhubbard215-eng/hvac-legends/blob/main/desk.html";},true);<' + '/script>';
     t = t.replace('<base href="/legends/" />', base);
     t = t.replace("</body>", hook + "</body>");
-    document.open();
-    document.write(t);
-    document.close();
+    document.open(); document.write(t); document.close();
   })
   .catch(function () {
     var n = document.getElementById("boot");
