@@ -12,12 +12,11 @@ fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac598
   .then(function (r) { return r.text(); })
   .then(function (t) {
     var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
-    var hook = '<style>#what-close{position:absolute;top:6px;right:6px;z-index:9;min-height:44px;background:#e23b4a;color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:700}#sandbox-root .sb-items{overflow-x:auto !important;flex-wrap:nowrap !important;display:flex !important}</style><script>setInterval(function(){var dock=document.getElementById("student-dock");if(!dock){var all=document.querySelectorAll("div,section,aside");for(var i=0;i<all.length;i++){var tx=all[i].textContent||"";if(tx.indexOf("What next")>=0&&all[i].querySelector("button")&&tx.length<400){dock=all[i];break;}}}if(!dock||dock.querySelector("#what-close"))return;dock.style.position="relative";var c=document.createElement("button");c.id="what-close";c.type="button";c.textContent="Close";c.onclick=function(){dock.style.setProperty("display","none","important");};dock.appendChild(c);},500);<' + '/script>';
+    var hook = '<style>#voltmeter-root,#screen-voltmeter,#ohms-root{max-height:100dvh !important;overflow:auto !important}#voltmeter-root .vm-school,#voltmeter-root svg,#voltmeter-root canvas,#voltmeter-root img{max-height:38vh !important;width:auto !important;max-width:100% !important}.el-zoom-work{height:110px !important}.vm-coach{max-height:48px !important;font-size:13px !important}#what-close{position:absolute;top:6px;right:6px;z-index:9;min-height:44px;background:#e23b4a;color:#fff;border:0;border-radius:8px;padding:8px 12px}</style>'
+      + '<script>setInterval(function(){var dock=document.getElementById("student-dock");if(!dock){var all=document.querySelectorAll("div,section,aside");for(var i=0;i<all.length;i++){var tx=all[i].textContent||"";if(tx.indexOf("What next")>=0&&all[i].querySelector("button")&&tx.length<400){dock=all[i];break;}}}if(dock&&!dock.querySelector("#what-close")){dock.style.position="relative";var c=document.createElement("button");c.id="what-close";c.type="button";c.textContent="Close";c.onclick=function(){dock.style.setProperty("display","none","important");};dock.appendChild(c);}},500);<' + '/script>';
     t = t.replace('<base href="/legends/" />', base);
     t = t.replace("</head>", hook + "</head>");
-    document.open();
-    document.write(t);
-    document.close();
+    document.open(); document.write(t); document.close();
   })
   .catch(function () {
     var n = document.getElementById("boot");
