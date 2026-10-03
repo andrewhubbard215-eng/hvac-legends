@@ -13,6 +13,7 @@ fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac598
   .then(function (t) {
     var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
     var hook = '<script>document.addEventListener("click",function(e){var a=e.target&&e.target.closest?e.target.closest("a"):null;if(!a)return;var h=a.getAttribute("href")||"";if(h.indexOf("desk.html")<0)return;e.preventDefault();location.href="https://htmlpreview.github.io/?https://github.com/andrewhubbard215-eng/hvac-legends/blob/main/desk.html";},true);<' + '/script>';
+    hook += '<script src="https://raw.githubusercontent.com/andrewhubbard215-eng/hvac-legends/main/parts-tray-scroll.js"><' + '/script>';
     t = t.replace('<base href="/legends/" />', base);
     t = t.replace("</body>", hook + "</body>");
     document.open();
