@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="110" viewBox="0 0 280 110">
+  <rect width="280" height="110" fill="#101820"/>
+  <text x="14" y="22" fill="#f3e2b0" font-size="14" font-family="sans-serif">Black lead in COM</text>
+  <path d="M40 38 C70 38 70 78 108 78" fill="none" stroke="#111" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="40" cy="38" r="7" fill="#111" stroke="#f3e2b0"/>
+  <rect x="96" y="62" width="28" height="32" rx="4" fill="#1c2630" stroke="#c9a227"/>
+  <text x="99" y="82" fill="#fff" font-size="9" font-family="sans-serif">COM</text>
+  <path d="M170 38 C200 38 200 78 236 78" fill="none" stroke="#e23b4a" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="170" cy="38" r="7" fill="#e23b4a"/>
+  <rect x="224" y="62" width="28" height="32" rx="4" fill="#1c2630" stroke="#c9a227"/>
+  <text x="230" y="82" fill="#fff" font-size="9" font-family="sans-serif">V</text>
+</svg>
