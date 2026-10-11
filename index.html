@@ -16,6 +16,12 @@ fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac598
     var hook = pic + '<style>#screen-voltmeter .el-zoom-card{max-height:140px !important}#screen-voltmeter.active #student-dock{display:none !important}</style><script>setInterval(function(){var root=document.getElementById("screen-voltmeter");var box=document.getElementById("lead-black");if(!box)return;var on=root&&root.classList.contains("active");box.style.display=on?"block":"none";if(on){var dock=document.getElementById("student-dock");if(dock)dock.style.display="none";}},500);<' + '/script>';
     t = t.replace('<base href="/legends/" />', base);
     t = t.replace("</body>", hook + "</body>");
+    if (t.indexOf("condenser-lair") === -1) {
+      t = t.replace(
+        '<div class="hub-grid hub-nav" id="hub-options">',
+        '<div class="hub-grid hub-nav" id="hub-options"><a class="mode-card" href="https://andrewhubbard215-eng.github.io/condenser-lair/?skin=legends"><h3>Condenser Lair</h3><p>Move or die. Side job, then the bus.</p></a>'
+      );
+    }
     document.open();
     document.write(t);
     document.close();
