@@ -1,4 +1,4 @@
-/* All-Star Exam Board — EPA 608 · OSHA 30 · shop HVAC */
+/* All-Star Exam Board — EPA 608 · OSHA 30 · Lincoln Tech HVAC */
 (function (global) {
   "use strict";
 
@@ -253,6 +253,64 @@
         why: "Inspect before use. Don't climb damaged scaffold.",
       },
     ],
+    refov: [
+      {
+        q: "What two points in the refrigeration system divide the low-pressure side and the high-pressure side?",
+        choices: ["The compressor and the evaporator", "The compressor and the liquid receiver", "The condenser and the evaporator", "The compressor and the metering device"],
+        a: 3,
+        why: "The compressor raises the pressure. The metering device drops it. Those two points split the high side from the low side.",
+      },
+      {
+        q: "What state does the refrigerant enter the compressor as?",
+        choices: ["A high-pressure, low-temperature liquid", "A high-pressure, high-temperature superheated vapor", "A high-pressure subcooled liquid", "A low-pressure, low-temperature superheated vapor"],
+        a: 3,
+        why: "The evaporator finishes the boil and adds superheat. The compressor must see vapor, not liquid.",
+      },
+      {
+        q: "The blue gauge on a gauge manifold set is the:",
+        choices: ["High pressure gauge", "Low-pressure compound gauge", "Recovery gauge", "Evacuation gauge"],
+        a: 1,
+        why: "Blue is the compound gauge. It reads pressure and vacuum on the low side.",
+      },
+      {
+        q: "Where in the refrigeration cycle is the pressure reduced, causing a small percentage of the refrigerant to flash to a vapor (flash-gas)?",
+        choices: ["The compressor", "The condenser", "The metering device", "The liquid receiver"],
+        a: 2,
+        why: "The metering device drops the pressure. Part of the liquid flashes so the rest can boil in the evaporator.",
+      },
+      {
+        q: "What is a de-minimis release of refrigerant?",
+        choices: ["Refrigerant released from an old refrigerant cylinder", "A minor release of refrigerant such as removing hoses", "A major release of refrigerant that must be reported", "Refrigerant released through a purge unit as a result of adding nitrogen to a charged system"],
+        a: 1,
+        why: "De minimis is a small release you cannot avoid, such as disconnecting hoses. It is not a vent, and it is not a leak you leave.",
+      },
+      {
+        q: "The center port and hose of a gauge manifold is used for which of the following?",
+        choices: ["All of these: recovery, charging, and evacuation", "Recovery", "Charging", "Evacuation"],
+        a: 0,
+        why: "The center hose is the utility hose. Recovery, charging, and evacuation all use it.",
+      },
+    ],
+    leak: [
+      {
+        q: "After determining the general area of a leak, what can be used to pinpoint it?",
+        choices: ["Recovery unit", "Soap bubbles", "Vacuum pump", "Laser"],
+        a: 1,
+        why: "An electronic detector finds the area. Soap bubbles show the exact fitting that is leaking.",
+      },
+      {
+        q: "What is the most effective way to determine the general area of a leak?",
+        choices: ["Nitrogen leak test", "Use an electronic or ultrasonic leak detector", "Use a recovery unit", "Use a vacuum pump"],
+        a: 1,
+        why: "A detector sweeps the system and tells you which section is leaking. Then you pinpoint it.",
+      },
+      {
+        q: "What is the first issue a technician can look for when inspecting a refrigeration system known to be leaking?",
+        choices: ["Dust or dirt inside the machine", "Traces of oil around fittings", "Excessive condensation", "Rat droppings"],
+        a: 1,
+        why: "Oil travels with the refrigerant. Oil at a fitting is the first sign of where it left.",
+      },
+    ],
     curriculum: [
       {
         q: "High superheat AND low subcooling most often indicates:",
@@ -351,7 +409,7 @@
         why: "POE + moisture is trouble. Cap the oil.",
       },
       {
-        q: (window.LtBrand && window.LtBrand.isStore ? "Shop standard" : "Shop standard") + ": after brazing a copper joint you should:",
+        q: ((window.LtBrand && window.LtBrand.org) || "Shop") + " standard: after brazing a copper joint you should:",
         choices: ["Charge immediately while it's hot", "N₂ purge while brazing, then pressure test and vacuum", "Skip the vacuum if it looks pretty", "Use R-22 leftover to push moisture"],
         a: 1,
         why: "Purge with nitrogen while brazing, then test and evacuate.",
@@ -433,6 +491,24 @@
     ],
   };
 
+  function lethalCause(text) {
+    const t = String(text || "").trim().toLowerCase();
+    const exact = {
+      "use pure oxygen for better detection": "an oxygen explosion",
+      "use oxygen to push moisture out": "an oxygen explosion",
+      "pure oxygen for a hotter test": "an oxygen explosion",
+      "heated with a torch to empty": "a cylinder explosion",
+      "until the relief valve dumps": "a ruptured cylinder",
+      "100% liquid": "a ruptured cylinder",
+      "whatever fits": "a ruptured cylinder",
+      "class a water only": "electrocution",
+      "a jumper across l1–l2": "electrocution",
+      "power on so you see real values": "electrocution",
+      "no special precautions": "bad air",
+    };
+    return exact[t] || "";
+  }
+
   function shuffleQuestion(q) {
     const n = (q.choices || []).length;
     if (n < 2) return Object.assign({}, q);
@@ -445,16 +521,6 @@
       order[j] = t;
     }
     const choices = order.map((i) => q.choices[i]);
-    const a = order.indexOf(q.a);
-    if (a === 0 && n > 1) {
-      const j = 1 + ((Math.random() * (n - 1)) | 0);
-      const tmpC = choices[0];
-      choices[0] = choices[j];
-      choices[j] = tmpC;
-      const tmpI = order[0];
-      order[0] = order[j];
-      order[j] = tmpI;
-    }
     const correct = order.indexOf(q.a);
     let wrong = q.wrong;
     if (wrong && typeof wrong === "object") {
@@ -485,9 +551,9 @@
     { id: "epa608-type1", name: "EPA 608 Type I", blurb: "25 questions · small appliances ≤5 lb" },
     { id: "epa608-type2", name: "EPA 608 Type II", blurb: "25 questions · splits, vacuums, 10/20/30% leaks" },
     { id: "epa608-type3", name: "EPA 608 Type III", blurb: "25 questions · low-pressure chillers · 25 mm Hg abs" },
-    { id: "osha30", name: "OSHA 30", blurb: "Falls, LOTO, PPE, electrical, heat, SDS" },
-    { id: "curriculum", name: (window.LtBrand && window.LtBrand.isStore) ? "Shop curriculum" : "Shop curriculum", blurb: "Cycle, SH/SC, gauges, DMM, mini-split, airflow" },
-    { id: "mixed", name: "Quiz Game mix", blurb: (window.LtBrand && window.LtBrand.isStore) ? "EPA 608 + OSHA 30 + shop" : "EPA 608 + OSHA 30 + shop" },
+    { id: "leak", name: "Leak Detection", blurb: "3 questions · oil at the fitting, electronic detector, soap bubbles" },
+    { id: "curriculum", name: (window.LtBrand && window.LtBrand.packCurriculum) || "HVAC Legends", blurb: "Cycle, SH/SC, gauges, DMM, mini-split, airflow" },
+    { id: "mixed", name: "Quiz Game mix", blurb: "EPA 608 + OSHA 30 + " + ((window.LtBrand && window.LtBrand.packCurriculum) || "HVAC Legends") },
   ];
 
   const LETTERS = ["A", "B", "C", "D"];
@@ -516,6 +582,8 @@
   let roastLevel = 1;
   let sectionMarks = {};
   let examMode = false;
+  let examLevel = "hard";
+  let uniLeft = [];
 
   function isEpaPack(id) {
     return String(id || "").indexOf("epa608") === 0;
@@ -530,7 +598,7 @@
         id === "epa608-type2" ? "type2" :
         id === "epa608-type3" ? "type3" :
         "universal";
-      return E.deck(kind);
+      return E.deck(kind, examLevel);
     }
     const keys = id === "mixed" ? ["epa608", "osha30", "curriculum"] : [id];
     return mixBanks(keys).slice(0, 12);
@@ -544,12 +612,13 @@
     let items = [];
     const E = global.Epa608Exam;
     if (E && isEpaPack(id)) {
-      items =
-        id === "epa608-core" ? E.CORE.slice() :
-        id === "epa608-type1" ? E.TYPE1.slice() :
-        id === "epa608-type2" ? E.TYPE2.slice() :
-        id === "epa608-type3" ? E.TYPE3.slice() :
-        E.ALL.slice();
+      const kind =
+        id === "epa608-core" ? "core" :
+        id === "epa608-type1" ? "type1" :
+        id === "epa608-type2" ? "type2" :
+        id === "epa608-type3" ? "type3" :
+        "universal";
+      items = E.paper ? E.paper(kind, examLevel) : E.deck(kind, examLevel);
     } else {
       const keys = id === "mixed" ? ["epa608", "osha30", "curriculum"] : [id];
       items = mixBanks(keys);
@@ -733,9 +802,23 @@
   }
 
   function pointsForSpeed() {
+    if (examMode) return 1;
     if (!timerMax) return 1000;
     const frac = Math.max(0, timer / timerMax);
     return Math.round(500 + 500 * frac);
+  }
+
+  function examPlace(item) {
+    if (!examMode || !item || !item.section) return "Item " + (qi + 1) + " / " + questions.length;
+    const names = { core: "Core", type1: "Type I", type2: "Type II", type3: "Type III" };
+    let seen = 0;
+    let total = 0;
+    for (let i = 0; i < questions.length; i++) {
+      if (questions[i].section !== item.section) continue;
+      total++;
+      if (i <= qi) seen++;
+    }
+    return (names[item.section] || "Section") + " · " + seen + " / " + total;
   }
 
   function finishQuestion() {
@@ -764,10 +847,15 @@
       Object.keys(ans).forEach((name) => {
         const ok = ans[name].i === item.a;
         const frac = timerMax ? Math.max(0, (ans[name].t || 0) / timerMax) : 1;
-        const got = ok ? Math.round(500 + 500 * frac) : 0;
+        const got = ok ? (examMode ? 1 : Math.round(500 + 500 * frac)) : 0;
         awards[name] = got;
         scores[name] = (scores[name] || 0) + got;
       });
+      if (examMode && item.section) {
+        if (!sectionMarks[item.section]) sectionMarks[item.section] = { right: 0, total: 0 };
+        sectionMarks[item.section].total++;
+        if (selected === item.a) sectionMarks[item.section].right++;
+      }
       window.__answers = {};
       if (net === "server") {
         roomPost({
@@ -791,12 +879,48 @@
     }
   }
 
+  function continueUniversal() {
+    const kind = uniLeft.shift();
+    if (!kind || !global.Epa608Exam) {
+      finishSat();
+      return;
+    }
+    questions = global.Epa608Exam.deck(kind, examLevel);
+    qi = 0;
+    selected = null;
+    locked = false;
+    mode = "play";
+    render();
+  }
+
+  function finishSat() {
+    mode = "results";
+    stopTimer();
+    render();
+    if (hooks.onComplete) {
+      try {
+        const list = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+        hooks.onComplete({ scores, winner: list[0], total: 100, packId: "epa608", marks: sectionMarks });
+      } catch (err) {
+        console.warn("quiz complete", err);
+      }
+    }
+  }
+
   function nextQuestion() {
+    var trail = document.getElementById("c90-trail");
+    if (trail) trail.remove();
     qi++;
     selected = null;
     locked = false;
     window.__answers = {};
     if (qi >= questions.length) {
+      if (role === "solo" && uniLeft.length) {
+        mode = "gate";
+        stopTimer();
+        render();
+        return;
+      }
       mode = "results";
       stopTimer();
       if (role === "host") {
@@ -816,7 +940,7 @@
       if (hooks.onComplete) {
         try {
           const list = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-          hooks.onComplete({ scores, winner: list[0], total: questions.length, packId });
+          hooks.onComplete({ scores, winner: list[0], total: questions.length, packId, marks: sectionMarks });
         } catch (err) {
           console.warn("quiz complete", err);
         }
@@ -840,6 +964,41 @@
     render();
   }
 
+  function shortStem(q) {
+    var s = String(q || "").replace(/\s+/g, " ").trim();
+    var seen = [
+      [/HFC substitutes such as R-134a/i, "HFC venting (R-134a) was banned on:"],
+      [/reached 0 psig/i, "Recovered to 0 psig. Before charging, it:"],
+      [/zeotropic blend has been leaking/i, "Leaked blend. Topping off by gauge is wrong because:"],
+      [/Which container and fill are legal/i, "Legal recovery cylinder and fill?"],
+      [/still destroy ozone/i, "R-22 still destroys ozone because it:"],
+      [/not certified asks the supply house/i, "Selling R-410A to a homeowner is:"],
+      [/shop vacuum/i, "Using a shop vacuum to recover refrigerant is:"],
+      [/4-pound window unit is being scrapped/i, "Cutting the lines on a 4 lb window unit is:"],
+      [/wholesaler still has virgin R-22/i, "New R-22 equipment in 2015. Which was already true?"],
+      [/old machine still holds R-12/i, "R-12, then R-22, then R-134a are:"],
+      [/jug of R-22, a jug of R-410A/i, "Which jug contains chlorine?"],
+      [/Ozone loss lets more ultraviolet/i, "Ozone loss. Which health effect is on the 608 list?"],
+      [/Two refrigerants are compared/i, "Low-pressure or high-pressure is decided by:"],
+      [/owner wants to sell it to another contractor/i, "Selling that reclaimed R-410A is legal only when:"],
+      [/pulls refrigerant with a compressor built into the machine/i, "This machine has its own compressor. It is:"],
+      [/cleaned for reuse by the same owner/i, "Remove, clean for the same owner, then AHRI 700. Those steps are:"],
+    ];
+    for (var i = 0; i < seen.length; i++) {
+      if (seen[i][0].test(s)) return seen[i][1];
+    }
+    var parts = s.split(/(?<=[.?!])\s+/);
+    var last = parts.length > 1 ? parts[parts.length - 1] : "";
+    if (last && last.length >= 36 && last.length <= 84 && /[?:]$/.test(last) && !/^(this|that|those|it|the sale|the machine|under section)\b/i.test(last)) return last;
+    return s;
+  }
+
+  function firstLine(s) {
+    var t = String(s || "").replace(/\s+/g, " ").trim();
+    var p = t.split(/(?<=[.?!])\s+/)[0];
+    return p || t;
+  }
+
   function renderReveal(correct, why) {
     const item = questions[qi];
     if (!item) return;
@@ -849,9 +1008,7 @@
       else btn.classList.add("wrong");
       if (selected === i) btn.classList.add("picked");
     });
-    const explain = why || item.why || ((window.LtBrand && window.LtBrand.isStore)
-      ? "Review this in EPA 608 / OSHA 30 notes."
-      : "Review this in EPA 608 / OSHA 30 / shop notes.");
+    const explain = firstLine(why || item.why || "Not that one.");
     const ok = selected === correct;
     if (window.LtSfx) {
       try {
@@ -863,56 +1020,25 @@
       if (ok) window.LtHaptic.ok();
       else window.LtHaptic.bad();
     }
-    const rows = item.choices
-      .map((c, i) => {
-        const letter = LETTERS[i] || String(i + 1);
-        if (i === correct) {
-          return (
-            '<li class="qa-break right"><strong>' +
-            letter +
-            " RIGHT</strong> — " +
-            c +
-            "<br><em>Why it's right:</em> " +
-            explain +
-            "</li>"
-          );
-        }
-        const miss =
-          (item.wrong && item.wrong[i]) ||
-          "Why it's wrong: this is not the shop answer. " + explain;
-        return (
-          '<li class="qa-break miss"><strong>' +
-          letter +
-          " WRONG</strong> — " +
-          c +
-          "<br><em>" +
-          miss +
-          "</em></li>"
-        );
-      })
-      .join("");
     const fb = root.querySelector(".qa-feedback");
     if (fb) {
-      fb.innerHTML =
-        '<div class="qa-explain-card qa-explain-dark">' +
-        '<p class="qa-explain-result">' +
-        (ok ? "✅ You got it · +" + lastAward + " pts" : "❌ Missed it · +0 pts") +
-        "</p>" +
-        "<ol class=\"qa-break-list\">" +
-        rows +
-        "</ol>" +
-        '<p class="qa-explain-hub">HUB: ' +
-        (ok ? hubLine("ok") : hubLine("bad")).trim() +
-        "</p>" +
-        "</div>";
+      fb.innerHTML = '<p class="qa-explain-result">' + (ok ? "Right. " : "Wrong. ") + explain.replace(/[&<>]/g, function (c) { return c === "&" ? "&" : c === "<" ? "<" : ">"; }) + "</p>";
       fb.className = "qa-feedback " + (ok ? "good" : "bad");
+    }
+    const scoreEl = root.querySelector(".qa-exam-score");
+    if (scoreEl) {
+      scoreEl.textContent = examMode ? (scores[nickname] || 0) + " right" : (scores[nickname] || 0) + " pts";
     }
     const next = root.querySelector(".qa-next");
     if (next) {
       next.classList.remove("hidden");
-      next.textContent = qi + 1 >= questions.length ? "See final scores" : "Next question";
+      next.textContent = qi + 1 < questions.length ? "Next question" : uniLeft.length ? "Score this section" : "See final scores";
       next.onclick = () => nextQuestion();
       try { next.focus(); } catch (_) {}
+    }
+    if (!ok && item.choices && global.HvacTrail) {
+      const cause = lethalCause(item.choices[selected]);
+      if (cause) global.HvacTrail.show(cause, "Back to the quiz");
     }
   }
 
@@ -922,7 +1048,13 @@
     packId = (root.querySelector("#qa-pack") && root.querySelector("#qa-pack").value) || "mixed";
     examMode = isEpaPack(packId);
     timerMax = 0;
-    questions = buildDeck(packId);
+    if (packId === "epa608" && global.Epa608Exam) {
+      uniLeft = ["type1", "type2", "type3"];
+      questions = global.Epa608Exam.deck("core", examLevel);
+    } else {
+      uniLeft = [];
+      questions = buildDeck(packId);
+    }
     qi = 0;
     scores = {};
     scores[nickname] = 0;
@@ -1007,6 +1139,15 @@
     render();
   }
 
+  function keepExplainVisible(item) {
+    if (!item || !root) return;
+    const fb = root.querySelector(".qa-feedback");
+    if (!fb) return;
+    fb.hidden = false;
+    if (fb.classList) fb.classList.remove("hidden");
+    if (fb.style && fb.style.display === "none") fb.style.display = "";
+  }
+
   function pick(i) {
     if (locked || mode !== "play") return;
     selected = i;
@@ -1019,8 +1160,13 @@
       }
       const fb = root.querySelector(".qa-feedback");
       if (fb) {
-        fb.textContent = "Answer locked in. Waiting for timer…";
-        fb.className = "qa-feedback";
+        const item = questions[qi];
+        const explain = item && (item.explanation || item.why);
+        const already = explain && String(fb.textContent || "").indexOf(String(explain)) !== -1;
+        if (!already) {
+          fb.textContent = "Answer locked in. Waiting for timer…";
+          fb.className = "qa-feedback";
+        }
       }
       root.querySelectorAll(".qa-choice, .qa-k-btn").forEach((b, idx) => {
         b.classList.add("locked");
@@ -1035,6 +1181,18 @@
         if (idx === i) b.classList.add("picked");
       });
       // host waits for timer to score everyone
+    }
+    const PF = window.PlayFeel;
+    const item = questions[qi];
+    if (!PF || !item || typeof item.a !== "number") return;
+    const buttons = root ? root.querySelectorAll(".qa-choice, .qa-k-btn") : null;
+    const anchor = (buttons && buttons[i]) || (root && root.querySelector(".qa-feedback")) || root;
+    if (i === item.a) {
+      PF.pop(anchor, "Correct", "ok");
+      if (typeof streak === "number" && streak >= 2) PF.pop(anchor, "Streak x" + streak, "xp");
+    } else {
+      PF.pop(anchor, "Not that", "bad");
+      if (role === "solo") keepExplainVisible(item);
     }
   }
 
@@ -1063,6 +1221,8 @@
 
   function render() {
     if (!root) return;
+    var trail = document.getElementById("c90-trail");
+    if (trail && mode !== "play") trail.remove();
     try {
       paint();
     } catch (err) {
@@ -1084,20 +1244,32 @@
           <header class="qa-head">
             <div class="brand-bar" style="justify-content:flex-start">
               <div class="brand-mark" style="width:28px;height:28px;font-size:14px">LT</div>
-              <div class="brand-word"><strong style="font-size:15px">ALL-STAR EXAM</strong><span>${(window.LtBrand && window.LtBrand.exam) || "EPA 608 · OSHA 30 · shop"} · timed shop quiz</span></div>
+              <div class="brand-word"><strong style="font-size:15px">EPA 608 PAPER</strong><span>Core · Type I · Type II · Type III · 18 of 25</span></div>
             </div>
             <button class="btn" id="qa-hub">Shop floor</button>
           </header>
           <div class="qa-lobby">
-            <p class="qa-lede">Timed shop quiz — or sit the 2026 EPA 608 paper: 100 questions, 25 a section, 18/25 (72%) to pass each. Training bank, not the official ESCO items. Andrew sits the real card.</p>
+            <p class="qa-lede">Sit one section, or sit all four. 25 questions. 18 to pass. Miss more than seven and that section does not stamp. These are original questions on the EPA topic list, not the ESCO card.</p>
+            <div class="qa-diff" role="group" aria-label="Difficulty">
+              <button type="button" class="qa-diff-btn${examLevel === "straight" ? " on" : ""}" data-level="straight">Straight</button>
+              <button type="button" class="qa-diff-btn${examLevel === "hard" ? " on" : ""}" data-level="hard">Hard</button>
+            </div>
+            <p class="qa-muted" id="qa-diff-note">${examLevel === "straight" ? "Straight asks the rule." : "Hard gives you the refrigerant, the pounds, and the year."}</p>
+            <div class="qa-outline">
+              <button type="button" class="qa-pack-btn" data-pack="epa608-core"><b>Core</b><span>Chlorine, the venting dates, the three R's, cylinders, oils</span></button>
+              <button type="button" class="qa-pack-btn" data-pack="epa608-type1"><b>Type I</b><span>Factory-sealed, 5 lb. 90 percent, 80 percent, or 4 in Hg</span></button>
+              <button type="button" class="qa-pack-btn" data-pack="epa608-type2"><b>Type II</b><span>Splits. 0 psig, 10 in, 15 in. Leak rates 10 / 20 / 30</span></button>
+              <button type="button" class="qa-pack-btn" data-pack="epa608-type3"><b>Type III</b><span>Chillers. 25 mm Hg absolute. Leak test stops at 10 psig</span></button>
+              <button type="button" class="qa-pack-btn" data-pack="epa608"><b>Universal</b><span>Core, then Type I, II, and III. You see the score before the next section</span></button>
+            </div>
+            <p class="qa-muted">Other packs stay below. OSHA and the shop mix are timed games. The 608 buttons are the paper.</p>
             <label class="spicy-toggle qa-heat">HUB roast
               <input type="range" id="qa-roast" min="0" max="3" step="1" value="${roastLevel}" />
               <span id="qa-roast-lab"></span>
             </label>
             <div class="qa-pack-row" id="qa-pack-row">
-              <button type="button" class="qa-pack-btn" data-pack="epa608">608 Universal (100)</button>
-              <button type="button" class="qa-pack-btn" data-pack="epa608-core">608 Core (25)</button>
-              <button type="button" class="qa-pack-btn" data-pack="epa608-type2">608 Type II (25)</button>
+              <button type="button" class="qa-pack-btn" data-pack="refov">Refrigeration Overview</button>
+              <button type="button" class="qa-pack-btn" data-pack="leak">Leak Detection</button>
               <button type="button" class="qa-pack-btn" data-pack="osha30">OSHA 30</button>
               <button type="button" class="qa-pack-btn" data-pack="curriculum">${(window.LtBrand && window.LtBrand.packCurriculum) || "HVAC Legends"}</button>
               <button type="button" class="qa-pack-btn" data-pack="mixed">Mix all</button>
@@ -1144,6 +1316,16 @@
         };
       }
       const packSel = root.querySelector("#qa-pack");
+      root.querySelectorAll(".qa-diff-btn").forEach((b) => {
+        b.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          examLevel = b.getAttribute("data-level") === "straight" ? "straight" : "hard";
+          root.querySelectorAll(".qa-diff-btn").forEach((x) => x.classList.toggle("on", x === b));
+          const note = root.querySelector("#qa-diff-note");
+          if (note) note.textContent = examLevel === "straight" ? "Straight asks the rule." : "Hard gives you the refrigerant, the pounds, and the year.";
+        };
+      });
       root.querySelectorAll(".qa-pack-btn").forEach((b) => {
         b.onclick = () => {
           if (packSel) packSel.value = b.dataset.pack;
@@ -1177,6 +1359,32 @@
       root.querySelector("#qa-hub").onclick = () => hooks.onHub && hooks.onHub();
       const b = root.querySelector("#qa-begin");
       if (b) b.onclick = hostBegin;
+      return;
+    }
+
+    if (mode === "gate") {
+      const labels = { core: "Core", type1: "Type I", type2: "Type II", type3: "Type III" };
+      const nextKind = uniLeft[0];
+      const lines = ["core", "type1", "type2", "type3"]
+        .filter(function (s) { return sectionMarks[s] && sectionMarks[s].total; })
+        .map(function (s) {
+          const m = sectionMarks[s];
+          const pass = m.right >= 18;
+          return '<p class="' + (pass ? "pass" : "fail") + '"><strong>' + labels[s] + "</strong> " + m.right + "/" + m.total + (pass ? " PASS" : " FAIL — need 18") + "</p>";
+        })
+        .join("");
+      root.innerHTML =
+        '<div class="qa-shell"><header class="qa-head"><div><p class="eyebrow">Universal</p><h2>Section scored</h2></div><button class="btn" id="qa-hub">Shop floor</button></header>' +
+        '<div class="qa-lobby"><div class="qa-608-stamp">' + lines + "</div>" +
+        "<p class=\"qa-lede\">Next is " + labels[nextKind] + ". 25 questions. 18 to pass. A miss does not stop the card. Universal needs 18 on every section.</p>" +
+        '<div class="qa-actions"><button class="btn primary" id="qa-uni-next">Continue · ' + labels[nextKind] + '</button>' +
+        '<button class="btn" id="qa-uni-stop">Score and stop</button></div></div></div>';
+      root.querySelector("#qa-hub").onclick = function () { if (hooks.onHub) hooks.onHub(); };
+      root.querySelector("#qa-uni-next").onclick = continueUniversal;
+      root.querySelector("#qa-uni-stop").onclick = function () {
+        uniLeft = [];
+        finishSat();
+      };
       return;
     }
 
@@ -1215,7 +1423,7 @@
               (allPass ? "Universal: stamped. All four sections 18+." : "Universal not stamped — retake the failed section(s).") +
               "</p>"
             : "") +
-          '<p class="qa-muted">Training paper covering 2026 federal topics. Not the official ESCO bank. Real card = EPA-approved proctor.</p>' +
+          '<p class="qa-muted">Training paper on the EPA topic list. Not the ESCO bank. The real card is sat with a proctor.</p>' +
           "</div>";
       }
       root.innerHTML = `
@@ -1252,20 +1460,19 @@
         <header class="qa-exam-top">
           <span class="qa-exam-pack">${
             item.section
-              ? "EPA 608 · " + ({ core: "Core", type1: "Type I", type2: "Type II", type3: "Type III" }[item.section] || item.section)
+              ? (({ core: "Core", type1: "Type I", type2: "Type II", type3: "Type III" }[item.section] || item.section) + (examMode ? " · " + (examLevel === "straight" ? "Straight" : "Hard") : ""))
               : (item.pack || packId || "")
                   .replace("curriculum", (window.LtBrand && window.LtBrand.packCurriculum) || "HVAC Legends")
                   .replace("epa608", "EPA 608")
                   .replace("osha30", "OSHA 30")
           }</span>
-          <span class="qa-exam-qnum">Item ${qi + 1} / ${questions.length}</span>
-          <span class="qa-timer-text qa-exam-time">${timerMax ? Math.ceil(timer) + "s" : "untimed"}</span>
-          <span class="qa-exam-score">${scores[nickname] || 0} pts</span>
+          <span class="qa-exam-qnum">${examPlace(item)}</span>
+          <span class="qa-timer-text qa-exam-time">${examMode ? "18 to pass" : timerMax ? Math.ceil(timer) + "s" : "untimed"}</span>
+          <span class="qa-exam-score">${examMode ? (scores[nickname] || 0) + " right" : (scores[nickname] || 0) + " pts"}</span>
           <button class="btn" id="qa-hub">Shop floor</button>
         </header>
         <div class="qa-timer-bar qa-exam-bar"${timerMax ? "" : " hidden"}><i style="width:${timerMax ? (timer / timerMax) * 100 : 100}%"></i></div>
-        <img class="qa-exam-pic" src="${quizPic(item)}" alt="" />
-        <h2 class="qa-exam-question">${item.q}</h2>
+        <h2 class="qa-exam-question">${shortStem(item.q)}</h2>
         <div class="qa-exam-grid">
           ${(item.choices || [])
             .map(
@@ -1290,23 +1497,13 @@
     };
   }
 
-  function quizPic(item) {
-    const q = ((item && item.q) || "") + " " + ((item && item.choices) || []).join(" ");
-    const t = q.toLowerCase();
-    if (/micron|vacuum|evacuate/.test(t)) return "ms/tools/micron.jpg";
-    if (/nitrogen|pressure test/.test(t)) return "ms/tools/n2.jpg";
-    if (/cylinder|tank|recover|vent/.test(t)) return "recover/tank.jpg";
-    if (/gauge|superheat|subcool|pressure/.test(t)) return "parts/gauges.png";
-    if (/compressor|oil/.test(t)) return "parts/compressor.png";
-    if (/leak|soap/.test(t)) return "ms/tools/soap.jpg";
-    if (/chiller|low-pressure|type iii/.test(t)) return "parts/evaporator.png";
-    if (item && item.section === "type1") return "parts/filter.png";
-    if (item && item.section === "type2") return "parts/condenser.png";
-    if (item && item.section === "type3") return "parts/evaporator.png";
-    return "recover/tank.jpg";
-  }
-
   function start(host, opts) {
+    if (!document.getElementById("qa-diff-css")) {
+      const st = document.createElement("style");
+      st.id = "qa-diff-css";
+      st.textContent = ".qa-diff{display:flex;gap:8px;margin:0 0 6px}.qa-diff-btn{flex:1 1 0;min-height:48px;border-radius:12px;border:1px solid #6d5b3c;background:#1c2126;color:#f6f0e2;font:700 16px/1 system-ui,sans-serif;cursor:pointer}.qa-diff-btn.on{background:#e8c450;color:#1a1408;border-color:#e8c450}#qa-diff-note{margin:0 0 8px}#screen-quiz .qa-exam-question{font-size:16px!important;line-height:1.25!important;margin:2px 0 8px!important}#screen-quiz .qa-feedback{margin:8px 0 0;font-size:15px;line-height:1.3}";
+      document.head.appendChild(st);
+    }
     root = host;
     hooks = opts || {};
     mode = "lobby";

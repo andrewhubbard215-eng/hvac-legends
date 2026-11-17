@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HVAC Legends · print the poster</title>
+  <style>
+    @page { size: letter; margin: 0.45in; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #e7e2d6; color: #14181c; font: 18px/1.35 system-ui, sans-serif; }
+    .sheet {
+      width: 7.6in;
+      margin: 16px auto;
+      padding: 0.28in 0.4in 0.2in;
+      background: #f7f3ea;
+      text-align: center;
+      box-shadow: 0 8px 28px rgba(0,0,0,.18);
+    }
+    .mark { margin: 0; letter-spacing: 0.16em; font-size: 13px; font-weight: 700; color: #CE0034; }
+    h1 { margin: 6px 0 4px; font: 800 48px/0.95 system-ui, sans-serif; letter-spacing: -0.03em; }
+    h1 span { color: #CE0034; }
+    .lead { margin: 0 0 14px; font-size: 18px; }
+    canvas { width: 3.15in; height: 3.15in; background: #fff; border: 8px solid #14181c; }
+    .url { margin: 10px 0 0; font-size: 12px; word-break: break-all; }
+    .rule { height: 3px; margin: 14px auto; width: 2.2in; background: #CE0034; }
+    .fine { margin: 0; font-size: 16px; }
+    .copy { margin: 6px 0 0; font-size: 14px; }
+    .bar { max-width: 7.4in; margin: 0 auto 12px; display: flex; gap: 8px; justify-content: center; }
+    button, .bar a { background: #CE0034; color: #fff; border: 0; border-radius: 8px; padding: 10px 16px; font: 700 15px system-ui, sans-serif; text-decoration: none; }
+    .warn { max-width: 7.4in; margin: 12px auto 0; padding: 0 12px; color: #6d1a28; font-size: 15px; text-align: center; }
+    @media print {
+      html, body { background: #fff; }
+      .noprint { display: none !important; }
+      .sheet { width: auto; margin: 0; padding: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bar noprint">
+    <button type="button" id="print">Print</button>
+    <a href="index.html?play=1">Back to the floor</a>
+  </div>
+  <p class="warn noprint" id="w" hidden>Don’t print this copy. Publish first, open this page on the public link, then print. A code from the editor will not open on a student’s phone.</p>
+  <main class="sheet">
+    <p class="mark">HVAC LEGENDS</p>
+    <h1>Student <span>test</span></h1>
+    <p class="lead">Scan with the phone camera. The floor opens.</p>
+    <canvas id="q" width="720" height="720"></canvas>
+    <p class="url" id="u"></p>
+    <div class="rule"></div>
+    <p class="fine">Open through October 19</p>
+    <p class="copy">© 2026 Andrew Hubbard. For this class. Not for resale.</p>
+  </main>
+  <script src="qrcode.min.js"></script>
+  <script>
+    var host = location.hostname;
+    var local = !host || host === "localhost" || /^127\./.test(host) || host.endsWith(".local") || host.endsWith(".grok-sandbox.com") || host.endsWith(".vercel.app");
+    var url = location.origin + "/?play=1";
+    document.getElementById("u").textContent = url;
+    if (local) document.getElementById("w").hidden = false;
+    document.getElementById("print").addEventListener("click", function () { window.print(); });
+    QRCode.toCanvas(document.getElementById("q"), url, {
+      width: 720,
+      margin: 1,
+      color: { dark: "#14181c", light: "#ffffff" }
+    }).catch(function () {
+      document.getElementById("u").textContent = "The code did not draw. The link is " + url;
+    });
+  </script>
+</body>
+</html>

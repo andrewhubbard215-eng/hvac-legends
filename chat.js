@@ -1,4 +1,4 @@
-/* HVAC Legends — student shop chat */
+/* Lincoln Tech HVAC Allstars — student shop chat */
 (function (global) {
   "use strict";
 

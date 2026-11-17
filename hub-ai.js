@@ -26,7 +26,7 @@
       tags: ["commandment", "commandments", "ten commandments", "shop law", "hvac jesus", "gauges of god"],
       topic: "The HVAC Commandments",
       answer:
-        "The ten shop laws: 1) Recover first — never vent. 2) Nut on the tube before you flare. 3) Dry nitrogen only. 4) Microns at the system, not a compound gauge. 5) Don't top off a leaker — recover, repair, evacuate, weigh in. 6) Lockout before ohms or µF. 7) Nameplate is law (MCA/MOP/charge). 8) SH = suction temp − evap sat; SC = cond sat − liquid temp. 9) Airflow before charge. 10) " + ((window.LtBrand && window.LtBrand.isStore) ? "The shop is home base" : "The shop is home base") + " — log it, teach the next helper. Open HVAC Commandments on the shop floor or ask me any one of them.",
+        "The ten shop laws: 1) Recover first — never vent. 2) Nut on the tube before you flare. 3) Dry nitrogen only. 4) Microns at the system, not a compound gauge. 5) Don't top off a leaker — recover, repair, evacuate, weigh in. 6) Lockout before ohms or µF. 7) Nameplate is law (MCA/MOP/charge). 8) SH = suction temp − evap sat; SC = cond sat − liquid temp. 9) Airflow before charge. 10) " + ((window.LtBrand && window.LtBrand.isStore) ? "The shop is home base" : ((window.LtBrand && window.LtBrand.org) || "HVAC Legends") + " is home base") + " — log it, teach the next helper. Open HVAC Commandments on the shop floor or ask me any one of them.",
     },
     {
       tags: ["nameplate", "data plate", "label", "model number", "serial number", "read plate"],
@@ -362,9 +362,9 @@
         "I only coach EPA 608, OSHA 30, and the refrigeration course. Rephrase like a tech: 'Type II recovery' or '6-foot fall rule'.",
       ]
     : [
-        "Stay on the three packs: EPA 608, OSHA 30, or the shop course. Try: recover, vacuum, LOTO, fall protection, superheat, TXV, mini-split.",
+        "Stay on the three packs: EPA 608, OSHA 30, or " + ((window.LtBrand && window.LtBrand.packCurriculum) || "HVAC Legends") + " curriculum. Try: recover, vacuum, LOTO, fall protection, superheat, TXV, mini-split.",
         "That's off the manifold. Ask 608 recovery, OSHA LOTO/falls/PPE, or LT cycle/SH-SC/gauges.",
-        "I only coach EPA 608, OSHA 30, and the shop course. Rephrase like a tech: 'Type II recovery' or '6-foot fall rule'.",
+        "I only coach EPA 608, OSHA 30, and " + ((window.LtBrand && window.LtBrand.packCurriculum) || "HVAC Legends") + " HCR. Rephrase like a tech: 'Type II recovery' or '6-foot fall rule'.",
       ];
 
   const TOPIC_TIPS = {
@@ -394,9 +394,9 @@
           "Shop: four core parts close the cycle — compressor, condenser, metering, evaporator. Sandbox it before you torch a real unit.",
         ]
       : [
-          "Shop: SH = suction temp minus evap sat. SC = cond sat minus liquid temp. Read both or you're guessing.",
+          ((window.LtBrand && window.LtBrand.org) || "HVAC Legends") + ": SH = suction temp minus evap sat. SC = cond sat minus liquid temp. Read both or you're guessing.",
           "LT curriculum: airflow before charge. Iced suction + near-zero SH is usually filter/blower/coil, not 'add gas.'",
-          "Shop: nut on the tube before you flare. Deburr. Torque. That's the lab, not optional flavor.",
+          "LT: nut on the tube before you flare. Deburr. Torque. That's HCR lab, not optional flavor.",
           "LT: nameplate is law — refrigerant, charge, MCA/MOP. OCR is a hint; your eyes are the final.",
           "LT: TXV is often charged by subcooling + weigh-in. Fixed orifice by superheat chart. OEM still wins.",
           "LT: four core parts close the cycle — compressor, condenser, metering, evaporator. Sandbox it before you torch a real unit.",
@@ -406,7 +406,7 @@
   const TOPIC_LABEL = {
     epa608: "EPA 608",
     osha30: "OSHA 30",
-    lincoln: (window.LtBrand && window.LtBrand.isStore) ? "Shop course" : "the shop course",
+    lincoln: (window.LtBrand && window.LtBrand.isStore) ? "Shop course" : ((window.LtBrand && window.LtBrand.packCurriculum) || "HVAC Legends"),
   };
 
   const DIRTY = [
@@ -507,14 +507,15 @@
     if (!ctx) return "";
     if (ctx.unit) {
       const map = {
-        bench: "the bench",
-        copper: "copper",
-        charge: "the charge",
-        controls: "the circuit",
-        install: "the install",
-        card: "the 608 card",
+        hcr101: "HCR101 climate control",
+        hcr102: "HCR102 electricity",
+        hcr105: "HCR105 basic refrigeration",
+        hcr117: "HCR117 air conditioning",
+        hcr108: "HCR108 design / energy",
+        hcr109: "HCR109 commercial refrigeration",
+        hcr110: "HCR110 troubleshooting",
         epa608: "EPA 608 prep",
-        piping: "copper",
+        piping: "piping / brazing shop lab",
       };
       const label = map[ctx.unit] || ctx.unit;
       return " [Curriculum focus: " + label + " — keep answers aligned to that unit.]";
@@ -552,7 +553,7 @@
       const r = randomPackTip();
       return {
         topic: r.label,
-        text: dress("I stay on EPA 608, OSHA 30, and " + ((window.LtBrand && window.LtBrand.isStore) ? "the shop course" : "the shop course") + ". Random " + r.label + ": " + r.tip),
+        text: dress("I stay on EPA 608, OSHA 30, and " + ((window.LtBrand && window.LtBrand.isStore) ? "the shop course" : ((window.LtBrand && window.LtBrand.packCurriculum) || "HVAC Legends")) + ". Random " + r.label + ": " + r.tip),
       };
     }
     return {
@@ -975,7 +976,7 @@
           <img src="hub-portrait.jpg?v=3" alt="" class="hub-chip-av photo" />
           <div>
             <strong>Professor Andrew Hubbard</strong>
-            <em>${(window.LtBrand && window.LtBrand.org) || "HVAC Legends"} · Install · Troubleshoot · Labels</em>
+            <em>${(window.LtBrand && window.LtBrand.isStore) ? "HVAC Allstars" : ((window.LtBrand && window.LtBrand.org) || "HVAC Legends")} · Install · Troubleshoot · Labels</em>
           </div>
         </div>
         <button type="button" class="btn" id="hub-ai-close">Close</button>
@@ -1003,7 +1004,15 @@
       window.LtDrag.makeMoveable(panel.querySelector(".hub-ai-head"), panel, "lt-hub-panel-pos");
     }
 
-    panel.querySelector("#hub-ai-close").onclick = close;
+    var closeBtn = panel.querySelector("#hub-ai-close");
+    closeBtn.onclick = function (e) { e.preventDefault(); e.stopPropagation(); close(); };
+    closeBtn.style.position = "relative";
+    closeBtn.style.zIndex = "5";
+    closeBtn.style.minHeight = "44px";
+    closeBtn.style.minWidth = "72px";
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && panel && !panel.classList.contains("hidden")) close();
+    });
     panel.querySelector("#hub-ai-form").onsubmit = (e) => {
       e.preventDefault();
       const input = panel.querySelector("#hub-ai-input");
@@ -1300,12 +1309,51 @@
     return enabled;
   }
 
+  function wireChips() {
+    if (document.documentElement.dataset.hubChips) return;
+    document.documentElement.dataset.hubChips = "1";
+    function arm(chip) {
+      if (!chip || chip.dataset.armed || chip.closest("#hub-ai-panel")) return;
+      chip.dataset.armed = "1";
+      chip.setAttribute("role", "button");
+      chip.tabIndex = 0;
+    }
+    document.addEventListener("pointerover", (e) => {
+      const chip = e.target.closest && e.target.closest(".hub-chip");
+      if (chip) arm(chip);
+    });
+    function askChip(chip) {
+      if (!chip || !enabled || chip.closest("#hub-ai-panel")) return;
+      const p = chip.querySelector("p");
+      const line = ((p && p.textContent) || "").replace(/\s+/g, " ").trim().slice(0, 280);
+      if (!line) {
+        open();
+        return;
+      }
+      say(line);
+    }
+    document.addEventListener("click", (e) => {
+      const chip = e.target.closest && e.target.closest(".hub-chip");
+      if (!chip || chip.closest("#hub-ai-panel")) return;
+      if (e.target.closest("button, a, input, select, textarea")) return;
+      askChip(chip);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const chip = e.target.closest && e.target.closest(".hub-chip");
+      if (!chip || chip.closest("#hub-ai-panel")) return;
+      e.preventDefault();
+      askChip(chip);
+    });
+  }
+
   function init(opts) {
     if (opts && opts.getContext) getContext = opts.getContext;
     mountButton();
     ensurePanel();
     close();
     setEnabled(enabled);
+    wireChips();
   }
 
   global.HubAI = {

@@ -33,7 +33,7 @@
     if (global.LtClass && global.LtClass.isIn()) extra += "&room=" + global.LtClass.pin();
     var s = load();
     if (s.customHost && /^https?:\/\//i.test(s.customHost)) {
-      return s.customHost.replace(/\/$/, "") + "/allstars/index.html?" + extra;
+      return s.customHost.replace(/\/$/, "") + "/legends/index.html?" + extra;
     }
     try {
       var u = new URL(location.href);
@@ -41,7 +41,7 @@
       u.hash = "";
       return u.toString();
     } catch (e) {
-      return origin() + "/allstars/index.html?" + extra;
+      return origin() + "/legends/index.html?" + extra;
     }
   }
 
@@ -186,16 +186,36 @@
       '<div class="row" style="gap:8px;flex-wrap:wrap">' +
       '<button type="button" class="btn primary" id="net-copy-class">Copy student link</button>' +
       "</div>" +
-      "<p>Write the PIN on the board. Open a lab — they follow.</p>" +
+      "<p>Write the PIN on the board. Open a lab — they follow. Practice techs are already seated so you can preview the board before anyone joins.</p>" +
       "<ol class='class-hud-board'>" +
       (roster || "<li>Waiting on techs…</li>") +
-      "</ol>";
+      "</ol>" +
+      '<button type="button" class="btn" id="net-round">Run a practice round</button>';
     var c = box.querySelector("#net-copy-class");
     if (c) {
       c.onclick = function () {
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(link).then(function () { c.textContent = "Copied"; });
         }
+      };
+    }
+    var round = box.querySelector("#net-round");
+    if (round && C) {
+      round.onclick = function () {
+        round.disabled = true;
+        fetch("/api/class-lab", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "round", pin: C.pin() }),
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (room) {
+            if (C.ingest) C.ingest(room);
+            if (lastRoot) paint(lastRoot);
+          })
+          .catch(function () {
+            round.disabled = false;
+          });
       };
     }
   }

@@ -35,6 +35,16 @@
     "sandbox.job": "High SH + low SC is starved. High SC + high SH is a restriction. Low SH + ice is a filter. Don't mix those.",
     "epa608": "Recover, vacuum, weigh in. Topping a zeotrope leak is how you cocktail the blend.",
     "quiz": "If you guess, read the why. The why is the job.",
+    "pt.glide": "Dew for superheat, bubble for subcool, on 454B. Glide.",
+    "pt.dew": "Suction clamp minus the dew sat is superheat on 454B.",
+    "pt.bubble": "Bubble sat minus the liquid line is subcool on a glide gas.",
+    "charge.frac": "Liquid in from the jug — don't pull vapor off a blend. Fractionation.",
+    "charge.vapor": "Vapor off a 454B jug is the light end, not the nameplate mix.",
+    "fn.kvl": "Open switch shows the 24 — closed contacts read about zero. Kirchhoff.",
+    "gauges.locked": "Call's locked — piston by superheat, TXV by subcool, stem stays put.",
+    "epa.weigh": "Recover it, then weigh the virgin to the nameplate — the needle isn't a scale.",
+    "epa.80": "Recovery bottle stops at 80% by weight so the rest stays vapor.",
+    "epa.recover": "Gas goes in the bottle before you open that system.",
   };
 
   function load() {
@@ -74,6 +84,9 @@
     el.addEventListener("click", function () {
       el.hidden = true;
     });
+    if (global.LtDrag && global.LtDrag.makeMoveable) {
+      global.LtDrag.makeMoveable(el, el, "lt-drip-pos");
+    }
     return el;
   }
 
@@ -92,7 +105,14 @@
       '<img src="hub-portrait.jpg?v=3" alt="" />' +
       "<div><strong>HUB</strong><p>" +
       text +
-      "</p></div>";
+      '</p></div><button type="button" class="drip-x" aria-label="Close">×</button>';
+    var x = el.querySelector(".drip-x");
+    if (x) {
+      x.onclick = function (ev) {
+        ev.stopPropagation();
+        el.hidden = true;
+      };
+    }
     el.hidden = false;
     clearTimeout(say._t);
     say._t = setTimeout(function () {
@@ -109,7 +129,6 @@
       elguide: "elec.ok",
       meter: "elec.kvl",
       voltmeter: "vm.class",
-      sandbox: "sandbox",
       ptchart: "ptchart",
       epa608: "epa608",
       quiz: "quiz",

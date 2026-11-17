@@ -1,36 +1,914 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>HVAC Legends</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>HVAC Legends</title>
+  <base href="/legends/" />
+  <script src="gate-hvac1.js?v=6" data-doors="1"></script>
+  <script src="demo-clock.js?v=5"></script>
+  <script src="schools/legends.js?v=5"></script>
+  <script src="schools/menu.js?v=3"></script>
+  <script src="sku.js?v=25"></script>
+  <script src="a11y.js?v=20"></script>
+  <meta name="description" content="HVAC Legends — vocational HVAC trainer. Recovery, charging, electrical, the system sandbox, and EPA 608." />
+  <meta http-equiv="Permissions-Policy" content="magnetometer=(self), accelerometer=(self), gyroscope=(self), microphone=(self)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="HVAC Legends" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=384" />
+  <link rel="stylesheet" href="pouch.css?v=1" />
+  <script src="preview-bridge.js?v=2"></script>
 </head>
 <body>
-<p id="boot">Opening the shop floor…</p>
-<script>
-fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/index.html")
-  .then(function (r) { return r.text(); })
-  .then(function (t) {
-    var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
-    var pic = '<div id="lead-black" style="display:none;position:fixed;left:8px;right:8px;top:8px;z-index:200;background:#121820;border:1px solid #c9a227;border-radius:12px;padding:8px;color:#f3e2b0"><svg viewBox="0 0 280 90" width="100%" height="90"><rect x="8" y="16" width="70" height="58" rx="8" fill="#0e141b" stroke="#f3e2b0"/><text x="22" y="50" fill="#f3e2b0" font-size="16">COM</text><circle cx="42" cy="12" r="8" fill="#111"/><line x1="42" y1="20" x2="42" y2="40" stroke="#111" stroke-width="6"/><rect x="120" y="16" width="70" height="58" rx="8" fill="#0e141b" stroke="#8a6a10"/><text x="136" y="50" fill="#8a93a0" font-size="14">V ohm</text><text x="200" y="52" fill="#f3e2b0" font-size="14">Black in COM</text></svg></div>';
-    var hook = pic + '<style>#screen-voltmeter .el-zoom-card{max-height:140px !important}#screen-voltmeter.active #student-dock{display:none !important}</style><script>setInterval(function(){var root=document.getElementById("screen-voltmeter");var box=document.getElementById("lead-black");if(!box)return;var on=root&&root.classList.contains("active");box.style.display=on?"block":"none";if(on){var dock=document.getElementById("student-dock");if(dock)dock.style.display="none";}},500);<' + '/script>';
-    t = t.replace('<base href="/legends/" />', base);
-    t = t.replace("</body>", hook + "</body>");
-    t = t.replace("<h3>Condenser Lair</h3>", "<h3>Super Heat</h3>");
-    if (t.indexOf("super-heat-card") === -1 && t.indexOf("condenser-lair") === -1) {
-      t = t.replace(
-        '<div class="hub-grid hub-nav" id="hub-options">',
-        '<div class="hub-grid hub-nav" id="hub-options"><a class="mode-card" id="super-heat-card" href="https://andrewhubbard215-eng.github.io/condenser-lair/?skin=legends"><h3>Super Heat</h3><p>Saturday side job. Watch the flash. Move or lose a life.</p></a>'
-      );
-    }
-    document.open();
-    document.write(t);
-    document.close();
-  })
-  .catch(function () {
-    var n = document.getElementById("boot");
-    if (n) n.textContent = "Shop floor did not load. Close this tab and open the new link.";
-  });
-</script>
+  <script src="seat.js?v=11"></script>
+  <div id="app">
+    <!-- TITLE -->
+    <section id="screen-title" class="screen">
+      <div class="bg-plate bg-lincoln" style="background-image:url(demo-cover.jpg?v=1)"></div>
+      <div class="vignette"></div>
+      <div class="title-hero">
+        <img src="hub-portrait.jpg?v=3" alt="Professor HUB" class="title-hero-face" />
+        <p class="eyebrow"><span class="lincoln-only">Lincoln Tech - HVAC</span><span class="store-only">Vocational HVAC trainer</span></p>
+        <h1>HVAC <span class="lt-red">Legends</span></h1>
+        <p class="lede">Clock In — shop floor.</p>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <button class="btn primary btn-clock-hero" id="btn-start" type="button">Clock In</button>
+          <button class="btn" id="btn-hub-voice" type="button">Hear HUB</button>
+        </div>
+        <div class="a11y-bar" role="group" aria-label="Text size">
+          <button type="button" class="btn" data-type="sm" title="Smaller text">A−</button>
+          <button type="button" class="btn" data-type="md" title="Normal text">A</button>
+          <button type="button" class="btn" data-type="lg" title="Bigger text">A+</button>
+        </div>
+        <audio id="hub-voice" preload="none" src="hub-welcome.mp3?v=1"></audio>
+        <script>
+          document.getElementById("btn-hub-voice").addEventListener("click", function () {
+            var a = document.getElementById("hub-voice");
+            if (!a) return;
+            if (!a.paused) { a.pause(); a.currentTime = 0; return; }
+            a.play();
+          });
+        </script>
+      </div>
+    </section>
+
+    <!-- CHARACTER -->
+    <section id="screen-character" class="screen">
+      <div class="bg-plate bg-allstars" style="background-image:url(hvac-allstars-cover.jpg?v=1)"></div>
+      <div class="vignette"></div>
+      <div class="panel char-panel">
+        <button type="button" class="card-close" id="btn-char-back" aria-label="Close" onclick="window.ltGo && window.ltGo('title')">×</button>
+        <div class="brand-bar" style="justify-content:flex-start;margin-bottom:10px">
+          <div class="brand-mark">LT</div>
+          <div class="brand-word">
+            <strong class="lincoln-only">LINCOLN TECH</strong><strong class="store-only">HVAC ALLSTARS</strong>
+            <span>Create your student account</span>
+          </div>
+        </div>
+        <p class="eyebrow">Locker · photo · campus</p>
+        <h2>Build your tech</h2>
+        <div class="char-photo-row">
+          <img id="char-preview" class="char-preview char-preview-empty" alt="No photo yet" />
+          <div>
+            <label class="btn char-photo-btn">Add your picture
+              <input id="char-photo" type="file" accept="image/*" hidden />
+            </label>
+            <p class="char-photo-hint">Optional. Starts blank — not Professor HUB. Selfie stays on this device.</p>
+          </div>
+        </div>
+        <label>Callsign / name
+          <input id="callsign" maxlength="16" placeholder="Your name on the floor" value="" />
+        </label>
+        <label>Password
+          <input id="acct-pass" type="password" autocomplete="off" placeholder="Min 4 characters" />
+        </label>
+        <label id="acct-pass2-wrap">Confirm password
+          <input id="acct-pass2" type="password" autocomplete="off" placeholder="Re-type to create locker" />
+        </label>
+        <p class="char-photo-hint" id="acct-hint">New name creates a locker. Existing name logs you in. You pick the password — HUB included.</p>
+        <button type="button" class="btn" id="acct-reset">Forgot password · reset this locker on this device</button>
+        <label class="lincoln-only">Campus
+          <select id="campus">
+            <option value="levittown" selected>Levittown, PA — Philly area</option>
+            <option value="mahwah">Mahwah, NJ</option>
+            <option value="union">Union, NJ</option>
+            <option value="moorestown">Moorestown, NJ</option>
+            <option value="eastwindsor">East Windsor, CT</option>
+            <option value="newbritain">New Britain, CT</option>
+            <option value="shelton">Shelton, CT</option>
+            <option value="lincolnri">Lincoln, RI</option>
+            <option value="columbia">Columbia, MD</option>
+            <option value="indianapolis">Indianapolis, IN</option>
+            <option value="melrose">Melrose Park, IL</option>
+            <option value="denver">Denver, CO</option>
+            <option value="nashville">Nashville, TN</option>
+            <option value="houston">Houston, TX</option>
+            <option value="grandprairie">Grand Prairie, TX</option>
+            <option value="other">Other Lincoln Tech campus</option>
+          </select>
+        </label>
+        <label>Class / section (optional)
+          <input id="class-section" maxlength="24" placeholder="HCR1 AM · evening · etc." />
+        </label>
+        <label>Specialization
+          <select id="spec">
+            <option value="residential">Residential</option>
+            <option value="commercial">Commercial</option>
+            <option value="refrigeration">Refrigeration</option>
+          </select>
+        </label>
+        <p class="eyebrow">Look</p>
+        <div class="char-looks" id="char-looks">
+          <button type="button" class="char-look on" data-look="hardhat">Hard hat</button>
+          <button type="button" class="char-look" data-look="hoodie">Hoodie</button>
+          <button type="button" class="char-look" data-look="coveralls">Coveralls</button>
+          <button type="button" class="char-look" data-look="glasses">Safety glasses</button>
+        </div>
+        <button class="btn primary" id="btn-clockin" disabled>Create locker · clock in to shop floor</button>
+        <button type="button" class="btn" id="hub-logout">Log out · back to Clock In</button>
+        <p class="char-photo-hint">No games on this screen. After clock in you land on the shop floor — sandbox, quiz, electrical.</p>
+      </div>
+    </section>
+
+    <!-- HUB -->
+    <section id="screen-hub" class="screen active">
+      <p id="hub-visits" class="hub-visits"><span>Visitors</span><b>—</b></p>
+      <div class="bg-plate dark"></div>
+      <img class="demo-cover" src="demo-cover.jpg?v=1" alt="HVAC Legends" />
+      <header class="hub-head">
+        <div class="hub-head-left">
+          <img src="hub-portrait.jpg?v=3" alt="Professor Andrew Hubbard" class="hub-avatar" />
+          <img id="hub-student" class="hub-student-av hidden" alt="Student" />
+          <div>
+            <div class="brand-bar" style="justify-content:flex-start;margin-bottom:6px">
+              <div class="brand-mark" style="width:28px;height:28px;font-size:14px">LT</div>
+              <div class="brand-word">
+                <strong style="font-size:15px">HVAC LEGENDS</strong>
+                <span>© 2026 Andrew Hubbard</span>
+              </div>
+            </div>
+            <p class="eyebrow">On the clock</p>
+            <h2 id="hub-name">Tech</h2>
+            <p id="hub-meta" class="hub-meta"></p>
+          </div>
+        </div>
+        <button type="button" class="btn hub-menu-btn" id="hub-menu" aria-expanded="false" aria-controls="hub-actions">
+          <span class="hub-burger" aria-hidden="true"></span>
+          Menu
+        </button>
+        <div class="hub-stats">
+          <span id="hub-cash">$0</span>
+          <span id="hub-jobs">0 jobs</span>
+          <span id="hub-xp">0 XP</span>
+          <span id="hub-rank">Helper</span>
+        </div>
+        <p class="xp-track" id="xp-track"><i id="xp-fill"></i><span id="xp-next">180 XP to Apprentice</span></p>
+        <div class="xp-goals" data-xp-goals>
+          <div class="xp-goals-bar"><i></i>
+            <b data-at="10" style="left:4%">10</b>
+            <b data-at="50" style="left:20%">50</b>
+            <b data-at="100" style="left:40%">100</b>
+            <b data-at="250" style="left:100%">250</b>
+          </div>
+          <span class="xp-goals-next" data-xp-goal-next></span>
+        </div>
+        <button type="button" class="board-chip" id="board-chip" data-mode="compete">
+          <b>Board</b>
+          <span id="board-chip-line">No scores yet. Finish a lab.</span>
+        </button>
+        <div class="hub-actions" id="hub-actions" hidden>
+          <a class="btn primary" id="hub-desk" href="desk.html">Instructor Desk</a>
+          <button type="button" class="btn" id="hub-howto">How to</button>
+          <a class="btn" href="qr.html">Print the poster</a>
+          <a class="btn" id="hub-pc-dl" href="HVAC-Allstars-PC.zip" download="HVAC-Allstars-PC.zip">Download PC</a>
+          <button type="button" class="btn" id="hub-form-toggle">PC bench</button>
+          <button type="button" class="btn" id="hub-locker">Locker</button>
+          <button type="button" class="btn" id="hub-install-app">Install</button>
+          <button type="button" class="btn" data-hubai-toggle id="hub-ai-toggle">HUB AI - On</button>
+          <div class="a11y-bar" role="group" aria-label="Text size">
+            <button type="button" class="btn" data-type="sm" title="Smaller text">A−</button>
+            <button type="button" class="btn" data-type="md" title="Normal text">A</button>
+            <button type="button" class="btn" data-type="lg" title="Bigger text">A+</button>
+          </div>
+        </div>
+      </header>
+      <div class="floor-tools">
+      <label class="school-switch">
+        <span>School</span>
+        <select id="school-switch" aria-label="School"></select>
+      </label>
+      <nav class="floor-nav" aria-label="Floor sections">
+        <button type="button" id="hub-more" class="hub-more-tab" aria-expanded="false" aria-controls="hub-options">All labs</button>
+        <button type="button" data-floor="floor-shop">Shop</button>
+        <button type="button" data-floor="floor-mech">Mechanics</button>
+        <button type="button" data-floor="floor-tech">Technicians</button>
+        <button type="button" data-floor="floor-electrical">Electrical</button>
+        <button type="button" data-floor="floor-heat">Heat</button>
+        <button type="button" data-floor="floor-reference">Reference</button>
+        <button type="button" data-floor="floor-phone">Phone</button>
+      </nav>
+      <label class="floor-search">
+        <input id="floor-search" type="search" placeholder="Search labs" autocomplete="off" enterkeyhint="search" />
+      </label>
+      <p class="floor-search-empty" id="floor-search-empty" hidden>No lab matches that.</p>
+      </div>
+<div class="hub-grid hub-nav" id="hub-options" hidden>
+        <p class="hub-section">Shop</p>
+        <button class="mode-card mode-card-hero" data-mode="sandbox" id="btn-sandbox-card" type="button">
+          <h3>System sandbox</h3>
+          <p>Drop each part on the glowing box. The gauges move with the fault.</p>
+        </button>
+        <a class="mode-card" id="btn-shopschool" href="desk.html">
+          <h3>Instructor desk</h3>
+          <p>Today, labs, keys, and the course. Students stay on this floor.</p>
+        </a>
+        <button class="mode-card mode-card-hero" data-mode="call" type="button">
+          <h3>Take the call</h3>
+          <p>Hear the house. Say the first move. The gauges prove you right or wrong.</p>
+        </button>
+        <button class="mode-card" data-mode="defusal" id="btn-defusal" type="button">
+          <h3>Saturday callback</h3>
+          <p>Meter the open part, then replace it or isolate it.</p>
+        </button>
+        <button class="mode-card" data-mode="service" type="button">
+          <h3>Service calls</h3>
+          <p>Read the gauges, then pick the safe next move.</p>
+        </button>
+        <button class="mode-card" data-mode="trouble" type="button">
+          <h3>Troubleshooting</h3>
+          <p>Superheat, subcooling, and a step card for every machine and every gas.</p>
+        </button>
+        <button class="mode-card" data-mode="minisplit" type="button">
+          <h3>Mini-split install</h3>
+          <p>Pick the tool for this step. The picture shows the result.</p>
+        </button>
+        <button class="mode-card" data-mode="compchange" id="btn-compchange" type="button">
+          <h3>Compressor change-out</h3>
+          <p>Recover, lock out, braze, new drier, then weigh the charge.</p>
+        </button>
+        <button class="mode-card" data-mode="recover" id="btn-recover" type="button">
+          <h3>Recovery room</h3>
+          <p>Recover, hold nitrogen, decay-test, weigh the charge, find the leak.</p>
+        </button>
+        <button class="mode-card" data-mode="cutaway" id="btn-cutaway" type="button">
+          <h3>Component film</h3>
+          <p>Clear shell. Watch the refrigerant move inside the part.</p>
+        </button>
+        <button class="mode-card" data-mode="gauges" id="btn-gauges" type="button">
+          <h3>Manifold school</h3>
+          <p>Analog needles or a digital screen. Drag the hoses. Pick the gas.</p>
+        </button>
+        <button class="mode-card" data-mode="rapture" id="card-rapture" type="button">
+          <div class="cast-pair">
+            <img src="jesus.png" alt="HVAC Jesus" />
+            <img src="hvac-god.png" alt="HVAC God" />
+          </div>
+          <h3>HVAC Jesus · HVAC God · HVAC Buddha</h3>
+          <p id="rapture-copy">Jesus, God, and Buddha. Rooftop, commandments, gauges.</p>
+        </button>
+        <button class="mode-card" data-mode="iconnect" id="btn-iconnect" type="button">
+          <h3>Hubconnect lab</h3>
+          <p>Every Hubconnect trainer. TU-522 is the jumper board.</p>
+        </button>
+        <button class="mode-card" data-mode="flare" id="btn-flare" type="button">
+          <h3>Flaring lab</h3>
+          <p>Nut on first, then cut, deburr, and flare.</p>
+        </button>
+        <button class="mode-card" data-mode="braze" id="btn-braze" type="button">
+          <h3>Brazing lab</h3>
+          <p>Nitrogen on, then braze. Solder does not pass.</p>
+        </button>
+        <p class="hub-section" id="floor-reference">Reference</p>
+        <button class="mode-card" data-mode="eleccard" type="button">
+          <h3>Line and 24</h3>
+          <p>Fifteen cards. Breaker, disconnect, contactor, then the 24-volt string.</p>
+        </button>
+        <button class="mode-card" data-mode="hubref" type="button">
+          <img src="hub-ref-cover.jpg" alt="" style="width:100%;height:180px;object-fit:cover;border-radius:12px;display:block;margin-bottom:8px" />
+          <h3>Hubbard's Electrical Reference Guide</h3>
+          <p>Search the book. Power wheel, voltage drop, conduit offsets, and the NEMA cords you actually see.</p>
+        </button>
+        <button class="mode-card mode-card-hero" data-mode="quiz" id="btn-quiz-box" type="button">
+          <h3>All-Star Exam</h3>
+          <p>Answer the shop questions. Pass the bay.</p>
+        </button>
+        <button class="mode-card mode-card-hero" data-mode="died" id="btn-died" type="button">
+          <h3>You Have Died</h3>
+          <p>Sixteen shop calls. A lethal answer shows the death card.</p>
+        </button>
+        <button class="mode-card mode-card-hero" data-mode="bible" id="btn-bible" type="button">
+          <h3>The HVAC Bible</h3>
+          <p>Look the part up before you condemn it. Operation, upkeep, repair.</p>
+        </button>
+        <button class="mode-card mode-card-hero" data-mode="factory" id="btn-factory" type="button">
+          <h3>Factory apps</h3>
+          <p>Free brand software. Trane Link, CoolCloud, Rheem, LG LATS. The gauges still win.</p>
+        </button>
+        <button class="mode-card mode-card-hero" data-mode="fieldsoft" id="btn-fieldsoft" type="button">
+          <h3>Field software</h3>
+          <p>Slider, a scored charge, and a TXV turn. Dew point for superheat. Start of boiling for subcooling.</p>
+        </button>
+        <button class="mode-card" data-mode="epa608" id="btn-epa608" type="button">
+          <h3>EPA 608 tutor</h3>
+          <p>Career path, then Core and Types I, II, and III.</p>
+        </button>
+        <a class="mode-card" id="btn-epa-prime" href="https://www.youtube.com/results?search_query=EPA+Prep+Prime" target="_blank" rel="noopener">
+          <h3>EPA 608 · January</h3>
+          <p>The old question bank stops January 1. EPA Prep Prime on YouTube covers the new exam. A card you already hold stays valid.</p>
+        </a>
+        <button class="mode-card" data-mode="commandments" type="button">
+          <h3>HVAC Commandments</h3>
+          <p>Shop rules that keep you off a callback.</p>
+        </button>
+        <button class="mode-card" data-mode="ptchart" type="button">
+          <h3>P/T charts</h3>
+          <p>Saturation on one side. Cylinder color and jug size on the other. The label still wins.</p>
+        </button>
+        <button class="mode-card" data-mode="tutorial" type="button">
+          <h3>How to use the app</h3>
+          <p>Professor Hub walks you through the shop.</p>
+        </button>
+        <button class="mode-card" data-mode="curriculum" type="button">
+          <h3>Curriculum</h3>
+          <p>Finish a lab to earn the credit for that course.</p>
+        </button>
+        <button class="mode-card" data-mode="compete" type="button">
+          <h3>Online arena</h3>
+          <p>Join with the class PIN.</p>
+        </button>
+        <button class="mode-card" data-mode="network" type="button">
+          <h3>Classroom Wi-Fi</h3>
+          <p>Start a class PIN so students can follow.</p>
+        </button>
+        <button class="mode-card" type="button" id="opt-locker" data-mode="character">
+          <h3>Locker</h3>
+          <p>Your name, photo, and password.</p>
+        </button>
+        <p class="hub-section" id="floor-phone">On this phone</p>
+        <label class="mode-card opt-spicy" title="Mute procedural SFX">
+          <div class="mode-icon" aria-hidden="true">🔊</div>
+          <div>
+            <h3>Sound effects</h3>
+            <p>Uncheck to mute beeps in class</p>
+            <input type="checkbox" id="hub-sfx" checked />
+          </div>
+        </label>
+        <label class="mode-card opt-spicy" title="Phone vibration on land / trip">
+          <div class="mode-icon" aria-hidden="true">📳</div>
+          <div>
+            <h3>Haptics</h3>
+            <p>Buzz when a part seats, a wire lands, or HPC cuts out</p>
+            <input type="checkbox" id="hub-haptic" checked />
+            <span class="haptic-pats" id="haptic-pats"></span>
+          </div>
+        </label>
+        <div class="mode-card opt-spicy opt-diff" title="Lab difficulty">
+          <div class="mode-icon" aria-hidden="true">🎚️</div>
+          <div>
+            <h3>Difficulty</h3>
+            <p id="hub-diff-label">Medium — live needles, you call it.</p>
+            <div class="diff-row" id="hub-diff">
+              <button type="button" class="btn" data-diff="easy">Easy</button>
+              <button type="button" class="btn primary" data-diff="medium">Medium</button>
+              <button type="button" class="btn" data-diff="spicy">Spicy</button>
+            </div>
+          </div>
+        </div>
+        <label class="mode-card opt-spicy opt-roast" title="HUB roast intensity">
+          <div class="mode-icon" aria-hidden="true">🌶️</div>
+          <div>
+            <h3>HUB roast</h3>
+            <p id="hub-roast-label">Mild — shop talk, 608 stays clean</p>
+            <input type="range" id="hub-roast" min="0" max="3" step="1" value="1" />
+            <span class="roast-ticks">Classroom · Mild · Spicy · Extra</span>
+          </div>
+        </label>
+      </div>
+      <section class="floor-start" aria-label="Start here">
+        <p class="eyebrow">Show this first</p>
+        <h3>Ten minutes. Four labs.</h3>
+        <p>A new tech can finish these on a phone. The job file is the camera and the price: pictures of the house, then good, better, and best.</p>
+        <div class="floor-start-row">
+          <button type="button" class="start-door job-door" data-mode="jobfile"><b>Job file</b><span>Photos, then the price</span></button>
+          <button type="button" class="start-door call-door" data-mode="call"><b>Take the call</b><span>Hear the house. Then prove it.</span></button>
+        </div>
+        <div class="floor-start-row">
+          <button type="button" class="start-door" data-mode="cutaway"><b>1 · See inside</b><span>Watch the refrigerant move</span></button>
+          <button type="button" class="start-door" data-mode="elguide"><b>2 · Land the lugs</b><span>Drag the wire onto the screw</span></button>
+          <button type="button" class="start-door" data-mode="defusal"><b>3 · Saturday call</b><span>Meter it, then replace it</span></button>
+          <button type="button" class="start-door" data-mode="sandbox"><b>4 · Build the system</b><span>Drop the parts. Read the gauges</span></button>
+        </div>
+      </section>
+      <section class="shop-floor" id="floor-shop" aria-label="Shop floor bays">
+        <p class="eyebrow">The floor</p>
+        <h3>Walk the bays</h3>
+        <div class="shop-floor-map">
+          <button type="button" class="shop-bay" data-mode="jobfile"><span class="bay-copy"><b>Job file</b><span>Photos, then the price</span></span></button>
+          <button type="button" class="shop-bay" data-mode="chargehow"><span class="bay-copy"><b>How to charge</b><span>Service ticket and the install</span></span></button>
+          <button type="button" class="shop-bay" data-mode="call"><img class="bay-mark" src="parts/thermostat.png" alt="" /><span class="bay-copy"><b>Call desk</b><span>Take the call</span></span></button>
+          <button type="button" class="shop-bay" data-mode="gauges"><img class="bay-mark" src="parts/gauges.png" alt="" /><span class="bay-copy"><b>Gauge cart</b><span>Analog or digital</span></span></button>
+          <button type="button" class="shop-bay" data-mode="trouble"><span class="bay-copy"><b>Troubleshooting</b><span>Superheat and subcooling</span></span></button>
+          <button type="button" class="shop-bay" data-mode="elguide"><img class="bay-mark" src="parts/contactor.png" alt="" /><span class="bay-copy"><b>Electrical</b><span>Land the lugs</span></span></button>
+          <button type="button" class="shop-bay" data-mode="furnace"><img class="bay-mark" src="parts/transformer.png" alt="" /><span class="bay-copy"><b>Heat bay</b><span>Furnace sequence</span></span></button>
+          <button type="button" class="shop-bay" data-mode="recover"><span class="bay-copy"><b>Recovery</b><span>Tank and scale</span></span></button>
+          <button type="button" class="shop-bay" data-mode="sandbox"><img class="bay-mark" src="parts/evaporator.png" alt="" /><span class="bay-copy"><b>Build bay</b><span>Drop the parts</span></span></button>
+          <button type="button" class="shop-bay" data-mode="iconnect"><img class="bay-mark" src="parts/disconnect.png" alt="" /><span class="bay-copy"><b>Hubconnect labs</b><span>How to run the trainers</span></span></button>
+          <button type="button" class="shop-bay" data-mode="compete"><span class="bay-copy"><b>The board</b><span>Beat their XP</span></span></button>
+          <button type="button" class="shop-bay" data-mode="funny"><span class="bay-copy"><b>Funny HVAC</b><span>Shop clips. Not the lesson.</span></span></button>
+          <a class="shop-bay shop-bay-desk" id="floor-desk" href="desk.html"><span class="bay-copy"><b>Instructor desk</b><span>Keys, class day, trainers</span></span></a>
+        </div>
+      </section>
+      <div id="hub-tip" class="hub-tip hidden">
+        <strong>How to use this app</strong>
+        <p>Start with the four labs in the gold bar. The rest of the floor is there when you want it. Instructor Desk is its own app.</p>
+        <button type="button" class="btn primary" id="hub-tip-tour">Start tour</button>
+        <button type="button" class="btn" id="hub-tip-dismiss">I know the floor</button>
+      </div>
+      <div id="badge-rack"></div>
+      <div id="daily-root"></div>
+      <div id="hub-commandments" class="hidden"></div>
+      <div id="hub-pt" class="hidden"></div>
+      <section class="shop-floor shop-floor-mech" id="floor-mech" aria-label="Mechanics shop floor">
+        <p class="eyebrow">Mechanics</p>
+        <h3>Mechanical bays</h3>
+        <div class="shop-floor-map">
+          <button type="button" class="shop-bay" data-mode="compchange"><img class="bay-mark" src="parts/compressor.png" alt="" /><span class="bay-copy"><b>Compressor</b><span>Change-out</span></span></button>
+          <button type="button" class="shop-bay" data-mode="braze"><span class="bay-copy"><b>Braze bench</b><span>Nitrogen, then the torch</span></span></button>
+          <button type="button" class="shop-bay" data-mode="flare"><span class="bay-copy"><b>Flare station</b><span>Nut on first</span></span></button>
+          <button type="button" class="shop-bay" data-mode="minisplit"><img class="bay-mark" src="parts/evaporator.png" alt="" /><span class="bay-copy"><b>Mini-split</b><span>The install steps</span></span></button>
+          <button type="button" class="shop-bay" data-mode="recover"><span class="bay-copy"><b>Recovery</b><span>Tank and scale</span></span></button>
+          <button type="button" class="shop-bay" data-mode="cutaway"><img class="bay-mark" src="parts/condenser.png" alt="" /><span class="bay-copy"><b>Cutaway</b><span>See the refrigerant move</span></span></button>
+        </div>
+      </section>
+      <section class="shop-floor shop-floor-tech" id="floor-tech" aria-label="Technician shop floor">
+        <p class="eyebrow">Technicians</p>
+        <h3>The job</h3>
+        <p class="tech-lead">Work top to bottom. The lit step is the one you're on.</p>
+        <ol class="tech-steps">
+          <li><button type="button" class="shop-bay" data-tech="0" data-mode="call"><img src="parts/thermostat.png" alt="Thermostat" /><span class="tech-copy"><b>1 · Hear the house</b><span>Ask them what's wrong. Don't guess from the truck.</span><span class="tech-note">Write it the way they said it. Ice, noise, no cool, and how long.</span></span></button></li>
+          <li><button type="button" class="shop-bay" data-tech="1" data-mode="call"><img src="parts/evaporator.png" alt="Evaporator" /><span class="tech-copy"><b>2 · Say the first move</b><span>Name the part you'll touch before the hoses come out.</span><span class="tech-note">Filter and airflow before any hose.</span></span></button></li>
+          <li><button type="button" class="shop-bay" data-tech="2" data-mode="voltmeter"><img src="parts/dmm.png" alt="Meter" /><span class="tech-copy"><b>3 · Lock it out, then meter</b><span>Volts while it's live. Ohms only after the disconnect is off.</span><span class="tech-note">Prove zero before you ohm a capacitor.</span></span></button></li>
+          <li><button type="button" class="shop-bay" data-tech="3" data-mode="boardwalk"><img src="parts/contactor.png" alt="Contactor" /><span class="tech-copy"><b>4 · Walk the board</b><span>Say the terminal before the lead lands.</span><span class="tech-note">R, C, Y, G. Then the screw.</span></span></button></li>
+          <li><button type="button" class="shop-bay" data-tech="4" data-mode="gauges"><img src="parts/gauges.png" alt="Manifold gauges" /><span class="tech-copy"><b>5 · Let the gauges prove it</b><span>Superheat and subcool. Air before charge.</span><span class="tech-note">Don't add gas to a dirty coil.</span></span></button></li>
+          <li><button type="button" class="shop-bay" data-tech="5" data-mode="defusal"><img src="parts/pressuresw.png" alt="Pressure switch" /><span class="tech-copy"><b>6 · Fix it, then prove it</b><span>Meter the part. Change it. Meter it again.</span><span class="tech-note">The new one has to pass the same test.</span></span></button></li>
+        </ol>
+        <button type="button" class="shop-bay" data-mode="pouch"><img src="parts/gauges.png" alt="" /><span class="bay-copy"><b>On the job</b><span>Truck pouch. Fat numbers.</span></span></button>
+      </section>
+      <section class="shop-floor" id="floor-cast" aria-label="HVAC Jesus, HVAC God, and HVAC Buddha">
+        <p class="eyebrow">The rooftop</p>
+        <h3>HVAC Jesus · HVAC God · HVAC Buddha</h3>
+        <button type="button" class="shop-bay cast-bay" data-mode="rapture">
+          <img src="jesus.png" alt="HVAC Jesus" />
+          <img src="hvac-god.png" alt="HVAC God" />
+          <img src="hvac-buddha.png?v=2" alt="HVAC Buddha" />
+          <span class="bay-copy"><b>Open the rooftop</b><span>Jesus, God, and Buddha. Commandments and the gauges.</span></span>
+        </button>
+      </section>
+      <section class="shop-floor shop-floor-elec" id="floor-electrical" aria-label="Electrical">
+        <p class="eyebrow">Electrical</p>
+        <h3>The board</h3>
+        <div class="shop-floor-map">
+          <button type="button" class="shop-bay" data-mode="eleccard"><img class="bay-mark" src="parts/disconnect.png" alt="" /><span class="bay-copy"><b>Line and 24</b><span>Fifteen cards. The condenser, not a kitchen.</span></span></button>
+          <button type="button" class="shop-bay" data-mode="electrical"><img class="bay-mark" src="parts/thermostat.png" alt="" /><span class="bay-copy"><b>Follow the call</b><span>24-volt string, then the wires</span></span></button>
+          <button type="button" class="shop-bay" data-mode="elguide"><img class="bay-mark" src="parts/contactor.png" alt="" /><span class="bay-copy"><b>Land the lugs</b><span>Wire color onto the screw</span></span></button>
+          <button type="button" class="shop-bay" data-mode="voltmeter"><img class="bay-mark" src="parts/dmm.png" alt="" /><span class="bay-copy"><b>Multimeter</b><span>Red and black on the screws</span></span></button>
+          <button type="button" class="shop-bay" data-mode="megger"><img class="bay-mark" src="parts/compressor.png" alt="" /><span class="bay-copy"><b>Megohmmeter</b><span>Ohm the compressor and the fan</span></span></button>
+          <button type="button" class="shop-bay" data-mode="boardwalk"><img class="bay-mark" src="parts/transformer.png" alt="" /><span class="bay-copy"><b>Board walk</b><span>Move the leads. The meter follows</span></span></button>
+          <button type="button" class="shop-bay" data-mode="phonetools"><img class="bay-mark" src="parts/capacitor.png" alt="" /><span class="bay-copy"><b>Phone testers</b><span>Wet bulb, static, CFM, solenoid</span></span></button>
+          <button type="button" class="shop-bay" data-mode="ohms"><img class="bay-mark" src="parts/relay.png" alt="" /><span class="bay-copy"><b>Ohm's Law</b><span>Volts, amps, ohms on a real load</span></span></button>
+          <button type="button" class="shop-bay" data-mode="formulas"><img class="bay-mark" src="parts/dmm.png" alt="" /><span class="bay-copy"><b>Field formulas</b><span>Watts, volts, amps, ohms</span></span></button>
+          <button type="button" class="shop-bay" data-mode="hubref"><img class="bay-mark" src="hub-ref-cover.jpg" alt="" /><span class="bay-copy"><b>Hubbard's guide</b><span>Electrical reference</span></span></button>
+          <button type="button" class="shop-bay" data-mode="iconnect"><img class="bay-mark" src="parts/disconnect.png" alt="" /><span class="bay-copy"><b>TU-522</b><span>Drag the jumper wires</span></span></button>
+        </div>
+      </section>
+      <section class="shop-floor shop-floor-heat" id="floor-heat" aria-label="Heat">
+        <p class="eyebrow">Heat</p>
+        <h3>The furnace</h3>
+        <div class="shop-floor-map">
+          <button type="button" class="shop-bay" data-mode="furnace"><img class="bay-mark" src="parts/transformer.png" alt="" /><span class="bay-copy"><b>Furnace sequence</b><span>Prove each step before the gas valve</span></span></button>
+          <button type="button" class="shop-bay" data-mode="call90"><img class="bay-mark" src="parts/pressuresw.png" alt="" /><span class="bay-copy"><b>90% furnace call</b><span>Open limit through the burner door</span></span></button>
+          <button type="button" class="shop-bay" data-mode="train"><span class="bay-copy"><b>Training deck</b><span>90% natural gas. Answer, then see the fix</span></span></button>
+        </div>
+      </section>
+      
+    </section>
+
+    <!-- ELECTRICAL SIM -->
+    <section id="screen-electrical" class="screen">
+      <div id="electrical-root"></div>
+    </section>
+
+    <section id="screen-braze" class="screen">
+      <div id="braze-root"></div>
+    </section>
+
+    <section id="screen-flare" class="screen">
+      <div id="flare-root"></div>
+    </section>
+
+    <section id="screen-furnace" class="screen">
+      <div id="furnace-root"></div>
+    </section>
+
+    <section id="screen-call90" class="screen">
+      <div id="call90-root"></div>
+    </section>
+
+    <section id="screen-iconnect" class="screen">
+      <div id="iconnect-root"></div>
+    </section>
+
+    <section id="screen-recover" class="screen">
+      <div id="recover-root"></div>
+    </section>
+
+    <!-- HVAC SANDBOX -->
+    <section id="screen-sandbox" class="screen">
+      <div id="sandbox-root"></div>
+    </section>
+
+    <!-- AI INSTALL / TROUBLESHOOT HELPER -->
+    <section id="screen-aihelper" class="screen">
+      <div id="aihelper-root"></div>
+    </section>
+
+    <!-- MINI-SPLIT INSTALL -->
+    <section id="screen-minisplit" class="screen">
+      <div id="minisplit-root"></div>
+    </section>
+    <section id="screen-compchange" class="screen">
+      <div id="compchange-root"></div>
+    </section>
+
+    <!-- CURRICULUM TRAINING -->
+    <section id="screen-curriculum" class="screen">
+      <div id="curriculum-root"></div>
+    </section>
+
+    <!-- QUIZ ARENA -->
+    <section id="screen-quiz" class="screen">
+      <div id="quiz-root"></div>
+    </section>
+
+    <!-- ONLINE COMPETE -->
+    <section id="screen-compete" class="screen">
+      <div id="compete-root"></div>
+    </section>
+
+    <section id="screen-network" class="screen">
+      <div id="network-root"></div>
+    </section>
+
+    <section id="screen-phonetools" class="screen">
+      <div id="phonetools-root"></div>
+    </section>
+
+    <section id="screen-jobfile" class="screen">
+      <div id="jobfile-root"></div>
+    </section>
+
+    <section id="screen-chargehow" class="screen">
+      <div id="chargehow-root"></div>
+    </section>
+
+    <section id="screen-funny" class="screen">
+      <div id="funny-root"></div>
+    </section>
+
+    <section id="screen-commandments" class="screen">
+      <div id="commandments-root"></div>
+    </section>
+
+    <section id="screen-bible" class="screen">
+      <div id="bible-root"></div>
+    </section>
+
+    <section id="screen-factory" class="screen">
+      <div id="factory-root"></div>
+    </section>
+
+    <section id="screen-fieldsoft" class="screen">
+      <div id="fieldsoft-root"></div>
+    </section>
+
+    <section id="screen-formulas" class="screen">
+      <div id="formulas-root"></div>
+    </section>
+
+    <section id="screen-hubref" class="screen">
+      <div id="hubref-root"></div>
+    </section>
+
+    <section id="screen-eleccard" class="screen">
+      <div id="eleccard-root"></div>
+    </section>
+
+    <section id="screen-ohms" class="screen">
+      <div id="ohms-root"></div>
+    </section>
+
+    <section id="screen-voltmeter" class="screen">
+      <div id="voltmeter-root"></div>
+    </section>
+    <section id="screen-boardwalk" class="screen">
+      <div id="boardwalk-root"></div>
+    </section>
+
+    <section id="screen-bros" class="screen">
+      <div id="bros-root"></div>
+    </section>
+
+    <section id="screen-route" class="screen">
+      <div id="route-root"></div>
+    </section>
+
+    <section id="screen-gauges" class="screen">
+      <div id="gauges-root"></div>
+    </section>
+
+    <section id="screen-ptchart" class="screen">
+      <div id="ptchart-root"></div>
+    </section>
+
+    <section id="screen-shopschool" class="screen">
+      <div id="shopschool-root"></div>
+    </section>
+
+    <section id="screen-call" class="screen">
+      <div id="call-root"></div>
+    </section>
+
+    <section id="screen-cutaway" class="screen">
+      <div id="cutaway-root"></div>
+    </section>
+
+    <section id="screen-epa608" class="screen">
+      <div id="epa608-root"></div>
+    </section>
+
+    <!-- RAPTURE -->
+    <section id="screen-rapture" class="screen">
+      <div class="heaven-sky" id="heaven-sky">
+        <div class="god-rays"></div>
+        <div class="heaven-clouds"></div>
+        <video id="heaven-vid" src="heaven.mp4" muted playsinline loop poster="jesus.png" onerror="this.style.display='none'"></video>
+      </div>
+      <div class="vignette"></div>
+      <p class="cut-kicker" id="cut-kicker">Rooftop · the heavens open</p>
+      <img class="god-figure" src="hvac-god.png" alt="HVAC God" />
+      <p class="cast-name cast-god">HVAC God</p>
+      <img id="jesus-sprite" src="jesus.png" alt="HVAC Jesus" />
+      <p class="cast-name cast-jesus">HVAC Jesus</p>
+      <img class="buddha-figure" src="hvac-buddha.png?v=2" alt="HVAC Buddha" />
+      <p class="cast-name cast-buddha">HVAC Buddha</p>
+      <img class="muhammad-figure" src="hvac-mu.png" alt="HVAC Muhammed" />
+      <p class="cast-name cast-mu">HVAC Muhammed</p>
+      <div class="gold-card" id="gold-card">
+        <small>EPA 608</small>
+        <strong>UNIVERSAL</strong>
+        <b id="card-winner">Tech</b>
+      </div>
+      <div class="gauges-god" id="gauges-god">
+        <img src="gauges.png" alt="Gauges of God" />
+        <span>Gauges of God</span>
+      </div>
+      <div class="panel bottom rapture-lore" id="rapture-lore">
+        <div class="rapture-lore-body">
+          <p class="eyebrow">HVAC God · HVAC Jesus · HVAC Buddha</p>
+          <h2 id="rapture-h2">The golden card</h2>
+          <blockquote class="jesus-speak" id="jesus-speak">
+            “You won. I am HVAC Jesus. Receive the Gauges of God — SH and SC will never be a coin flip again.”
+          </blockquote>
+          <ol class="cmd-list compact" id="rapture-commandments"></ol>
+        </div>
+        <div class="row rapture-actions">
+          <button class="btn primary" id="btn-accept">I receive the Gauges of God</button>
+          <button class="btn" id="btn-skip-cut">Skip</button>
+          <button class="btn" id="btn-rapture-hub">Shop floor</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-thor" class="screen">
+      <div class="thor-sky"></div>
+      <p class="cut-kicker thor-kicker">Storm · the bolt opens</p>
+      <p class="thor-name">Thor</p>
+      <div class="gauges-god thor-meter" id="zeus-meter">
+        <img src="parts/dmm.png" alt="Voltmeter of Zeus" />
+        <span>Voltmeter of Zeus</span>
+      </div>
+      <div class="panel bottom rapture-lore thor-lore">
+        <p class="eyebrow">Thor</p>
+        <h2>The voltmeter</h2>
+        <blockquote class="jesus-speak" id="thor-speak">“You metered it. I am Thor. Receive the Voltmeter of Zeus — live volts will never be a coin flip again.”</blockquote>
+        <div class="row rapture-actions">
+          <button class="btn primary" id="btn-zeus" type="button">I receive the Voltmeter of Zeus</button>
+          <button class="btn" id="btn-thor-hub" type="button">Shop floor</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-trouble" class="screen">
+      <div id="trouble-root"></div>
+    </section>
+
+    <!-- SERVICE CALLS -->
+    <section id="screen-service" class="screen">
+      <div class="bg-plate dark"></div>
+      <div class="svc-wrap">
+        <header class="svc-top">
+          <div>
+            <p class="eyebrow" id="svc-eyebrow">Service call</p>
+            <h2 id="svc-title">Dispatch</h2>
+          </div>
+          <div class="svc-meters">
+            <span id="svc-score">Call 0</span>
+            <span id="svc-rating">★ ★ ★ ★ ★</span>
+            <label class="spicy-toggle" title="HUB roast intensity">
+              <span>🌶️ Roast</span>
+              <input type="range" id="svc-roast" min="0" max="3" step="1" value="1" />
+            </label>
+          </div>
+        </header>
+        <div class="svc-card">
+          <div class="svc-customer">
+            <div class="svc-avatar" id="svc-avatar">👤</div>
+            <div>
+              <p class="svc-name" id="svc-name">Customer</p>
+              <p class="svc-job" id="svc-job">Address · complaint</p>
+            </div>
+          </div>
+          <blockquote class="svc-quote" id="svc-quote">“…”</blockquote>
+          <div class="svc-vitals" id="svc-vitals"></div>
+          <p class="svc-prompt" id="svc-prompt">What do you do?</p>
+          <div id="svc-choices" class="svc-choices"></div>
+          <p id="svc-feedback" class="svc-feedback"></p>
+          <div class="svc-nav">
+            <button class="btn" id="btn-svc-hub">Shop floor</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+  <p class="version-strip">© 2026 Andrew Hubbard. For this class. Not for resale. · <a href="privacy.html">Privacy</a> · <a href="support.html">Support</a></p>
+  </div>
+  <div id="tutorial-root" class="tut-overlay hidden"></div>
+  <script>
+    window.ltCloseCard = function () {
+      var c = document.getElementById("title-card");
+      if (c) {
+        c.classList.add("hidden");
+        c.style.display = "none";
+      }
+      var m = document.getElementById("btn-clockin-mini");
+      if (m) m.classList.remove("hidden");
+    };
+    window.ltPlay = function (mode) {
+      if (window.ltPlayGo) return window.ltPlayGo(mode);
+      window.__ltPlayWait = mode;
+    };
+    window.ltGo = function (id) {
+      document.querySelectorAll(".screen").forEach(function (s) {
+        s.classList.remove("active");
+      });
+      var el = document.getElementById("screen-" + id);
+      if (el) el.classList.add("active");
+    };
+  </script>
+  <script src="sku.js?v=25"></script>
+  <script src="commandments.js?v=121"></script>
+  <script src="pt-chart.js?v=13"></script>
+  <script src="fieldsoft.js?v=5"></script>
+  <script src="shopschool.js?v=54"></script>
+  <script src="thecall.js?v=6"></script>
+  <script src="cutaway.js?v=35"></script>
+  <script src="epa608.js?v=21"></script>
+  <script src="e608lab.js?v=2"></script>
+  <script src="epa608-exam.js?v=7"></script>
+  <script src="haptic.js?v=11"></script>
+  <script src="playfeel.js?v=3"></script>
+  <script src="dragdrop.js?v=62"></script>
+  <script src="drip.js?v=5"></script>
+  <script src="pouch.js?v=3"></script>
+  <script src="walkchip.js?v=2"></script>
+  <script src="electrical.js?v=190"></script>
+  <script src="webgl-cycle.js?v=57"></script>
+  <script src="shop-bg.js?v=1"></script>
+  <script src="manifold.js?v=2"></script>
+  <script src="bros.js?v=3"></script>
+  <script src="routegame.js?v=3"></script>
+  <script src="gaugeschool.js?v=91"></script>
+  <script src="brazing.js?v=23"></script>
+  <script src="flare.js?v=10"></script>
+  <script src="furnace.js?v=21"></script>
+  <script src="call90.js?v=21"></script>
+  <script src="tu522.js?v=10"></script>
+  <script src="visual-station.js?v=4"></script>
+  <script src="bench-sheet.js?v=2"></script>
+  <script src="trainer-lessons.js?v=2"></script>
+  <script src="trainer-vision.js?v=20"></script>
+  <script src="iconnect-catalog.js?v=13"></script>
+  <script src="iconnect.js?v=11"></script>
+  <script src="recover.js?v=131"></script>
+  <script src="room.js?v=39"></script>
+  <script src="bible.js?v=3"></script>
+  <script src="factory.js?v=2"></script>
+  <script src="formulas.js?v=1"></script>
+  <script src="hubref.js?v=6"></script>
+  <script src="eleccard.js?v=2"></script>
+  <script src="ohms.js?v=11"></script>
+  <script src="shop-face.js?v=10"></script>
+  <script src="voltmeter.js?v=42"></script>
+  <script src="boardwalk.js?v=6"></script>
+  <script src="sandbox.js?v=283"></script>
+  <script src="minisplit.js?v=43"></script>
+  <script src="compchange.js?v=17"></script>
+  <script src="ai-helper.js?v=2"></script>
+  <script src="service.js?v=139"></script>
+  <script src="instructor.js?v=96"></script>
+  <script src="hub-ai.js?v=90"></script>
+  <script src="quiz-arena.js?v=120"></script>
+  <script src="died-quiz.js?v=3"></script>
+  <script src="class-lab.js?v=3"></script>
+  <script src="classroom-net.js?v=4"></script>
+  <script src="compete.js?v=96"></script>
+  <script src="outbox.js?v=1"></script>
+  <script src="chat.js?v=109"></script>
+  <script src="badges.js?v=96"></script>
+  <script src="curriculum.js?v=16"></script>
+  <script src="canvas.js?v=3"></script>
+  <script src="review.js?v=9"></script>
+  <script src="daily.js"></script>
+  <script src="tutorial.js?v=101"></script>
+  <script src="phone-tools.js?v=106"></script>
+  <script src="lesson-demo.js?v=10"></script>
+  <script src="jobfile.js?v=4"></script>
+  <script src="chargehow.js?v=1"></script>
+  <script src="funny.js?v=1"></script>
+  <script src="trouble.js?v=6"></script>
+  <script src="game.js?v=212"></script>
+  <script>
+    (function () {
+      window.addEventListener("error", function (e) {
+        if (e && e.message) console.warn("allstars", e.message);
+      });
+      window.addEventListener("unhandledrejection", function (e) {
+        console.warn("allstars promise", e && e.reason);
+      });
+      function killWanted() {
+        document.querySelectorAll("#epa-wanted, .epa-wanted, .epa-stars, .epa-actions").forEach(function (n) {
+          n.remove();
+        });
+      }
+      killWanted();
+      setInterval(killWanted, 400);
+      if ("serviceWorker" in navigator && window.top === window) {
+        var hadWorker = !!navigator.serviceWorker.controller;
+        navigator.serviceWorker.addEventListener("controllerchange", function () {
+          if (hadWorker) window.location.reload();
+        });
+        navigator.serviceWorker.register("sw.js?v=24").then(function (reg) { reg.update(); }).catch(function () {});
+      }
+    })();
+  </script>
+  <script>
+    (function () {
+      var el = document.getElementById("hub-visits");
+      if (!el) return;
+      var KEY = "hvac-legends-class-2026";
+      var SEEN = "hvac-legends-counted";
+      function paint(n) {
+        n = Number(n);
+        if (!isFinite(n)) return;
+        var num = el.querySelector("b");
+        if (num) num.textContent = String(n);
+        else el.textContent = "Visitors " + n;
+      }
+      function remote(path) {
+        return fetch("https://countapi.mileshilliard.com/api/v1/" + path + "/" + KEY)
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (data) {
+            if (data && data.value != null) paint(data.value);
+          });
+      }
+      function live() {
+        var seen = false;
+        try { seen = localStorage.getItem(SEEN) === "1"; } catch (e) {}
+        if (!seen) {
+          try { localStorage.setItem(SEEN, "1"); } catch (e) {}
+          return remote("hit");
+        }
+        return remote("get");
+      }
+      live();
+    })();
+  </script>
 </body>
 </html>

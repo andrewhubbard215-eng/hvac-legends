@@ -1,0 +1,36 @@
+HVAC LEGENDS — Play Console
+For Andrew Hubbard.
+App name: HVAC Legends
+Package: com.hvaclegends.app
+Version name: 2.0.0
+Category: Education
+Ads: No
+This app is not published. You have not paid the $25 yet.
+
+1. Pay the $25 Google Play Console registration and verify your identity.
+   Google has to accept the account before anything else. No payment, no app.
+
+2. Create the app com.hvaclegends.app.
+   Name it HVAC Legends.
+   Category: Education.
+   It is not a game.
+   Ads: No.
+
+3. We cannot build the Android App Bundle in this session. There is no Android SDK here.
+   You upload the AAB from a machine that has the SDK.
+
+4. Closed test needs 12 testers for 14 days before production.
+   Do not jump straight to production. Play holds that door until the closed test is done.
+
+5. The privacy policy must be a public https page.
+   privacy.html is already in the app.
+   It still needs a public host. Paste only the https address of the page you put up. Do not invent one.
+
+6. Data safety: progress stays on the phone.
+   Callsign, locker, labs, and XP stay on the device. No ads.
+
+7. Content rating: likely Teen because of shop talk, not because of violence.
+   Not for children under 13. Not Designed for Families. Let the questionnaire score it.
+
+8. Do not upload until the $25 account exists.
+   No AAB, no screenshots, no review request before that account is real.

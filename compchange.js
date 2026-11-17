@@ -1,5 +1,5 @@
 /* Compressor change-out — same tool grid as the mini-split lab.
-   The picture stays shut until the right tool is picked. */
+   The picture of the part stays up until the next step is picked. */
 (function (global) {
   "use strict";
 
@@ -175,18 +175,263 @@
   let coresIn = false;
   let finished = false;
   let onDone = null;
+  let score = 0;
+  let combo = 0;
+  let skipClick = false;
+  let tone = "";
+
+  function setNote(text, kind) {
+    note = text || "";
+    tone = kind || "";
+  }
+
+  function toolNeeded(i) {
+    const s = STEPS[i];
+    if (!s) return null;
+    if (s.id === "braze") {
+      if (i === step && n2Flow && !done[s.id]) return s.tools.filter(function (t) { return t.needsN2; })[0];
+      return s.tools.filter(function (t) { return t.flow; })[0];
+    }
+    if (s.id === "vacuum") {
+      if (i === step && coresOut && !done[s.id]) return s.tools.filter(function (t) { return t.needsCores; })[0];
+      return s.tools.filter(function (t) { return t.cores; })[0];
+    }
+    if (s.id === "weigh") {
+      if (i === step && coresIn && !done[s.id]) return s.tools.filter(function (t) { return t.correct; })[0];
+      return s.tools.filter(function (t) { return t.coresIn; })[0];
+    }
+    return s.tools.filter(function (t) { return t.correct; })[0] || s.tools[0];
+  }
+
+  function nextRequired() {
+    if (finished) return null;
+    for (let i = step; i < STEPS.length; i++) {
+      if (done[STEPS[i].id]) continue;
+      return toolNeeded(i);
+    }
+    return null;
+  }
+
+  function laterHint() {
+    const s = STEPS[step];
+    if (!s || done[s.id]) return "Hit Next.";
+    if (s.id === "recover") return "Recover the charge before you cut.";
+    if (s.id === "lock") return "Lock out before your hands are in the cabinet.";
+    if (s.id === "meter") return "Meter the new compressor before you cut the stubs.";
+    if (s.id === "cut") return "Cut the stubs before the new scroll goes in.";
+    if (s.id === "set") return "Set the scroll before you braze.";
+    if (s.id === "braze") return n2Flow ? "Nitrogen is flowing. Put the torch on the joint." : "Nitrogen before you braze.";
+    if (s.id === "drier") return "New drier before the pressure test.";
+    if (s.id === "nitrogen") return "Hold the nitrogen test before the vacuum.";
+    if (s.id === "vacuum") return coresOut ? "Put the micron gauge on the system." : "Pull the cores before the vacuum.";
+    if (s.id === "weigh") return coresIn ? "Weigh the nameplate on the scale." : "Cores back in before you weigh the charge.";
+    if (s.id === "run") return "Read the manifold. Superheat needs pressure and temperature.";
+    return "Do step " + (step + 1) + " first.";
+  }
+
+  function earlyPop() {
+    const s = STEPS[step];
+    if (!s) return "Not yet";
+    if (s.id === "recover") return "Recover first";
+    if (s.id === "lock") return "Lockout first";
+    if (s.id === "meter") return "Meter first";
+    if (s.id === "cut") return "Cut first";
+    if (s.id === "set") return "Set it first";
+    if (s.id === "braze") return n2Flow ? "Torch next" : "No nitrogen";
+    if (s.id === "drier") return "Drier first";
+    if (s.id === "nitrogen") return "Pressure test";
+    if (s.id === "vacuum") return coresOut ? "Microns" : "Cores first";
+    if (s.id === "weigh") return coresIn ? "Weigh in" : "Cores first";
+    return "Not yet";
+  }
+
+  function missPopText(tool) {
+    if (!tool) return "Wrong tool";
+    if (tool.needsN2 && !n2Flow) return "No nitrogen";
+    if (tool.needsCores && !coresOut) return "Cores first";
+    if (tool.needsCoresIn && !coresIn) return "Cores first";
+    if (tool.id === "o2" || tool.id === "air") return "Wrong gas";
+    if (tool.why) {
+      const bit = tool.why.split(". ")[0].replace(/\.$/, "");
+      if (bit.length <= 42) return bit;
+      return bit.slice(0, 42).replace(/\s+\S*$/, "");
+    }
+    return "Not yet";
+  }
+
+  function playTool(ok, tool, label) {
+    if (!window.PlayFeel || !root) return;
+    const el = (tool && root.querySelector('.ms-tool[data-tool="' + tool.id + '"]')) || root.querySelector(".cc-drop") || root;
+    if (ok && tool) {
+      window.PlayFeel.bump(el);
+      window.PlayFeel.pop(el, tool.name, "ok");
+    } else {
+      window.PlayFeel.deny(el);
+      window.PlayFeel.pop(el, label || "Wrong tool", "bad");
+    }
+  }
+
+  function coachNext() {
+    if (!window.PlayFeel || !root) return;
+    if (finished) {
+      window.PlayFeel.coach(document.body, "Change-out is done.");
+      return;
+    }
+    if (tone === "bad" && note) {
+      window.PlayFeel.coach(document.body, note);
+      return;
+    }
+    const live = STEPS[step];
+    if (live && done[live.id]) {
+      window.PlayFeel.coach(document.body, step >= STEPS.length - 1 ? "Hit Finish." : "Hit Next.");
+      return;
+    }
+    const t = nextRequired();
+    if (t) window.PlayFeel.coach(document.body, "Drag " + t.name + " onto the unit.");
+  }
+
+  function storyBoard() {
+    const last = Math.max(0, Math.min(view, STEPS.length - 1));
+    let built = "";
+    for (let i = 0; i < last; i++) {
+      const prev = STEPS[i];
+      const name = prev.title.replace(/^\d+\s·\s/, "");
+      built += '<figure class="done"><img class="ms-photo" src="' + prev.photo + '?v=2" alt="" /><figcaption>' + (i + 1) + " · " + name + "</figcaption></figure>";
+    }
+    const st = STEPS[last];
+    const name = st.title.replace(/^\d+\s·\s/, "");
+    const mark = done[st.id] ? " · in place" : " · drop the tool";
+    const hitId = toolHit[st.id];
+    const hitTool = hitId && st.tools.filter(function (t) { return t.id === hitId; })[0];
+    const need = !done[st.id] && last === step ? toolNeeded(last) : null;
+    const badge = hitTool
+      ? '<img class="cc-landed" src="' + hitTool.img + '?v=1" alt="" /><b class="cc-landed-name">' + hitTool.name + " landed</b>"
+      : '<b class="cc-target">' + (need ? "Drop " + need.name + " here" : "Drop the tool here") + "</b>";
+    return (
+      '<div class="ms-story">' +
+      (built ? '<div class="ms-built"><p class="ms-chapter">Already on the unit</p>' + built + "</div>" : "") +
+      '<figure class="now cc-drop' + (done[st.id] ? " done" : "") + '" data-slot="unit"><img class="ms-photo cc-photo" src="' + st.photo + '?v=2" alt="" />' +
+      badge +
+      "<figcaption>" + (last + 1) + " · " + name + mark + "</figcaption></figure></div>"
+    );
+  }
+
+  function useTool(t) {
+    const s = STEPS[view] || STEPS[0];
+    if (!t) return;
+    if (view !== step || finished || done[s.id]) {
+      const ahead = view > step && !finished;
+      const onDoneStep = view === step && done[s.id] && !finished;
+      view = step;
+      if (finished) setNote("The change-out is already finished.", "");
+      else if (onDoneStep) setNote("That step is in. Hit Next.", "ok");
+      else setNote(laterHint(), "bad");
+      paint();
+      if (onDoneStep) {
+        if (window.PlayFeel && root) {
+          const el = root.querySelector("#cc-do") || root;
+          window.PlayFeel.pop(el, "Next", "ok");
+        }
+        return;
+      }
+      playTool(false, t, ahead ? earlyPop() : "Wrong tool");
+      return;
+    }
+    if (t.why) {
+      toolMiss[s.id] = toolMiss[s.id] || {};
+      toolMiss[s.id][t.id] = true;
+      combo = 0;
+      setNote(t.why, "bad");
+      if (window.LtHaptic) window.LtHaptic.bad();
+      paint();
+      playTool(false, t, missPopText(t));
+      return;
+    }
+    if (t.flow) {
+      n2Flow = true;
+      setNote("Nitrogen is flowing, about 3 SCFH. Drag the torch onto the joint.", "ok");
+      if (window.LtHaptic) window.LtHaptic.tick();
+      paint();
+      playTool(true, t);
+      return;
+    }
+    if (t.cores) {
+      coresOut = true;
+      setNote("Schrader cores are out. Drag the micron gauge on.", "ok");
+      if (window.LtHaptic) window.LtHaptic.tick();
+      paint();
+      playTool(true, t);
+      return;
+    }
+    if (t.coresIn) {
+      coresIn = true;
+      setNote("Cores are back in. Drag the scale on and weigh the nameplate.", "ok");
+      if (window.LtHaptic) window.LtHaptic.tick();
+      paint();
+      playTool(true, t);
+      return;
+    }
+    if (t.needsN2 && !n2Flow) {
+      toolMiss[s.id] = toolMiss[s.id] || {};
+      toolMiss[s.id][t.id] = true;
+      combo = 0;
+      setNote("No nitrogen. The torch stays off the joint until nitrogen is flowing.", "bad");
+      if (window.LtHaptic) window.LtHaptic.bad();
+      paint();
+      playTool(false, t, "No nitrogen");
+      return;
+    }
+    if (t.needsCores && !coresOut) {
+      toolMiss[s.id] = toolMiss[s.id] || {};
+      toolMiss[s.id][t.id] = true;
+      combo = 0;
+      setNote("Pull the Schrader cores before the deep vacuum.", "bad");
+      if (window.LtHaptic) window.LtHaptic.bad();
+      paint();
+      playTool(false, t, "Cores first");
+      return;
+    }
+    if (t.needsCoresIn && !coresIn) {
+      toolMiss[s.id] = toolMiss[s.id] || {};
+      toolMiss[s.id][t.id] = true;
+      combo = 0;
+      setNote("Put the Schrader cores back in before you charge.", "bad");
+      if (window.LtHaptic) window.LtHaptic.bad();
+      paint();
+      playTool(false, t, "Cores first");
+      return;
+    }
+    if (t.correct || t.needsN2 || t.needsCores) {
+      const clean = !(toolMiss[s.id] && Object.keys(toolMiss[s.id]).length);
+      combo = clean ? combo + 1 : 0;
+      score += clean ? 100 + (combo - 1) * 25 : 40;
+      toolHit[s.id] = t.id;
+      setNote(t.name + " landed. +" + (clean ? 100 + (combo - 1) * 25 : 40) + ". Hit Next.", "ok");
+      done[s.id] = true;
+      if (window.LtHaptic) window.LtHaptic.land();
+      paint();
+      playTool(true, t);
+      return;
+    }
+    toolMiss[s.id] = toolMiss[s.id] || {};
+    toolMiss[s.id][t.id] = true;
+    combo = 0;
+    setNote(t.name + " stays on the truck.", "bad");
+    if (window.LtHaptic) window.LtHaptic.bad();
+    paint();
+    playTool(false, t, "Wrong tool");
+  }
 
   function paint() {
     const s = STEPS[view] || STEPS[0];
     const completed = Object.keys(done).length;
-    const show = !!(done[s.id] || toolHit[s.id]);
-    const canDo = view === step && !done[s.id] && !finished;
+    const canDo = view === step && !finished;
     root.innerHTML =
       '<div class="ms-layout">' +
       '<header class="ms-head">' +
       '<button type="button" class="btn" id="cc-hub">Shop floor</button>' +
       "<h2>Compressor change-out · " + (view + 1) + "/" + STEPS.length + "</h2>" +
-      '<div class="ms-progress"><div class="ms-bar"><i style="width:' + Math.round((completed / STEPS.length) * 100) + '%"></i></div><span>' + completed + " done</span></div></header>" +
+      '<div class="ms-progress"><div class="ms-bar"><i style="width:' + Math.round((completed / STEPS.length) * 100) + '%"></i></div><span>' + score + " pts · combo x" + combo + "</span></div></header>" +
       '<div class="ms-body">' +
       '<aside class="ms-steps">' +
       STEPS.map(function (st, i) {
@@ -195,28 +440,38 @@
       }).join("") +
       "</aside>" +
       '<main class="ms-card">' +
-      '<div class="ms-scene' + (show ? " shown" : " locked") + '">' +
-      (show
-        ? '<img class="ms-photo cc-photo" src="' + s.photo + '?v=1" alt="" />'
-        : '<div class="ms-photo cc-wait">' + (s.id === "braze" && n2Flow ? "Nitrogen is flowing. The picture opens when the torch hits the joint." : "Pick the tool. The picture of this step stays shut.") + "</div>") +
-      "</div>" +
-      '<div class="ms-tools">' +
+      '<div class="ms-scene shown">' + storyBoard() + "</div>" +
+      '<div class="ms-tools"><p class="eyebrow">Drag the highlighted tool onto the unit</p>' +
       s.tools.map(function (t) {
         const hit = toolHit[s.id] === t.id;
         const miss = toolMiss[s.id] && toolMiss[s.id][t.id];
-        return '<button type="button" class="ms-tool' + (hit ? " good" : "") + (miss ? " bad" : "") + '" data-tool="' + t.id + '"><img src="' + t.img + '?v=1" alt="" /><span>' + t.name + "</span></button>";
+        const need = canDo && !done[s.id] ? toolNeeded(step) : null;
+        const next = !!(need && need.id === t.id && !hit);
+        return '<button type="button" class="ms-tool' + (hit ? " good" : "") + (miss ? " bad" : "") + (next ? " is-next" : "") + '" data-tool="' + t.id + '"><img src="' + t.img + '?v=1" alt="" /><span>' + t.name + "</span></button>";
       }).join("") +
       "</div>" +
-      '<p class="ms-feedback' + (note ? (toolHit[s.id] ? " good" : " bad") : "") + '">' + (note || "") + "</p>" +
+      '<p class="ms-feedback' + (tone === "ok" ? " good" : tone === "bad" ? " bad" : "") + '">' + (note || "") + "</p>" +
       "<h3>" + s.title + "</h3>" +
       '<p class="ms-tip">' + s.tip + "</p>" +
       '<p class="ms-check">Success: <strong>' + s.check + "</strong></p>" +
       '<div class="ms-actions">' +
-      '<button type="button" class="btn primary" id="cc-do"' + (canDo ? "" : " disabled") + ">" + (done[s.id] ? "Done" : s.action) + "</button>" +
+      '<button type="button" class="btn' + (done[s.id] ? " primary" : "") + '" id="cc-do"' + (canDo ? "" : " disabled") + ">" + (done[s.id] ? (view >= STEPS.length - 1 ? "Finish" : "Next step") : "Next step") + "</button>" +
       '<button type="button" class="btn" id="cc-back"' + (view === 0 ? " disabled" : "") + ">Back</button>" +
       "</div>" +
       '<p class="ms-detail">' + s.detail + "</p>" +
       "</main>" +
+      "<style>" +
+      "#compchange-root .cc-drop{position:relative}" +
+      "#compchange-root .cc-target{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);background:rgba(12,16,20,.78);color:#e8c450;border:2px dashed #e8c450;border-radius:12px;padding:10px 14px;pointer-events:none}" +
+      "#compchange-root .cc-landed{position:absolute;right:10px;bottom:36px;width:72px;height:72px;object-fit:contain;background:#10161c;border-radius:10px;border:2px solid #7fd99a}" +
+      "#compchange-root .cc-landed-name{position:absolute;left:10px;bottom:36px;background:#14301c;color:#7fd99a;border-radius:8px;padding:4px 8px;font-size:12px}" +
+      "#compchange-root .ms-tool{cursor:grab;touch-action:none}" +
+      "#compchange-root .ms-story > figure.now .ms-photo,#compchange-root img.cc-photo{width:100%;height:auto;max-height:min(42vh,360px);object-fit:contain;background:#10141a;display:block}" +
+      "#compchange-root .ms-built .ms-photo{width:108px;height:76px;max-height:76px;object-fit:contain}" +
+      "#compchange-root .ms-tool img{width:100%;height:88px;object-fit:contain;background:#10141a}" +
+      "#compchange-root .ms-tool.is-next{outline:2px solid #e8c450;outline-offset:2px}" +
+      "#compchange-root .ms-tools .eyebrow{width:100%;margin:0 0 6px}" +
+      "</style>" +
       '<aside class="ms-ref"><p class="eyebrow">Change-out order</p><ul>' +
       "<li><strong>Recover</strong> before the torch</li>" +
       "<li><strong>Lock out</strong> before the meter</li>" +
@@ -230,120 +485,122 @@
     if (hub) hub.onclick = function () { try { if (onDone) onDone(false); } catch (_) {} };
     const back = root.querySelector("#cc-back");
     if (back) back.onclick = function () {
-      if (view > 0) { view--; note = ""; paint(); }
+      if (view > 0) { view--; setNote("", ""); paint(); }
     };
     root.querySelectorAll(".ms-step").forEach(function (b) {
       b.onclick = function () {
         const i = +b.dataset.i;
         if (i > step) {
+          if (i === step + 1 && done[STEPS[step].id]) {
+            step = i;
+            view = i;
+            setNote("", "");
+            paint();
+            return;
+          }
+          if (window.PlayFeel) {
+            window.PlayFeel.deny(b);
+            window.PlayFeel.pop(b, earlyPop(), "bad");
+          }
           view = step;
-          note = "Do step " + (step + 1) + " first. That picture stays shut until the right tool.";
+          setNote(laterHint(), "bad");
           paint();
           return;
         }
         view = i;
-        note = i === step ? "" : "Back on step " + (step + 1) + " when you are done looking. The marker did not move.";
+        setNote(i === step ? "" : "Back on step " + (step + 1) + " when you are done looking.", "");
         paint();
       };
     });
     root.querySelectorAll(".ms-tool").forEach(function (b) {
       b.onclick = function () {
-        if (view !== step || finished || done[s.id]) {
-          view = step;
-          note = "Do step " + (step + 1) + " first. The picture stays shut.";
-          paint();
+        if (skipClick) {
+          skipClick = false;
           return;
         }
         const t = s.tools.find(function (x) { return x.id === b.getAttribute("data-tool"); });
-        if (!t) return;
-        if (t.why) {
-          toolMiss[s.id] = toolMiss[s.id] || {};
-          toolMiss[s.id][t.id] = true;
-          note = t.why;
-          paint();
-          return;
-        }
-        if (t.flow) {
-          n2Flow = true;
-          note = "Nitrogen is flowing, about 3 SCFH. The torch is next. Oxygen and shop air stay on the truck.";
-          paint();
-          return;
-        }
-        if (t.cores) {
-          coresOut = true;
-          note = "Schrader cores are out. The micron gauge can pull now. Put the cores back in before you charge.";
-          paint();
-          return;
-        }
-        if (t.coresIn) {
-          coresIn = true;
-          note = "Cores are back in. Weigh the nameplate on the scale. An open core dumps the new charge.";
-          paint();
-          return;
-        }
-        if (t.needsN2 && !n2Flow) {
-          toolMiss[s.id] = toolMiss[s.id] || {};
-          toolMiss[s.id][t.id] = true;
-          note = "The torch stays on the truck until nitrogen is flowing. Brazing on oxygen or shop air is a fail.";
-          paint();
-          return;
-        }
-        if (t.needsCores && !coresOut) {
-          toolMiss[s.id] = toolMiss[s.id] || {};
-          toolMiss[s.id][t.id] = true;
-          note = "Pull the Schrader cores before the deep vacuum. A core left in the port is not a 500-micron pull.";
-          paint();
-          return;
-        }
-        if (t.needsCoresIn && !coresIn) {
-          toolMiss[s.id] = toolMiss[s.id] || {};
-          toolMiss[s.id][t.id] = true;
-          note = "Put the Schrader cores back in before you charge. Leaving them out dumps the new charge.";
-          paint();
-          return;
-        }
-        if (t.correct || t.needsN2 || t.needsCores) {
-          toolHit[s.id] = t.id;
-          note = t.name + " did the job. That picture is the result.";
-          done[s.id] = true;
-          paint();
-          if (step >= STEPS.length - 1) {
-            finished = true;
-            if (onDone) onDone(true);
-            return;
-          }
-          setTimeout(function () {
-            step++;
-            view = step;
-            n2Flow = false;
-            note = "";
-            paint();
-          }, 500);
-          return;
-        }
-        toolMiss[s.id] = toolMiss[s.id] || {};
-        toolMiss[s.id][t.id] = true;
-        note = t.name + " stays on the truck.";
-        paint();
+        useTool(t);
       };
+      if (window.LtDrag && window.LtDrag.bindSource) {
+        window.LtDrag.bindSource(b, {
+          id: b.getAttribute("data-tool"),
+          allowButtons: true,
+          dropSelector: ".cc-drop",
+          ghostClass: "cc-ghost",
+          html: "<b>" + (b.querySelector("span") ? b.querySelector("span").textContent : "TOOL") + "</b>",
+          onDrop: function (_slot, id) {
+            skipClick = true;
+            const t = s.tools.find(function (x) { return x.id === id; });
+            useTool(t);
+            setTimeout(function () { skipClick = false; }, 0);
+          },
+        });
+      }
     });
     const go = root.querySelector("#cc-do");
     if (go) go.onclick = function () {
       if (view !== step) {
         view = step;
-        note = "";
+        setNote("", "");
         paint();
         return;
       }
-      if (!toolHit[s.id]) {
-        note = "Click the tool that does this step. The picture and the marker stay put.";
+      if (!done[s.id]) {
+        const need = toolNeeded(step);
+        setNote(need ? "Drag " + need.name + " onto the unit." : "Drag the tool onto the unit.", "bad");
         paint();
+        playTool(false, null, "Drop it");
+        return;
       }
+      if (step >= STEPS.length - 1) {
+        finished = true;
+        if (onDone) onDone(true);
+        return;
+      }
+      step += 1;
+      view = step;
+      n2Flow = false;
+      setNote("", "");
+      paint();
     };
     const fbEl = root.querySelector(".ms-feedback");
     if (fbEl && note) {
       try { fbEl.scrollIntoView({ block: "nearest" }); } catch (_) {}
     }
+    coachNext();
+  }
+
+  function ensurePhone() {
+    if (document.getElementById("cc-phone-fit")) return;
+    const st = document.createElement("style");
+    st.id = "cc-phone-fit";
+    st.textContent = [
+      "@media (max-width:720px){",
+      "#screen-compchange.screen.active{overflow-x:hidden!important;overflow-y:auto!important;height:100dvh!important;max-height:100dvh!important}",
+      "#compchange-root{position:relative!important;inset:auto!important;height:auto!important;max-height:none!important;overflow:visible!important}",
+      "#compchange-root .ms-layout{padding:8px 8px 12px!important}",
+      "#compchange-root .ms-head{margin:0 0 6px!important;align-items:center}",
+      "#compchange-root .ms-head h2{font-size:16px;margin:0}",
+      "#compchange-root .ms-body{display:block!important}",
+      "#compchange-root .ms-steps{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;max-height:none!important;gap:6px}",
+      "#compchange-root .ms-step{flex:0 0 auto!important;min-width:44px!important;min-height:40px!important;padding:6px 8px!important}",
+      "#compchange-root .ms-step em{display:none!important}",
+      "#compchange-root .ms-card{padding:8px!important}",
+      "#compchange-root .ms-card h3,#compchange-root .ms-detail,#compchange-root .ms-check,#compchange-root .ms-ref{display:none!important}",
+      "#compchange-root .ms-tip{margin:4px 0!important;font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}",
+      "#compchange-root .ms-story>figure.now .ms-photo,#compchange-root img.cc-photo{display:block!important;width:100%!important;height:auto!important;min-height:120px!important;max-height:28vh!important;object-fit:contain!important}",
+      "#compchange-root .ms-tools{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}",
+      "#compchange-root .ms-tools .eyebrow{grid-column:1 / -1;width:auto!important;margin:0 0 4px!important}",
+      "#compchange-root .ms-tool{min-width:0!important;min-height:64px}",
+      "#compchange-root .ms-tool img{height:64px!important;width:100%!important}",
+      "#compchange-root .ms-actions{display:flex!important;gap:8px;position:relative;z-index:3}",
+      "#compchange-root .ms-actions .btn{min-height:48px;flex:1 1 40%}",
+      "body:has(#screen-compchange.active) #pf-coach-bar,body:has(#screen-compchange.active) .pf-coach{top:auto!important;bottom:8px!important;left:8px!important;right:auto!important;width:min(180px,46vw)!important;max-height:52px!important;overflow:hidden!important}",
+      "body:has(#screen-compchange.active) #drip-ear{top:8px!important;bottom:auto!important;left:auto!important;right:8px!important;width:min(140px,38vw)!important;max-height:40px!important}",
+      "body:has(#screen-compchange.active) .ld-replay{top:auto!important;bottom:8px!important;right:8px!important;left:auto!important;max-width:124px!important}",
+      "}",
+    ].join("");
+    document.head.appendChild(st);
   }
 
   function start(host, opts) {
@@ -358,7 +615,12 @@
     coresOut = false;
     coresIn = false;
     finished = false;
+    score = 0;
+    combo = 0;
+    skipClick = false;
+    tone = "";
     onDone = opts && opts.onDone;
+    ensurePhone();
     if (!root) return { stop: function () {} };
     root.style.position = "absolute";
     root.style.inset = "0";

@@ -35,7 +35,7 @@
       title: "Quiz arena",
       minutes: 8,
       skill: "theory",
-      why: "EPA 608 · OSHA · P/T · shop practice",
+      why: "EPA 608 · OSHA · P/T · shop curriculum",
     },
     {
       id: "epa608",
@@ -51,7 +51,7 @@
       title: "Curriculum unit",
       minutes: 10,
       skill: "study",
-      why: "Shop practice units mapped to the labs",
+      why: "HCR-style course units mapped to sims",
     },
   ];
 

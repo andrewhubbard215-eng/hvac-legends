@@ -1,8 +1,52 @@
-/* HVAC Legends — Refrigeration Cycle Sandbox */
+/* Lincoln Tech HVAC Allstars — Refrigeration Cycle Sandbox */
 (function (global) {
   "use strict";
+  function trainerName() {
+    return (window.LtBrand && window.LtBrand.trainer) || "Hubconnect";
+  }
+  function landTurn(screenId) {
+    try {
+      if (sessionStorage.getItem("land-upright-off")) return;
+    } catch (e) {}
+    var cssId = "land-css-" + screenId;
+    if (!document.getElementById(cssId)) {
+      var st = document.createElement("style");
+      st.id = cssId;
+      st.textContent = ".land-turn{display:none}@media (orientation:landscape) and (max-height:500px){body.land-on:has(#" + screenId + ".active) .land-turn{display:flex;position:fixed;z-index:220;inset:0;align-items:center;justify-content:center;padding:8px;background:rgba(8,10,12,.55);color:#f6f0e2;box-sizing:border-box}body.land-on:has(#" + screenId + ".active) .land-card{display:flex;flex-direction:column;align-items:center;gap:4px;width:min(200px,52vw);padding:8px 10px;background:#1c2126;border:1px solid #e8c450;border-radius:12px;text-align:center}body.land-on:has(#" + screenId + ".active) .land-phone{width:22px;height:36px;border:2px solid #e8c450;border-radius:6px;position:relative}body.land-on:has(#" + screenId + ".active) .land-phone:before{content:\"\";position:absolute;left:50%;bottom:3px;width:10px;height:2px;margin-left:-5px;background:#e8c450;border-radius:2px}body.land-on:has(#" + screenId + ".active) .land-turn strong{font:700 15px/1.2 system-ui,sans-serif;color:#fff}body.land-on:has(#" + screenId + ".active) .land-turn span{font:600 12px/1.3 system-ui,sans-serif;color:#d7d0c4;max-width:180px}body.land-on:has(#" + screenId + ".active) .land-turn button{min-height:32px;margin-top:2px;padding:0 10px;background:transparent;color:#f6f0e2;border:1px solid #6d5b3c;border-radius:8px;cursor:pointer;font:600 13px system-ui,sans-serif}}";
+      document.head.appendChild(st);
+    }
+    document.body.classList.add("land-on");
+    if (!document.getElementById("land-turn")) {
+      var bar = document.createElement("div");
+      bar.className = "land-turn";
+      bar.id = "land-turn";
+      bar.innerHTML = "<div class=\"land-card\"><div class=\"land-phone\" aria-hidden=\"true\"></div><strong>Turn the phone upright</strong><span>Rotate it. This card goes away on its own.</span><button type=\"button\" id=\"land-dismiss-btn\">Stay sideways</button></div>";
+      document.body.appendChild(bar);
+      document.getElementById("land-dismiss-btn").addEventListener("click", function () {
+        try { sessionStorage.setItem("land-upright-off", "1"); } catch (e2) {}
+        document.body.classList.remove("land-on");
+        bar.remove();
+      });
+    }
+  }
+  function floorFit(id, css) {
+    let st = document.getElementById(id);
+    if (!st) { st = document.createElement("style"); st.id = id; document.head.appendChild(st); }
+    st.textContent = css;
+    document.head.appendChild(st);
+    function bump() {
+      if (st.parentNode) document.head.appendChild(st);
+      var last = document.getElementById("sb-float-last");
+      if (last) document.head.appendChild(last);
+      var bar = document.getElementById("sb-bar-scroll");
+      if (bar) document.head.appendChild(bar);
+    }
+    requestAnimationFrame(bump);
+    setTimeout(bump, 80);
+    setTimeout(bump, 400);
+  }
 
-  // ---- Field P/T charts (psig). HVAC Legends pocket-chart numbers. ----
+  // ---- Field P/T charts (psig). Lincoln Tech pocket-chart numbers. ----
   const PT = {
     "R-410A": [
       [-40, 10.8], [-30, 17.2], [-20, 24.8], [-15, 29.5], [-10, 34.5],
@@ -32,13 +76,13 @@
       [140, 229.0], [150, 263.0],
     ],
     "R-32": [
-      [-40, 11.6], [-30, 19.2], [-20, 28.2], [-10, 39.0], [0, 51.2],
-      [5, 58.2], [10, 65.8], [15, 74.0], [20, 82.8], [25, 92.4],
-      [30, 102.6], [35, 113.6], [40, 125.4], [45, 138.0], [50, 151.4],
-      [55, 165.8], [60, 181.2], [65, 197.6], [70, 215.2], [75, 234.0],
-      [80, 254.0], [85, 275.4], [90, 298.2], [95, 322.4], [100, 348.2],
-      [105, 375.6], [110, 404.8], [115, 435.8], [120, 468.8], [130, 540.0],
-      [140, 620.0], [150, 710.0],
+      [-40, 11.0], [-30, 18.2], [-20, 26.8], [-10, 37.1], [0, 49.3],
+      [5, 56.1], [10, 63.5], [15, 71.4], [20, 80.0], [25, 89.2],
+      [30, 99.1], [35, 109.7], [40, 121.0], [45, 133.0], [50, 145.8],
+      [55, 159.5], [60, 174.0], [65, 189.5], [70, 205.8], [75, 223.2],
+      [80, 241.5], [85, 260.9], [90, 281.3], [95, 302.9], [100, 325.7],
+      [105, 349.6], [110, 374.9], [115, 401.4], [120, 429.3], [125, 458.7],
+      [130, 489.5], [140, 555.8], [150, 628.8],
     ],
   };
   const HPC_TRIP = { "R-410A": 610, "R-32": 610, "R-22": 400, "R-134a": 300 };
@@ -88,7 +132,7 @@
     { id: "capillary", name: "Capillary tube", group: "parts", icon: "〰️", img: null, slot: "metering", required: false, desc: "Cap-tube metering device" },
     { id: "evaporator", name: "Evaporator A-coil", group: "parts", icon: "❄️", img: "parts/evaporator.png", slot: "evaporator", required: true, desc: "Cased indoor coil · drain pan" },
     { id: "filter", name: "Filter-drier", group: "parts", icon: "🧪", img: "parts/filter.png", slot: "filter", required: false, desc: "Liquid-line drier" },
-    { id: "accumulator", name: "Suction accumulator", group: "parts", icon: "🛢", img: "parts/accumulator.png", slot: "accumulator", required: false, desc: "Protects compressor from liquid slug" },
+    { id: "accumulator", name: "Accumulator", group: "parts", icon: "🛢", img: "parts/accumulator.png", slot: "accumulator", required: false, desc: "Suction line · stops a liquid slug" },
     { id: "receiver", name: "Liquid receiver", group: "parts", icon: "🫙", img: null, slot: "receiver", required: false, desc: "Stores liquid after the condenser" },
     { id: "solenoid", name: "Liquid solenoid", group: "parts", icon: "🧲", img: "parts/relay.png", slot: "solenoid", required: false, desc: "Pump-down valve in the liquid line" },
     { id: "revvalve", name: "Reversing valve (4-way)", group: "parts", icon: "🔀", img: "parts/relay.png", slot: "revvalve", required: false, desc: "Heat pump changeover · discharge in the middle" },
@@ -458,14 +502,14 @@
     },
     {
       id: "iconnect-tu102",
-      brand: "iConnect",
+      brand: trainerName() + " / " + ((window.LtBrand && window.LtBrand.org) || "HVAC Legends"),
       name: "TU-102 H-Block AC trainer",
       type: "split",
       tons: 1,
       ref: "R-410A",
       metering: "txv",
       seer: "lab",
-      notes: "Shop-floor H-block: visible evap + condenser, sight glasses, receiver, accumulator, hermetic, TXV, drier. Vari-speed fans. Match the trainer on the floor.",
+      notes: "Shop-floor H-block: visible evap + condenser, sight glasses, receiver, accumulator, hermetic, TXV, drier. Vari-speed fans. Match the HVAC Legends trainer.",
       parts: { compressor: "compressor", condenser: "condenser", metering: "metering", evaporator: "evaporator", filter: "filter", accumulator: "accumulator", receiver: "receiver" },
       approachCond: 20,
       approachEvap: 30,
@@ -475,7 +519,7 @@
     },
     {
       id: "iconnect-tu601",
-      brand: "iConnect",
+      brand: trainerName() + " / " + ((window.LtBrand && window.LtBrand.org) || "HVAC Legends"),
       name: "TU-601 Multi-head mini-split HP",
       type: "minisplit-multi",
       tons: 2,
@@ -494,13 +538,13 @@
 
   const LAB_VIDEOS = {
     tu102: [
-      { t: "TU-100 H-block intro (iConnect)", url: "https://www.youtube.com/watch?v=zxEDlowCQ4c" },
-      { t: "iConnect video library", url: "https://iconnecttraining.com/videos/" },
+      { t: "TU-100 H-block intro (" + trainerName() + ")", url: "https://www.youtube.com/watch?v=zxEDlowCQ4c" },
+      { t: trainerName() + " video library", url: "https://iconnecttraining.com/videos/" },
     ],
     tu601: [
       { t: "TU-601 lesson ideas (4 min)", url: "https://www.youtube.com/watch?v=zaTZ2biRINc" },
       { t: "TU-601 teaching opportunities", url: "https://www.youtube.com/watch?v=tNCLHfJMXFE" },
-      { t: "iConnect TU-601 page", url: "https://iconnecttraining.com/training-units/tu-601-multi-head-mini-split-heat-pump-training-unit/" },
+      { t: trainerName() + " TU-601 page", url: "https://iconnecttraining.com/training-units/tu-601-multi-head-mini-split-heat-pump-training-unit/" },
     ],
   };
 
@@ -572,22 +616,22 @@
   }
 
   const SLOTS = [
-    { id: "compressor", x: 0.24, y: 0.50, label: "1 · Compressor", core: true },
-    { id: "condenser", x: 0.50, y: 0.16, label: "2 · Condenser", core: true },
-    { id: "filter", x: 0.68, y: 0.32, label: "Filter-drier" },
-    { id: "metering", x: 0.78, y: 0.50, label: "3 · Metering", core: true },
-    { id: "evaporator", x: 0.50, y: 0.84, label: "4 · Evaporator", core: true },
-    { id: "accumulator", x: 0.32, y: 0.72, label: "Accumulator" },
+    { id: "compressor", x: 0.16, y: 0.16, label: "1 · Compressor", core: true },
+    { id: "condenser", x: 0.84, y: 0.16, label: "2 · Condenser", core: true },
+    { id: "filter", x: 0.84, y: 0.50, label: "Filter-drier" },
+    { id: "metering", x: 0.84, y: 0.84, label: "3 · Metering", core: true },
+    { id: "evaporator", x: 0.16, y: 0.84, label: "4 · Evaporator", core: true },
+    { id: "accumulator", x: 0.16, y: 0.50, label: "Accumulator" },
     { id: "disconnect", x: 0.10, y: 0.14, label: "Disconnect" },
     { id: "contactor", x: 0.10, y: 0.38, label: "Contactor" },
     { id: "capacitor", x: 0.10, y: 0.62, label: "Capacitor" },
     { id: "transformer", x: 0.10, y: 0.86, label: "Transformer" },
     { id: "thermostat", x: 0.90, y: 0.14, label: "Thermostat" },
     { id: "gauges", x: 0.90, y: 0.38, label: "Gauges" },
-    { id: "copper", x: 0.36, y: 0.30, label: "Line set" },
+    { id: "copper", x: 0.35, y: 0.37, label: "Line set" },
     { id: "nitrogen", x: 0.90, y: 0.62, label: "Nitrogen" },
     { id: "vacpump", x: 0.90, y: 0.86, label: "Vacuum" },
-    { id: "chargecan", x: 0.72, y: 0.84, label: "Charge cylinder" },
+    { id: "chargecan", x: 0.65, y: 0.64, label: "On the scale" },
   ];
 
   const RAIL = [
@@ -647,26 +691,36 @@
     evaporator: "Absorb heat · low vapor",
   };
 
+  const FIRST_STEPS = [
+    { slot: "compressor", accept: ["compressor"], tab: "parts", title: "1 · Compressor", say: "Drop the compressor.", hub: "Drop the compressor." },
+    { slot: "condenser", accept: ["condenser"], tab: "parts", title: "2 · Condenser", say: "Drop the condenser.", hub: "Drop the condenser." },
+    { slot: "metering", accept: ["metering", "piston", "capillary"], tab: "parts", title: "3 · TXV", say: "Drop the TXV.", hub: "Drop the TXV." },
+    { slot: "evaporator", accept: ["evaporator"], tab: "parts", title: "4 · Evaporator", say: "Drop the evaporator.", hub: "Drop the evaporator." },
+  ];
+  let firstPass = true;
+  function stepsNow() {
+    return guidedOn && firstPass ? FIRST_STEPS : BUILD_STEPS;
+  }
   const BUILD_STEPS = [
-    { slot: "compressor", accept: ["compressor"], tab: "parts", title: "1 · Compressor", hub: "Heart of the DX loop. Drag the scroll compressor onto the glowing box." },
-    { slot: "condenser", accept: ["condenser"], tab: "parts", title: "2 · Condenser", hub: "Outdoor coil — heat leaves the house. Drag the outdoor condenser onto the glowing box." },
-    { slot: "filter", accept: ["filter"], tab: "parts", title: "3 · Filter-drier", hub: "Liquid line after the condenser, before metering. Moisture and junk stop here." },
-    { slot: "metering", accept: ["metering", "piston", "capillary"], tab: "parts", title: "4 · Metering device", hub: "TXV, piston, or cap tube. Pressure drop lives here. TXV by SC; piston by SH." },
-    { slot: "evaporator", accept: ["evaporator"], tab: "parts", title: "5 · Evaporator", hub: "Indoor A-coil. Heat into the refrigerant. Loop is almost closed — now the lineset." },
-    { slot: "accumulator", accept: ["accumulator"], tab: "parts", title: "6 · Accumulator", hub: "Suction accumulator. Stops a liquid slug from eating the compressor." },
-    { slot: "copper", accept: ["lineset", "copper", "insulation"], tab: "materials", title: "7 · Line set", hub: "Roll liquid + suction. Insulate suction. Dry N₂ while you braze. Flares on mini-splits. This is how the two boxes become one system." },
-    { slot: "disconnect", accept: ["disconnect"], tab: "electrical", title: "8 · Disconnect", hub: "Fused disconnect at the ODU. LOTO. OSHA 30." },
-    { slot: "contactor", accept: ["contactor"], tab: "electrical", title: "9 · Contactor", hub: "24V coil. Line in, load out. No Y = no pull-in." },
-    { slot: "capacitor", accept: ["capacitor"], tab: "electrical", title: "10 · Dual run cap", hub: "HERM / FAN / C. Hum with no start is often a weak cap." },
-    { slot: "transformer", accept: ["transformer"], tab: "electrical", title: "11 · 24V transformer", hub: "R and C. Dead R and the tstat is wall art." },
-    { slot: "thermostat", accept: ["thermostat"], tab: "electrical", title: "12 · Thermostat", hub: "Y call, cool. Brain of the call." },
-    { slot: "gauges", accept: ["gauges"], tab: "tools", title: "13 · Gauges", hub: "Manifold on the ports. Don't start it yet — N₂, vacuum, then charge." },
-    { slot: "nitrogen", accept: ["nitrogen"], tab: "materials", title: "14 · Nitrogen proof", hub: "Dry N₂ standing test. Regulator on. Never oxygen. Never shop air. Watch decay. Then we pull microns." },
-    { slot: "vacpump", accept: ["vacpump", "micron"], tab: "tools", title: "15 · Evacuate", hub: "Vacuum pump + micron gauge at the system — not the recovery machine. About 500 microns and a decay hold. 0 in Hg is 0 psig, not a deep vacuum. Cores out to pull, cores in to finish. 608." },
-    { slot: "chargecan", accept: ["r410a", "r22", "r134a", "r32", "scale"], tab: "materials", title: "16 · Charge", hub: "Match the nameplate cylinder. Scale under the tank. Weigh-in, then trim SH or SC per metering. Then Start compressor." },
+    { slot: "compressor", accept: ["compressor"], tab: "parts", title: "1 · Compressor", say: "Drop the compressor.", hub: "Drop the compressor." },
+    { slot: "condenser", accept: ["condenser"], tab: "parts", title: "2 · Condenser", say: "Drop the condenser.", hub: "Drop the condenser." },
+    { slot: "filter", accept: ["filter"], tab: "parts", title: "3 · Filter-drier", say: "Drop the filter-drier.", hub: "Drop the filter-drier." },
+    { slot: "metering", accept: ["metering", "piston", "capillary"], tab: "parts", title: "4 · Metering device", say: "Drop the TXV.", hub: "Drop the TXV." },
+    { slot: "evaporator", accept: ["evaporator"], tab: "parts", title: "5 · Evaporator", say: "Drop the evaporator.", hub: "Drop the evaporator." },
+    { slot: "accumulator", accept: ["accumulator"], tab: "parts", title: "6 · Accumulator", say: "Drop the accumulator.", hub: "Drop the accumulator." },
+    { slot: "copper", accept: ["lineset", "copper", "insulation"], tab: "materials", title: "7 · Line set", say: "Drop the line set.", hub: "Drop the line set." },
+    { slot: "disconnect", accept: ["disconnect"], tab: "electrical", title: "8 · Disconnect", say: "Drop the disconnect.", hub: "Drop the disconnect." },
+    { slot: "contactor", accept: ["contactor"], tab: "electrical", title: "9 · Contactor", say: "Drop the contactor.", hub: "Drop the contactor." },
+    { slot: "capacitor", accept: ["capacitor"], tab: "electrical", title: "10 · Dual run cap", say: "Drop the capacitor.", hub: "Drop the capacitor." },
+    { slot: "transformer", accept: ["transformer"], tab: "electrical", title: "11 · 24V transformer", say: "Drop the transformer.", hub: "Drop the transformer." },
+    { slot: "thermostat", accept: ["thermostat"], tab: "electrical", title: "12 · Thermostat", say: "Drop the thermostat.", hub: "Drop the thermostat." },
+    { slot: "gauges", accept: ["gauges"], tab: "tools", title: "13 · Gauges", say: "Drop the gauges.", hub: "Drop the gauges." },
+    { slot: "nitrogen", accept: ["nitrogen"], tab: "materials", title: "14 · Nitrogen proof", say: "Drop the nitrogen.", hub: "Drop the nitrogen." },
+    { slot: "vacpump", accept: ["vacpump", "micron"], tab: "tools", title: "15 · Evacuate", say: "Pull to 500 microns.", hub: "Pull to 500 microns." },
+    { slot: "chargecan", accept: ["r410a", "r22", "r134a", "r32"], tab: "parts", title: "16 · Refrigerant", say: "Weigh the nameplate.", hub: "Weigh the nameplate." },
   ];
 
-  // CoolGame-style timed circuit builds (HVAC Legends clone — not Danfoss IP)
+  // CoolGame-style timed circuit builds (Lincoln Tech clone — not Danfoss IP)
   const CHALLENGES = [
     {
       id: "dx-basic",
@@ -896,27 +950,12 @@
   // Cycle path as normalized [x,y] points for particle flow (clockwise from compressor discharge)
   // compressor → condenser → filter → metering → evaporator → accumulator → compressor
   const FLOW_PATH = [
-    [0.22, 0.42],
-    [0.34, 0.22],
-    [0.50, 0.14],
-    [0.66, 0.22],
-    [0.74, 0.32],
-    [0.84, 0.50],
-    [0.74, 0.68],
-    [0.50, 0.86],
-    [0.32, 0.74],
-    [0.20, 0.58],
+    [0.30, 0.24],
+    [0.70, 0.24],
+    [0.70, 0.76],
+    [0.30, 0.76],
   ];
-  const FLOW_PATH_PHONE = [
-    [0.22, 0.48],
-    [0.36, 0.28],
-    [0.50, 0.16],
-    [0.64, 0.28],
-    [0.76, 0.48],
-    [0.64, 0.68],
-    [0.50, 0.84],
-    [0.36, 0.68],
-  ];
+  const FLOW_PATH_PHONE = FLOW_PATH;
   function flowPath() {
     return isPhoneLab() ? FLOW_PATH_PHONE : FLOW_PATH;
   }
@@ -1000,6 +1039,7 @@
   let coilEvap = "clean";
   let jobMode = null; // null | recreate | mystery
   let activeJob = null;
+  let lastTicketFault = "";
   let jobAttempts = 0;
   let jobSolved = false;
   let leak = { visual: false, soap: false, sniffer: false, nitrogen: false, repair: false, vac: false };
@@ -1010,6 +1050,13 @@
   function resetVac() {
     if (vac.timer) clearInterval(vac.timer);
     vac = freshVac();
+    pinStatus = false;
+  }
+  let pinStatus = false;
+  function writeStatus(text) {
+    pinStatus = true;
+    const st = document.getElementById("sb-status");
+    if (st && text != null) st.textContent = text;
   }
   let n2Acked = false;
   let capBad = false;
@@ -1058,14 +1105,19 @@
   function stepSeated(step) {
     if (!step || !placed[step.slot]) return false;
     if (step.slot === "vacpump") return !!(vac.pump && vac.gauge && vac.held);
+    if (step.slot === "chargecan") return weighedOz >= chargeTargetOz();
     return true;
   }
 
   function syncGuidedStep() {
     if (!guidedOn) return;
+    const list = stepsNow();
     let i = 0;
-    while (i < BUILD_STEPS.length && stepSeated(BUILD_STEPS[i])) i++;
+    while (i < list.length && stepSeated(list[i])) i++;
     guidedStep = i;
+    if (firstPass && i >= FIRST_STEPS.length) {
+      try { localStorage.setItem("sb-first-done", "1"); } catch (e) {}
+    }
   }
 
   function vacStop() {
@@ -1084,37 +1136,223 @@
   function paintVac() {
     const deck = document.getElementById("sb-vac");
     if (!deck) return;
-    const show = vac.pump || vac.gauge || (guidedOn && currentBuildStep() && currentBuildStep().slot === "vacpump");
+    const show = !!vac.pump;
+    const stage = document.querySelector("#sandbox-root .sb-stage-wrap");
+    if (stage && deck.parentElement !== stage) stage.appendChild(deck);
     if (!show) {
       deck.hidden = true;
       deck.innerHTML = "";
       return;
     }
     deck.hidden = false;
+    if (vac.held) {
+      deck.hidden = false;
+      deck.innerHTML =
+        '<p class="eyebrow">Vacuum held</p>' +
+        '<p class="sb-vac-line">Weigh the nameplate.</p>' +
+        '<button type="button" class="btn primary" data-vac="charge">Charge it</button>';
+      const go = deck.querySelector("[data-vac]");
+      if (go) go.onclick = function () { vacAct("charge", refrigerant); };
+      markNext();
+      return;
+    }
     const n = vac.microns >= 1000 ? Math.round(vac.microns).toLocaleString() : String(Math.round(vac.microns));
     deck.innerHTML =
-      '<p class="eyebrow">Evacuate · step 15</p>' +
+      '<p class="eyebrow">Evacuate</p>' +
       '<p class="sb-vac-read">' + n + " microns</p>" +
-      '<p class="sb-vac-line">' +
-      (vac.held ? "Hold is good. The charge box can light." : vac.isolated ? "Valved off. Watch the number." : "Pull only counts at the system.") +
-      "</p>" +
-      '<button type="button" class="btn' + (vac.oil === "clear" ? " primary" : "") + '" data-vac="oil">' + (vac.oil === "clear" ? "Oil clear" : "Oil milky · change it") + "</button>" +
-      '<button type="button" class="btn' + (vac.where === "system" ? " primary" : "") + '" data-vac="where">' + (vac.where === "system" ? "Gauge on the system" : "Gauge on the pump") + "</button>" +
-      '<button type="button" class="btn' + (vac.cores === "out" ? " primary" : "") + '" data-vac="cores">' + (vac.cores === "out" ? "Cores backed out" : "Cores in") + "</button>" +
+      '<p class="sb-vac-line">Pull to 500. Then valve off.</p>' +
+      '<button type="button" class="btn primary" data-vac="right"' + (vac.held || vac.pulling ? " disabled" : "") + ">Pull to 500</button>" +
+      '<button type="button" class="btn' + (vac.oil === "clear" ? " primary" : "") + '" data-vac="oil">' + (vac.oil === "clear" ? "Oil clear" : "Change oil") + "</button>" +
+      '<button type="button" class="btn' + (vac.where === "system" ? " primary" : "") + '" data-vac="where">' + (vac.where === "system" ? "Gauge on system" : "Gauge on pump") + "</button>" +
+      '<button type="button" class="btn' + (vac.cores === "out" ? " primary" : "") + '" data-vac="cores">' + (vac.cores === "out" ? "Cores out" : "Cores in") + "</button>" +
       '<button type="button" class="btn' + (vac.ballast === "shut" ? " primary" : "") + '" data-vac="ballast">' + (vac.ballast === "open" ? "Ballast open" : "Ballast shut") + "</button>" +
-      '<button type="button" class="mach-switch' + (vac.pulling ? " on" : "") + '" data-vac="power" role="switch" aria-checked="' + (vac.pulling ? "true" : "false") + '"' + (vac.pump && vac.gauge && !vac.held ? "" : " disabled") + "><i></i><span>" + (vac.pulling ? "ON" : "OFF") + "</span><em>Vacuum pump</em></button>" +
-      '<button type="button" class="btn" data-vac="off"' + (vac.pulling && vac.microns < 2000 ? "" : " disabled") + ">Valve the pump off</button>";
+      '<button type="button" class="mach-switch' + (vac.pulling ? " on" : "") + '" data-vac="power" role="switch" aria-checked="' + (vac.pulling ? "true" : "false") + '"' + (vac.pump && vac.gauge && !vac.held ? "" : " disabled") + "><i></i><span>" + (vac.pulling ? "ON" : "OFF") + "</span><em>Pump</em></button>" +
+      '<button type="button" class="btn" data-vac="off"' + (vac.pulling && vac.microns <= 600 ? "" : " disabled") + ">Valve off</button>";
     deck.querySelectorAll("[data-vac]").forEach(function (b) {
       b.onclick = function () { vacAct(b.getAttribute("data-vac")); };
     });
+    markNext();
   }
 
-  function vacAct(kind) {
+  let weighedOz = 0;
+  let chargeOpen = false;
+  function chargeTargetOz() {
+    const tons = activeSystem && activeSystem.tons ? activeSystem.tons : 3;
+    const per = refrigerant === "R-22" ? 28 : refrigerant === "R-134a" ? 24 : refrigerant === "R-32" ? 22 : 32;
+    return Math.max(16, Math.round(tons * per));
+  }
+  function fmtLb(oz) {
+    const n = Math.max(0, Math.round(oz));
+    return Math.floor(n / 16) + " lb " + (n % 16) + " oz";
+  }
+  function paintScale() {
+    if (!document.getElementById("sb-scale-fix")) {
+      const st = document.createElement("style");
+      st.id = "sb-scale-fix";
+      document.head.appendChild(st);
+    }
+    document.getElementById("sb-scale-fix").textContent =
+      "#sb-scale{position:fixed!important;z-index:200!important;left:12px!important;bottom:16px!important;top:auto!important;right:auto!important;width:min(240px,72vw)!important;max-height:none!important;overflow:visible!important;pointer-events:auto!important;padding:10px!important;background:linear-gradient(180deg,#3a3e44,#1a1d21)!important;border:1px solid #e8c450!important;border-radius:16px!important;box-shadow:0 12px 28px rgba(0,0,0,.55)!important;color:#f7f3ea!important}" +
+      "#sb-scale.is-moved{left:var(--sc-x)!important;top:var(--sc-y)!important;right:auto!important;bottom:auto!important}" +
+      "#sb-scale .sb-scale-top{display:flex!important;justify-content:space-between!important;align-items:center!important;font-size:13px!important;font-weight:800!important;cursor:grab;touch-action:none!important}" +
+      "#sb-scale .sb-scale-top button{width:32px!important;height:32px!important;min-height:32px!important;border-radius:50%!important;border:1px solid #666!important;background:#2a2e33!important;color:#fff!important}" +
+      "#sb-scale .sb-scale-read{margin-top:6px!important;padding:8px!important;background:#07090c!important;border-radius:8px!important}" +
+      "#sb-scale .sb-scale-read small{display:block!important;font-size:10px!important;letter-spacing:.08em!important;color:#c5ced6!important}" +
+      "#sb-scale .sb-scale-read strong{display:block!important;font:800 28px/1 ui-monospace,monospace!important;color:#e7eef4!important}" +
+      "#sb-scale .sb-scale-read em{display:block!important;margin-top:4px!important;font-style:normal!important;font-size:13px!important;color:#e8c450!important}" +
+      "#sb-scale .sb-scale-row{display:flex!important;gap:8px!important;margin-top:8px!important}" +
+      "#sb-scale .sb-scale-row .btn{flex:1!important;min-height:48px!important;font-size:16px!important;font-weight:800!important}";
+    let deck = document.getElementById("sb-scale");
+    if (!deck) {
+      deck = document.createElement("div");
+      deck.id = "sb-scale";
+      deck.className = "sb-scale";
+      document.body.appendChild(deck);
+    }
+    if (!deck._ltDrag) {
+      deck._ltDrag = true;
+      var press = false, sx = 0, sy = 0, ox = 0, oy = 0;
+      deck.addEventListener("pointerdown", function (e) {
+        if (!e.target || !e.target.closest || !e.target.closest(".sb-scale-top")) return;
+        if (e.target.closest("button")) return;
+        press = true;
+        var r = deck.getBoundingClientRect();
+        sx = e.clientX;
+        sy = e.clientY;
+        ox = r.left;
+        oy = r.top;
+        try { deck.setPointerCapture(e.pointerId); } catch (_) {}
+      });
+      deck.addEventListener("pointermove", function (e) {
+        if (!press) return;
+        var x = ox + e.clientX - sx;
+        var y = oy + e.clientY - sy;
+        var w = deck.offsetWidth || 220;
+        x = Math.max(8, Math.min(window.innerWidth - Math.min(w, window.innerWidth - 16) - 8, x));
+        y = Math.max(8, Math.min(window.innerHeight - 56, y));
+        deck.classList.add("is-moved");
+        deck.style.setProperty("--sc-x", x + "px");
+        deck.style.setProperty("--sc-y", y + "px");
+      });
+      function up() { press = false; }
+      deck.addEventListener("pointerup", up);
+      deck.addEventListener("pointercancel", up);
+    }
+    if (!chargeOpen) {
+      deck.hidden = true;
+      deck.innerHTML = "";
+      markNext();
+      return;
+    }
+    const target = chargeTargetOz();
+    const left = target - weighedOz;
+    deck.hidden = false;
+    deck.innerHTML =
+      '<div class="sb-scale-top"><b>' + refrigerant + "</b><button type=\"button\" data-ch=\"close\" aria-label=\"Close\">×</button></div>" +
+      '<div class="sb-scale-read"><small>SCALE</small><strong>' + fmtLb(weighedOz) + "</strong><em>" +
+      (left > 0 ? left + " oz to " + fmtLb(target) : left < 0 ? Math.abs(left) + " oz over" : "nameplate") +
+      "</em></div>" +
+      '<div class="sb-scale-row"><button type="button" class="btn" data-ch="back">Back 1 lb</button><button type="button" class="btn primary" data-ch="add">Add 1 lb</button></div>';
+    deck.querySelectorAll("[data-ch]").forEach(function (b) {
+      b.onclick = function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const k = b.getAttribute("data-ch");
+        if (k === "close") {
+          chargeOpen = false;
+          paintScale();
+          writeStatus("Scale closed. Tap the jug to open it.");
+          return;
+        }
+        chargeShot(k === "add" ? 1 : -1);
+      };
+    });
+    markNext();
+  }
+  function chargeShot(dir) {
+    if (running) {
+      setCompressor(false);
+      paintHubCoach("Compressor was on. It's off. Liquid goes in with it off.");
+      writeStatus("Compressor off. Hit Add 1 lb.");
+      return;
+    }
+    const target = chargeTargetOz();
+    let step = 16;
+    if (dir > 0 && weighedOz < target && weighedOz + 16 > target) step = target - weighedOz;
+    if (dir < 0 && weighedOz > target && weighedOz - 16 < target) step = weighedOz - target;
+    weighedOz = Math.max(0, Math.min(target + 32, weighedOz + dir * step));
+    chargePct = Math.round((weighedOz / target) * 100);
+    const ch = document.getElementById("sb-charge");
+    if (ch) ch.value = String(Math.max(50, Math.min(130, chargePct)));
+    const cv = document.getElementById("sb-charge-v");
+    if (cv) cv.textContent = String(chargePct);
+    const map = { "R-410A": "r410a", "R-22": "r22", "R-134a": "r134a", "R-32": "r32" };
+    if (weighedOz === target) {
+      placed.chargecan = map[refrigerant] || "r410a";
+      chargePct = 100;
+      if (window.LtSfx && window.LtSfx.charge) window.LtSfx.charge();
+      if (window.LtHaptic && window.LtHaptic.kick) window.LtHaptic.kick();
+      syncGuidedStep();
+      layoutSlots();
+      paintHubCoach("Nameplate is in. Start it.");
+      writeStatus("Nameplate weight is in. Start the compressor.");
+    } else if (weighedOz > target) {
+      placed.chargecan = map[refrigerant] || "r410a";
+      paintHubCoach("Past the nameplate. Take 1 lb back.");
+      writeStatus("Over the nameplate by " + (weighedOz - target) + " oz. Take some back.");
+    } else {
+      if (placed.chargecan && weighedOz < target) delete placed.chargecan;
+      paintHubCoach(fmtLb(weighedOz) + " in. Nameplate is " + fmtLb(target) + ".");
+      writeStatus(weighedOz + " oz in. " + (target - weighedOz) + " oz to the nameplate. Gauges only equalize.");
+    }
+    paintScale();
+    openGaugeWin();
+  }
+  function chargeFromButton(picked) {
+    const want = (activeSystem && activeSystem.ref) || refrigerant || "R-410A";
+    const ref = picked || want;
+    if (ref !== want) {
+      if (window.LtSfx && window.LtSfx.wrong) window.LtSfx.wrong();
+      paintHubCoach("That's " + ref + ". This nameplate is " + want + ". Don't mix.");
+      writeStatus("Wrong jug. Nameplate is " + want + ".");
+      return;
+    }
+    if ((vac.pulling || vac.isolated) && !vac.held) {
+      writeStatus("The vacuum didn't hold. Don't charge a wet system.");
+      paintHubCoach("Decay didn't hold. Find the leak before the jug comes off the truck.");
+      return;
+    }
+    refrigerant = ref;
+    const refSel = document.getElementById("sb-ref");
+    if (refSel) refSel.value = ref;
+    chargeOpen = true;
+    paintScale();
+    openGaugeWin();
+    paintHubCoach("Add 1 lb. Stop at " + fmtLb(chargeTargetOz()) + ". Compressor stays off.");
+    writeStatus("Add 1 lb on the scale. Stop at " + fmtLb(chargeTargetOz()) + ". Compressor stays off.");
+  }
+
+  function vacAct(kind, picked) {
+    if (kind === "charge") {
+      chargeFromButton(picked);
+      return;
+    }
+    if (kind === "right") {
+      vac.gauge = true;
+      vac.where = "system";
+      vac.oil = "clear";
+      vac.cores = "out";
+      vac.ballast = "shut";
+      kind = "pull";
+    } else if (kind === "gauge") {
+      vac.gauge = true;
+      vac.where = "system";
+    }
     if (kind === "oil") vac.oil = vac.oil === "milky" ? "clear" : "milky";
     if (kind === "where") vac.where = vac.where === "pump" ? "system" : "pump";
     if (kind === "cores") vac.cores = vac.cores === "in" ? "out" : "in";
     if (kind === "ballast") vac.ballast = vac.ballast === "open" ? "shut" : "open";
-    if (kind === "oil" || kind === "where" || kind === "cores" || kind === "ballast") {
+    if (kind === "gauge" || kind === "oil" || kind === "where" || kind === "cores" || kind === "ballast") {
       vac.held = false;
       vac.isolated = false;
       vacStop();
@@ -1128,8 +1366,7 @@
     if (kind === "power") {
       if (vac.pulling) {
         vacStop();
-        const st = document.getElementById("sb-status");
-        if (st) st.textContent = "Pump switch is off. Valve it off if you want the decay to hold.";
+        writeStatus("Pump switch is off. Valve it off if you want the decay to hold.");
         paintVac();
         return;
       }
@@ -1139,63 +1376,67 @@
       if (!vac.pump || !vac.gauge) return;
       vac.isolated = false;
       vac.held = false;
-      vac.pulling = true;
       vacStop();
       vac.pulling = true;
       vac.timer = setInterval(function () {
         const floor = vacLimit();
-        vac.microns += (floor - vac.microns) * 0.35;
+        vac.microns += (floor - vac.microns) * 0.55;
         if (vac.microns < floor + 15) vac.microns = floor;
-        const st = document.getElementById("sb-status");
-        if (st) {
-          st.textContent = floor > 500
-            ? (vac.oil === "milky" ? "Milky oil. The pump is boiling water in the crankcase. Change it."
-              : vac.cores === "in" ? "Cores are in. The pull is choked at the pin."
-              : "Ballast is open. Close it for the deep pull.")
-            : (vac.where === "system" ? "About 500 at the system. Valve the pump off and watch." : "That number is at the pump. It is not the system.");
+        if (floor > 500) {
+          writeStatus(vac.oil === "milky" ? "Change the milky oil."
+            : vac.cores === "in" ? "Cores are choking the pull."
+            : "Close the ballast.");
+        } else if (vac.microns > 600) {
+          writeStatus(vac.where === "system" ? "Pulling down. Watch the microns." : "That number is at the pump.");
+        } else {
+          writeStatus(vac.where === "system" ? "Near 500. Valve the pump off." : "That number is at the pump.");
         }
         paintVac();
+        paintHubCoach();
       }, 400);
       return;
     }
-    if (kind === "off") {
-      vacStop();
-      vac.isolated = true;
-      const lied = vac.where !== "system" || vac.microns > 600;
-      const tight = leak.nitrogen || !activeJob;
-      let ticks = 0;
-      vac.timer = setInterval(function () {
+    if (kind === "off") beginHold();
+  }
+
+  function beginHold() {
+    vacStop();
+    vac.isolated = true;
+    const lied = vac.where !== "system" || vac.microns > 600;
+    const tight = leak.nitrogen || !activeJob;
+    let ticks = 0;
+    vac.timer = setInterval(function () {
         ticks += 1;
         if (lied || !tight) vac.microns += lied ? 1800 : 400;
         else vac.microns += ticks < 3 ? 140 : ticks < 8 ? 20 : 0;
-        const st = document.getElementById("sb-status");
-        if (!lied && tight && ticks >= 8 && vac.microns < 1200) {
+        const stMsg = !lied && tight && ticks >= 8 && vac.microns < 1200;
+        if (stMsg) {
           vac.held = true;
           vacStop();
           leak.vac = true;
-          if (st) st.textContent = "Decay held. Moisture and air are out. Cores back in, then the cylinder.";
+          writeStatus("Decay held. Add 1 lb.");
           if (guidedOn) {
             syncGuidedStep();
             layoutSlots();
-            paintHubCoach("Decay held. Next box is the charge.");
           }
-        } else if (st) {
-          st.textContent = lied
-            ? "The number is climbing. The gauge was not on the system, or you never got deep."
-            : "Still climbing. The standing nitrogen test was the leak check. This pull will not seal a hole.";
+          openGaugeWin();
+          renderPalette("parts");
+          chargeFromButton(refrigerant);
+        } else {
+          writeStatus(lied ? "The number is climbing." : "Still climbing. Find the leak.");
         }
         if (vac.microns > 50000) vacStop();
         paintVac();
+        paintHubCoach();
       }, 400);
-    }
   }
 
   function currentBuildStep() {
-    return BUILD_STEPS[guidedStep] || null;
+    return stepsNow()[guidedStep] || null;
   }
 
   function stepOnPhone() {
-    return typeof window.matchMedia === "function" && window.matchMedia("(max-width: 1100px)").matches;
+    return typeof window.matchMedia === "function" && window.matchMedia("(max-width: 639px)").matches;
   }
 
   function ensureStepLine() {
@@ -1226,6 +1467,63 @@
     return line;
   }
 
+  function bannerWords(text) {
+    return String(text || "").replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
+  }
+  function bannerSay(step, extra) {
+    const words = bannerWords(extra);
+    if (words.length && words.length <= 8) return words.join(" ");
+    if (step && step.say) return step.say;
+    if (words.length) return words.slice(0, 8).join(" ");
+    if (!guidedOn) return running ? "Read the needles." : "Drop a part. Then start it.";
+    if (!step) return "Start it. Read the needles.";
+    return step.say || "Follow the glow.";
+  }
+  function markNext() {
+    document.querySelectorAll("#sandbox-root .rc-next, #sb-scale .rc-next, #sb-vac .rc-next").forEach(function (n) {
+      n.classList.remove("rc-next");
+    });
+    let el = null;
+    const scaleAdd = document.querySelector("#sb-scale [data-ch='add']");
+    if (chargeOpen && scaleAdd && weighedOz < chargeTargetOz()) el = scaleAdd;
+    else if (vac.pump && !vac.held) {
+      const off = document.querySelector('#sb-vac [data-vac="off"]');
+      const pull = document.querySelector('#sb-vac [data-vac="right"]');
+      if (vac.pulling && off && !off.disabled) el = off;
+      else if (vac.pulling) el = document.querySelector("#sb-vac .sb-vac-read");
+      else if (pull && !pull.disabled) el = pull;
+      else el = document.querySelector("#sb-vac .btn.primary");
+    } else if (guidedOn && currentBuildStep()) {
+      const wants = Array.prototype.slice.call(document.querySelectorAll("#sb-items .sb-item.hub-want, #sb-xtra .sb-item.hub-want"));
+      const step = currentBuildStep();
+      if (step && step.slot === "vacpump" && !vac.pump) {
+        el = wants.filter(function (n) { return n.dataset.id === "vacpump"; })[0] || null;
+      } else if (step && step.slot === "vacpump" && !vac.gauge) {
+        el = wants.filter(function (n) { return n.dataset.id === "micron"; })[0] || null;
+      }
+      if (!el) {
+        el = wants.filter(function (n) {
+          const id = n.dataset.id;
+          return !Object.keys(placed).some(function (slot) { return placed[slot] === id; });
+        })[0] || wants[0] || null;
+      }
+    } else if (!running && requiredComplete()) {
+      el = document.getElementById("sb-run");
+    } else if (running) {
+      const g = document.getElementById("sb-gauges-panel");
+      if (g && !g.classList.contains("drawer-open")) el = document.getElementById("sb-gauges-toggle");
+    }
+    if (!el) return;
+    el.classList.add("rc-next");
+    const scroller = el.closest("#sb-items, #sb-xtra, #sb-rail, #sb-vac");
+    if (!scroller) return;
+    const er = el.getBoundingClientRect();
+    const sr = scroller.getBoundingClientRect();
+    if (er.left < sr.left + 4 || er.right > sr.right - 4) {
+      try { el.scrollIntoView({ inline: "center", block: "nearest" }); } catch (e) {}
+    }
+  }
+
   function writeBanner(text) {
     const line = mountStepLine();
     const ban = document.getElementById("sb-sysbanner");
@@ -1238,62 +1536,62 @@
 
   function paintHubCoach(extra) {
     mountStepLine();
+    paintChecklist();
     const coach = document.getElementById("sb-hub-coach");
     const aiOn = window.LtHubAiOn !== false;
     if (coach) coach.classList.toggle("hub-muted", !aiOn);
     const sbT = document.getElementById("sb-hubai-toggle");
     if (sbT) sbT.textContent = aiOn ? "HUB AI · On" : "HUB AI · Off";
-    if (!aiOn) {
-      const title = document.getElementById("sb-hub-title");
-      const line = document.getElementById("sb-hub-line");
-      if (title) title.textContent = "Professor HUB · muted";
-      if (line) line.textContent = "AI is off. Use HUB AI · On on the shop floor or here to bring me back. Free build still works.";
-      return;
-    }
     const title = document.getElementById("sb-hub-title");
     const line = document.getElementById("sb-hub-line");
     const hint = document.getElementById("sb-hint");
     const prog = document.getElementById("sb-progress");
     const gOn = document.getElementById("sb-guide-on");
     const gFree = document.getElementById("sb-guide-free");
+    if (!aiOn) {
+      if (title) title.textContent = "Professor HUB · muted";
+      if (line) line.textContent = "AI is off. Free build still works.";
+      writeBanner("AI is off. Free build still works.");
+      return;
+    }
     if (gOn) gOn.classList.toggle("active", guidedOn);
     if (gFree) gFree.classList.toggle("active", !guidedOn);
     if (!guidedOn) {
+      const say = bannerSay(null, extra);
       if (title) title.textContent = "Professor HUB · free build";
-      if (line) line.textContent = extra || "All boxes are out. Build it your way. I still want SH and SC when you start it.";
-      writeBanner(extra || "Free build. Every box is live. Drop a part, then start the compressor.");
-      if (hint) hint.textContent = "Free build: every drop box is live. HUB guided puts them back in install order.";
+      if (line) line.textContent = say;
+      writeBanner(say);
+      if (hint) hint.textContent = "Every box is live.";
       if (prog) {
         const n = ["compressor", "condenser", "metering", "evaporator"].filter((s) => placed[s]).length;
         prog.textContent = "Free build · core " + n + " / 4" + (running ? " · running" : "");
       }
+      markNext();
       return;
     }
     const step = currentBuildStep();
+    let say = bannerSay(step, extra);
+    if (guidedOn && step && step.slot === "vacpump") {
+      if (!vac.pump) say = "Drop the vacuum pump.";
+      else if (!vac.gauge) say = "Drop the micron gauge.";
+      else if (vac.pulling && vac.microns <= 600) say = "Valve the pump off.";
+      else if (!vac.held) say = "Pull to 500 microns.";
+      else say = "Weigh the nameplate.";
+    }
     if (!step) {
       if (title) title.textContent = "Professor HUB · system built";
-      if (line) line.textContent = extra || "That's a real split. Start the compressor. Gauges on. SH and SC together. Don't top off a leaker.";
-      const banDone = document.getElementById("sb-sysbanner");
-      if (banDone) banDone.textContent = "System is built. Start the compressor. Read superheat and subcool together.";
-      if (hint) hint.textContent = "Guided build complete. Start compressor. Or Free build to add extras (RV, solenoid, N₂…).";
-      if (prog) prog.textContent = "HUB guided · " + BUILD_STEPS.length + " / " + BUILD_STEPS.length + " · evac & charge done · start it";
+      if (line) line.textContent = say;
+      writeBanner(say);
+      if (hint) hint.textContent = "Start it. Read the needles.";
+      if (prog) prog.textContent = "Loop closed. Start it.";
+      markNext();
       return;
     }
     if (title) title.textContent = "Professor HUB · " + step.title;
-    if (line) line.textContent = extra || step.hub;
-    const ban = document.getElementById("sb-sysbanner");
-    if (ban) ban.textContent = extra || (step.title + ". " + step.hub);
-    if (hint) {
-      if (step.slot === "vacpump" && (placed.vacpump || vac.pump || vac.gauge) && !stepSeated(step)) {
-        hint.textContent =
-          (vac.pump ? "" : "Drop the vacuum pump on the glowing box. ") +
-          (vac.gauge ? "" : "Drop the micron gauge on its chip — that gauge reads microns, not the compound psi. ") +
-          "Oil clear, gauge on the system, cores out, ballast shut, pump ON, then valve the pump off. The charge box lights when the decay holds. 0 in Hg is 0 psig, not microns.";
-      } else {
-        hint.textContent = "Drop " + step.title + " on the glowing box. Next box appears after this one seats.";
-      }
-    }
-    if (prog) prog.textContent = "HUB guided · step " + (guidedStep + 1) + " / " + BUILD_STEPS.length;
+    if (line) line.textContent = say;
+    writeBanner(say);
+    if (hint) hint.textContent = say;
+    if (prog) prog.textContent = (firstPass ? "First run · " : "Step ") + (guidedStep + 1) + " / " + stepsNow().length;
     const wantTab = step.tab;
     document.querySelectorAll(".sb-tab[data-tab]").forEach((t) => {
       t.classList.toggle("active", t.getAttribute("data-tab") === wantTab);
@@ -1304,6 +1602,7 @@
     } else {
       markWantedParts();
     }
+    markNext();
   }
 
   function markWantedParts() {
@@ -1314,6 +1613,35 @@
     });
   }
 
+  function paintChecklist() {
+    let list = document.getElementById("sb-check");
+    if (!firstPass || !guidedOn) {
+      if (list) list.hidden = true;
+      return;
+    }
+    if (!list) {
+      const ban = document.getElementById("sb-sysbanner");
+      list = document.createElement("ol");
+      list.id = "sb-check";
+      list.className = "sb-check";
+      if (ban && ban.parentNode) ban.insertAdjacentElement("afterend", list);
+    }
+    if (!list) return;
+    list.hidden = false;
+    const rows = [
+      ["compressor", "Compressor"],
+      ["condenser", "Condenser"],
+      ["metering", "TXV"],
+      ["evaporator", "Evaporator"],
+    ];
+    const now = currentBuildStep();
+    list.innerHTML = rows.map(function (row, i) {
+      const done = !!placed[row[0]];
+      const on = !!(now && now.slot === row[0]);
+      return '<li class="' + (done ? "done" : on ? "now" : "") + '">' + (done ? "Done" : on ? "Drag" : String(i + 1)) + " · " + row[1] + "</li>";
+    }).join("");
+  }
+
   function meteringKind() {
     const m = placed.metering;
     if (m === "piston" || m === "capillary") return "orifice";
@@ -1321,9 +1649,46 @@
     return "txv";
   }
 
+  let shownP = null;
+  let shownAt = 0;
+  function settle(sim) {
+    if (!sim || typeof sim.pHigh !== "number") return sim;
+    const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+    const dt = shownAt ? Math.min(0.3, (now - shownAt) / 1000) : 0.05;
+    shownAt = now;
+    if (!shownP) shownP = { pLow: sim.pLow, pHigh: sim.pHigh, sh: sim.sh || 0, sc: sim.sc || 0 };
+    const k = 1 - Math.exp(-dt / 1.8);
+    const ks = 1 - Math.exp(-dt / 1.15);
+    shownP.pLow += (sim.pLow - shownP.pLow) * k;
+    shownP.pHigh += (sim.pHigh - shownP.pHigh) * k;
+    shownP.sh += ((sim.sh || 0) - shownP.sh) * ks;
+    shownP.sc += ((sim.sc || 0) - shownP.sc) * ks;
+    const out = Object.assign({}, sim, {
+      pLow: shownP.pLow,
+      pHigh: shownP.pHigh,
+      sh: shownP.sh,
+      sc: shownP.sc,
+    });
+    if (out.pHigh > 8 || out.pLow > 8) {
+      out.tSatLow = satT(refrigerant, Math.max(0, out.pLow));
+      out.tSatHigh = satT(refrigerant, Math.max(0, out.pHigh));
+      if (sim.running) {
+        out.tSuction = out.tSatLow + out.sh;
+        out.tLiquid = out.tSatHigh - out.sc;
+      }
+    }
+    const gap = Math.abs(sim.pHigh - shownP.pHigh) + Math.abs(sim.pLow - shownP.pLow);
+    if (gap > 14 && sim.running) {
+      out.status = "Moving. Low " + Math.round(shownP.pLow) + " · high " + Math.round(shownP.pHigh) + ". Let it settle, then read SH and SC.";
+    } else if (gap > 14 && !sim.running && sim.pHigh > 30) {
+      out.status = "Equalizing. Both sides near " + Math.round((shownP.pLow + shownP.pHigh) / 2) + " psig and still moving.";
+    }
+    return out;
+  }
+
   function simulate() {
     if (!requiredComplete()) {
-      return {
+      return settle({
         running: false,
         pHigh: 0,
         pLow: 0,
@@ -1335,11 +1700,11 @@
         sc: 0,
         status: "Place the four — compressor, condenser, metering, evaporator.",
         fp: "HUB: close the loop before you read gauges.",
-      };
+      });
     }
 
     const kind = meteringKind();
-    const ac = activeSystem ? activeSystem.approachCond : 18;
+    const ac = activeSystem ? activeSystem.approachCond : 20;
     const ae = activeSystem ? activeSystem.approachEvap : 35;
     const tgtSH = kind === "orifice" ? 12 : (typeof txvTarget === "number" ? txvTarget : 10);
     const tgtSC = activeSystem ? activeSystem.targetSC : 10;
@@ -1602,8 +1967,8 @@
       else supplyF = indoorF - deltaT;
     }
 
-    const pHigh = satP(refrigerant, condSat);
-    const pLow = Math.max(0, satP(refrigerant, evapSat));
+    let pHigh = satP(refrigerant, condSat);
+    let pLow = Math.max(0, satP(refrigerant, evapSat));
     const tSatHigh = satT(refrigerant, pHigh);
     const tSatLow = satT(refrigerant, pLow);
     sh = Math.max(0, sh);
@@ -1623,10 +1988,11 @@
       fp = "HUB: low-pressure switch. Prove airflow and restriction before you charge.";
     }
 
-    const staticPsig = Math.max(0, satP(refrigerant, outdoorF));
+    const pumpedOut = !placed.chargecan && weighedOz <= 0 && (vac.pulling || vac.held || vac.isolated);
+    const staticPsig = pumpedOut ? 0 : Math.max(0, satP(refrigerant, outdoorF));
     if (!running) {
       if (cutOut) {
-        return Object.assign({}, cutOut, {
+        return settle(Object.assign({}, cutOut, {
           running: false,
           static: false,
           tons: 0,
@@ -1635,9 +2001,9 @@
           odFanOn: false,
           iceEvap: !!cutOut.iceEvap,
           iceOd: !!cutOut.iceOd,
-        });
+        }));
       }
-      return {
+      return settle({
         running: false,
         static: true,
         pHigh: staticPsig,
@@ -1648,8 +2014,16 @@
         tSuction: outdoorF,
         sh: 0,
         sc: 0,
-        status: "Static " + Math.round(staticPsig) + " psig both sides · " + refrigerant + " sitting at " + outdoorF + "°F outdoor. Start compressor.",
-        fp: "HUB: equalized is normal off. Start it, then read SH and SC together.",
+        status: pumpedOut
+          ? (vac.held
+            ? "Held near 0 psig. 0 is not 500 microns. Add the jug."
+            : "Pulling down toward 0 psig. The micron gauge is the one that counts.")
+          : (chargeOpen && weighedOz > 0 && weighedOz < chargeTargetOz()
+            ? "Liquid is in. Both sides equalize. The scale is the charge, not this number."
+            : "Static " + Math.round(staticPsig) + " psig both sides · " + refrigerant + " at " + outdoorF + "°F outdoor. Start the compressor."),
+        fp: pumpedOut
+          ? "HUB: a compound gauge dies at 0 psig. Microns prove the vacuum."
+          : "HUB: equalized is normal off. Start it, then read SH and SC together.",
         condSat: outdoorF,
         evapSat: outdoorF,
         tons: 0,
@@ -1672,7 +2046,16 @@
         supplyF: null,
         drierDrop: 0,
         slugRisk: false,
-      };
+      });
+    }
+
+    if (pumpedOut) {
+      pHigh = 0;
+      pLow = 0;
+      sh = 0;
+      sc = 0;
+      status = "Empty. Both sides stay near 0 until the jug is in.";
+      fp = "HUB: don't read running pressures on a system that is still under a vacuum.";
     }
 
     if (!status) {
@@ -1716,7 +2099,7 @@
     const shOk = !trip && Math.abs(sh - tgtSH) <= 4;
     const scOk = !trip && Math.abs(sc - tgtSC) <= 4;
 
-    return {
+    return settle({
       running: !trip,
       trip,
       static: false,
@@ -1752,7 +2135,7 @@
       supplyF,
       drierDrop,
       slugRisk,
-    };
+    });
   }
 
   function injectSandboxPolish() {
@@ -1760,17 +2143,17 @@
     const st = document.createElement("style");
     st.id = "sb-polish";
     st.textContent = [
-      "#sandbox-root .sb-main{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important}",
+      "#sandbox-root .sb-main{display:flex!important;flex-direction:column!important;min-height:0!important;min-width:0!important;max-width:100%!important;overflow:hidden!important}",
       "#sandbox-root .sb-stage-wrap{flex:1 1 auto!important;min-height:0!important}",
-      "#sandbox-root .sb-rail{display:flex!important;flex:0 0 auto!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;min-height:74px!important;max-height:96px!important;padding:6px 8px!important;background:#10161c!important;border-top:1px solid #2a3644!important;position:relative!important;z-index:8!important}",
+      "#sandbox-root .sb-rail{display:flex!important;flex:0 0 auto!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;min-height:74px!important;max-height:96px!important;min-width:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;padding:6px 8px!important;background:#10161c!important;border-top:1px solid #2a3644!important;position:relative!important;z-index:8!important}",
       "#sandbox-root #sb-rail .sb-slot{position:relative!important;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;transform:none!important;flex:0 0 96px!important;width:96px!important;min-height:60px!important;max-height:80px!important;pointer-events:auto!important}",
       "#sandbox-root .sb-palette{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important}",
       "#sandbox-root .sb-palette .brand-bar,#sandbox-root .sb-palette .sb-tabs,#sandbox-root .sb-palette .sb-guide-bar,#sandbox-root .sb-palette .sb-build-progress{flex:0 0 auto!important}",
-      "#sandbox-root .sb-tabs{flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;max-height:42px!important}",
+      "#sandbox-root .sb-tabs{flex-wrap:wrap!important;overflow:visible!important;max-height:none!important}",
       "#sandbox-root .sb-tab{flex:0 0 auto!important;min-width:64px!important;white-space:nowrap!important}",
       "#sandbox-root .sb-guide-bar{display:flex!important;flex-wrap:wrap!important;gap:4px!important}",
       "#sandbox-root .sb-guide-bar .btn{flex:1 1 30%!important;min-height:34px!important;padding:4px 6px!important}",
-      "#sandbox-root #sb-items{flex:1 1 52%!important;min-height:300px!important;overflow-x:hidden!important;overflow-y:auto!important;position:relative!important}",
+      "#sandbox-root #sb-items{flex:1 1 52%!important;min-height:0!important;min-width:0!important;max-width:100%!important;overflow-x:hidden!important;overflow-y:auto!important;position:relative!important}",
       "#sandbox-root .sb-xtra-wrap{flex:1 1 34%!important;min-height:112px!important;max-height:42%!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;border-top:1px solid #2a3644!important;margin-top:6px!important;position:relative!important;z-index:1!important}",
       "#sandbox-root .sb-xtra-wrap[hidden]{display:none!important}",
       "#sandbox-root .sb-xtra-label{flex:0 0 auto!important;margin:6px 0 4px!important}",
@@ -1780,21 +2163,93 @@
       "@media (max-width:700px){#sandbox-root #sb-sysbanner{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;overflow:hidden!important;max-height:2.8em!important}}",
       "#sandbox-root #sb-sysbanner{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;overflow:hidden!important;max-height:2.8em!important;flex:0 0 auto!important;line-height:1.35!important;color:#f7f3ea!important;background:#10161c!important}",
       "#sandbox-root #sb-hub-line{display:block!important;visibility:visible!important;margin:0!important;white-space:normal!important;overflow:visible!important;height:auto!important;max-height:none!important;color:#f7f3ea!important;font-size:14px!important;line-height:1.35!important;font-style:normal!important}",
-      "#sandbox-root .sb-stage-wrap{overflow:hidden!important;min-height:220px!important}",
-      "#sandbox-root .sb-slots{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(3,minmax(0,1fr))!important;gap:8px!important;inset:8px!important;position:absolute!important}",
-      "#sandbox-root .sb-slot:not(.sb-rail-slot){position:relative!important;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;transform:none!important;width:auto!important;max-width:none!important;height:100%!important;max-height:none!important;min-height:0!important;overflow:hidden!important;padding:4px!important}",
-      "#sandbox-root .sb-slot.core:not(.sb-rail-slot){width:auto!important;max-height:none!important}",
-      "#sandbox-root .sb-slot:not(.sb-rail-slot) .part-img,#sandbox-root .sb-slot:not(.sb-rail-slot) img{width:36px!important;height:36px!important;object-fit:contain!important}",
+      "#sandbox-root .sb-stage-wrap{overflow:hidden!important;min-height:0!important;min-width:0!important;max-width:100%!important;max-height:100%!important}",
+      "#sandbox-root .sb-slots{display:block!important;position:absolute!important;inset:0!important}",
+      "#sandbox-root .sb-slot:not(.sb-rail-slot){position:absolute!important;transform:translate(-50%,-50%)!important;width:min(96px,24%)!important;height:auto!important;min-height:52px!important;max-height:none!important;overflow:hidden!important;padding:4px!important;z-index:2!important}",
+      "#sandbox-root .sb-slot.core:not(.sb-rail-slot){width:min(108px,26%)!important;min-height:60px!important}",
+      "#sandbox-root .sb-slot:not(.sb-rail-slot) .part-img,#sandbox-root .sb-slot:not(.sb-rail-slot) img,#sandbox-root #sb-rail .part-img,#sandbox-root #sb-rail img{width:36px!important;height:36px!important;max-width:100%!important;max-height:40px!important;object-fit:contain!important;object-position:center!important;background:#0b1218!important}",
       "#sandbox-root .sb-dispatch{position:relative!important;z-index:6!important;flex:0 0 auto!important;max-height:22dvh!important;overflow:auto!important;background:#10161c!important;color:#f7f3ea!important;border-top:2px solid #CE0034!important}",
       "#sandbox-root .sb-dispatch-top{display:flex!important;flex-wrap:wrap!important;gap:6px!important;align-items:center!important;padding:6px 8px!important}",
       "#sandbox-root .sb-dispatch-choices{display:flex!important;flex-wrap:wrap!important;gap:6px!important;padding:0 8px 8px!important}",
       "#sandbox-root .sb-float-win{display:none!important}",
       "#sandbox-root .sb-float-win.is-open{display:flex!important;position:fixed!important;z-index:80!important;top:64px!important;right:12px!important;bottom:auto!important;left:auto!important;width:min(340px,92vw)!important;max-height:min(70dvh,560px)!important}",
       "#sandbox-root .sb-float-win.is-open.is-moved{left:var(--sb-fx)!important;top:var(--sb-fy)!important;right:auto!important;bottom:auto!important}",
-      "@media (min-width:801px){#sandbox-root .sb-layout{display:grid!important;grid-template-columns:minmax(180px,220px) minmax(0,1fr) minmax(220px,280px)!important;grid-template-rows:minmax(0,1fr)!important;height:100%!important;max-height:100%!important}#sandbox-root .sb-palette{position:relative!important;transform:none!important;inset:auto!important;width:auto!important;height:100%!important;max-height:none!important;grid-column:1!important;grid-row:1!important;overflow:auto!important;border-radius:0!important;border-right:1px solid #2a3644!important}#sandbox-root .sb-palette .brand-bar,#sandbox-root .sb-palette .sb-hint,#sandbox-root .sb-palette .eyebrow,#sandbox-root .sb-palette .sb-build-progress{display:block!important}#sandbox-root .sb-palette .sb-guide-bar,#sandbox-root .sb-palette .sb-hub-coach{display:flex!important}#sandbox-root .sb-main{grid-column:2!important;grid-row:1!important;min-width:0!important;min-height:0!important}#sandbox-root aside.sb-gauges{position:relative!important;transform:none!important;inset:auto!important;display:flex!important;flex-direction:column!important;grid-column:3!important;grid-row:1!important;width:auto!important;height:100%!important;max-height:none!important;min-height:0!important;overflow:hidden!important;border-radius:0!important;z-index:2!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important}#sandbox-root .sb-gauges-scroll{overflow:auto!important;flex:1 1 auto!important;min-height:0!important}}",
-      "@media (max-width:800px){#sandbox-root .sb-layout{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;height:100%!important;max-height:100dvh!important}#sandbox-root .sb-palette{position:relative!important;transform:none!important;inset:auto!important;order:3!important;width:100%!important;height:auto!important;max-height:128px!important;min-height:96px!important;flex:0 0 auto!important;z-index:5!important;border-right:none!important;border-top:2px solid #CE0034!important;border-radius:0!important;overflow:hidden!important;padding:6px!important}#sandbox-root .sb-main{order:1!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;width:100%!important}#sandbox-root #sb-items{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;min-height:0!important;gap:8px!important;flex:1 1 auto!important}#sandbox-root .sb-item{flex:0 0 96px!important;width:96px!important;min-width:96px!important}#sandbox-root .sb-xtra-wrap{display:none!important}#sandbox-root aside.sb-gauges.sb-gauge-win{position:fixed!important;display:none!important;width:auto!important;height:min(50dvh,420px)!important;max-height:50dvh!important;overflow:hidden!important;z-index:90!important;border-radius:14px!important}#sandbox-root aside.sb-gauges.sb-gauge-win.drawer-open{display:flex!important;flex-direction:column!important;left:8px!important;right:8px!important;bottom:8px!important;top:auto!important;transform:none!important}#sandbox-root .sb-float-win.is-open{top:auto!important;bottom:8px!important;left:8px!important;right:8px!important;width:auto!important;max-height:46dvh!important}body.lt-dragging-part #sandbox-root .sb-palette{pointer-events:none!important}}",
+      "@media (min-width:801px){#sandbox-root .sb-layout{display:grid!important;grid-template-columns:var(--sb-tray-w, 220px) minmax(0,1fr) minmax(220px,280px)!important;grid-template-rows:minmax(0,1fr)!important;height:100%!important;max-height:100%!important}#sandbox-root .sb-palette{position:relative!important;transform:none!important;inset:auto!important;width:auto!important;height:100%!important;max-height:none!important;grid-column:1!important;grid-row:1!important;overflow:auto!important;border-radius:0!important;border-right:1px solid #2a3644!important}#sandbox-root .sb-palette .brand-bar,#sandbox-root .sb-palette .sb-hint,#sandbox-root .sb-palette .eyebrow,#sandbox-root .sb-palette .sb-build-progress{display:block!important}#sandbox-root .sb-palette .sb-guide-bar,#sandbox-root .sb-palette .sb-hub-coach{display:flex!important}#sandbox-root .sb-main{grid-column:2!important;grid-row:1!important;min-width:0!important;min-height:0!important}#sandbox-root aside.sb-gauges{position:relative!important;transform:none!important;inset:auto!important;display:flex!important;flex-direction:column!important;grid-column:3!important;grid-row:1!important;width:auto!important;height:100%!important;max-height:none!important;min-height:0!important;overflow:hidden!important;border-radius:0!important;z-index:2!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important}#sandbox-root .sb-gauges-scroll{overflow:auto!important;flex:1 1 auto!important;min-height:0!important}}",
+      "@media (max-width:800px){#sandbox-root .sb-layout{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;height:100%!important;max-height:100dvh!important}#sandbox-root .sb-palette{position:relative!important;transform:none!important;inset:auto!important;order:3!important;width:100%!important;height:var(--sb-tray-h, 112px)!important;max-height:var(--sb-tray-h, 112px)!important;min-height:96px!important;flex:0 0 auto!important;z-index:5!important;border-right:none!important;border-top:2px solid #CE0034!important;border-radius:0!important;overflow:hidden!important;padding:6px!important}#sandbox-root .sb-main{order:1!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;width:100%!important}#sandbox-root #sb-items{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-content:flex-start!important;overflow-x:hidden!important;overflow-y:auto!important;min-height:0!important;gap:8px!important;flex:1 1 auto!important}#sandbox-root .sb-item{flex:1 1 120px!important;width:auto!important;min-width:0!important;max-width:calc(50% - 8px)!important}#sandbox-root .sb-xtra-wrap{display:none!important}#sandbox-root aside.sb-gauges.sb-gauge-win{position:fixed!important;display:none!important;width:auto!important;height:min(50dvh,420px)!important;max-height:50dvh!important;overflow:hidden!important;z-index:90!important;border-radius:14px!important}#sandbox-root aside.sb-gauges.sb-gauge-win.drawer-open{display:flex!important;flex-direction:column!important;left:8px!important;right:8px!important;bottom:8px!important;top:auto!important;transform:none!important}#sandbox-root .sb-float-win.is-open{top:auto!important;bottom:8px!important;left:8px!important;right:8px!important;width:auto!important;max-height:46dvh!important}body.lt-dragging-part #sandbox-root .sb-palette{pointer-events:none!important}}",
+      "#screen-sandbox.screen.active{overflow:hidden!important;max-width:100%!important;height:100dvh!important;max-height:100dvh!important}",
+      "#sandbox-root,#sandbox-root .sb-layout{width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}",
+      "#sandbox-root .sb-palette,#sandbox-root .sb-toolbar,#sandbox-root .sb-actions,#sandbox-root .sb-gauges,#sandbox-root .sb-gauges-scroll,#sandbox-root #sb-items,#sandbox-root #sb-xtra{min-width:0!important;max-width:100%!important}",
+      "#sandbox-root #sb-canvas,#sandbox-root #sb-gl{max-width:100%!important;max-height:100%!important;object-fit:contain!important}",
+      "#sandbox-root .sb-item .part-img{object-fit:contain!important;object-position:center!important;width:min(64px,100%)!important;height:64px!important;max-width:100%!important;max-height:64px!important;background:#0b1218!important;flex:0 0 auto!important}",
+      "#sandbox-root svg,#sandbox-root #mf-canvas,#sandbox-root #sb-ph,#sandbox-root #sb-trend,#sandbox-root #sb-trend-desk{max-width:100%!important}",
+      "@media (max-width:420px){#sandbox-root #sb-rail .sb-slot{flex:0 0 84px!important;width:84px!important}}",
+      "@media (max-width:720px){body:has(#screen-sandbox.active) .walk-chip{display:none!important}body:has(#screen-sandbox.active) #pf-coach-bar,body:has(#screen-sandbox.active) .pf-coach{left:108px!important;right:auto!important;top:110px!important;bottom:auto!important;width:min(148px,38vw)!important;max-height:44px!important}body:has(#screen-sandbox.active) .ld-replay{left:auto!important;right:8px!important;top:110px!important;bottom:auto!important;width:auto!important;max-width:120px!important}body:has(#screen-sandbox.active) #toast-host{top:198px!important;bottom:auto!important;left:auto!important;right:8px!important;width:min(120px,34vw)!important;max-height:28px!important;overflow:hidden!important}}",
+      "@media (min-width:801px){body:has(#screen-sandbox.active) .walk-chip{left:252px!important;bottom:12px!important;width:min(240px,28vw)!important}body:has(#screen-sandbox.active) .ld-replay{right:300px!important;left:auto!important;bottom:12px!important;top:auto!important}body:has(#screen-sandbox.active) #toast-host{top:48px!important;bottom:auto!important;right:292px!important;left:auto!important;width:min(180px,20vw)!important}}",
+      "@media (max-width:800px){#sandbox-root .sb-slots{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(3,minmax(0,1fr))!important;gap:6px!important;inset:6px!important;position:absolute!important}#sandbox-root .sb-slot.sb-grid{position:relative!important;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;transform:none!important;width:auto!important;min-width:0!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:100%!important;padding:3px 4px!important;font-size:10px!important;line-height:1.1!important;overflow:hidden!important;box-sizing:border-box!important}#sandbox-root .sb-slot.sb-grid strong,#sandbox-root .sb-slot.sb-grid .empty{font-size:10px!important;line-height:1.1!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important}#sandbox-root .sb-slot.sb-grid .part-img,#sandbox-root .sb-slot.sb-grid img{width:26px!important;height:26px!important;max-height:26px!important}#sandbox-root .sb-vac:not([hidden]){position:absolute!important;left:6px!important;right:6px!important;bottom:6px!important;z-index:20!important;max-height:48%!important;overflow:auto!important;box-shadow:0 8px 24px rgba(0,0,0,.45)!important}}",
+      "@media (orientation:landscape) and (max-height:500px){#sandbox-root .sb-layout{display:flex!important;flex-direction:row!important;height:100%!important;max-height:100dvh!important;padding-top:0!important;box-sizing:border-box!important}#sandbox-root .sb-palette{position:relative!important;order:0!important;width:168px!important;max-width:38vw!important;height:100%!important;max-height:none!important;min-height:0!important;flex:0 0 168px!important;overflow:hidden!important;border-top:none!important;border-right:1px solid #2a3644!important}#sandbox-root #sb-items{display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;align-content:flex-start!important;overflow-x:hidden!important;overflow-y:auto!important}#sandbox-root .sb-item{flex:0 0 auto!important;width:auto!important;min-width:0!important;max-width:100%!important;flex-direction:row!important;align-items:center!important}#sandbox-root #sb-items .part-img{width:32px!important;height:32px!important;max-height:32px!important}#sandbox-root .sb-main{order:1!important;flex:1 1 auto!important;min-height:0!important}#sandbox-root aside.sb-gauges{display:none!important}#sandbox-root .sb-toolbar{max-height:48px!important;overflow-x:auto!important;overflow-y:hidden!important;flex-wrap:nowrap!important;-webkit-overflow-scrolling:touch!important}#sandbox-root #sb-sysbanner{max-height:22px!important;-webkit-line-clamp:1!important}#sandbox-root .sb-rail{flex:0 0 auto!important;max-height:64px!important;overflow-x:hidden!important;overflow-y:auto!important;flex-wrap:wrap!important}}",
+      "@media (max-width:800px){#sandbox-root .sb-palette{height:148px!important;max-height:168px!important}#sandbox-root #sb-items{flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important}#sandbox-root #sb-items .sb-item{flex:0 0 92px!important;width:92px!important;max-width:92px!important}#sandbox-root #sb-rail{display:flex!important}#sandbox-root .sb-xtra-wrap{display:none!important}}",
+      "#sandbox-root #sb-scale{position:absolute!important;z-index:24!important;left:8px!important;bottom:8px!important;top:auto!important;width:148px!important;max-height:132px!important;padding:6px 6px 4px!important;background:linear-gradient(180deg,#3a3e44,#1a1d21)!important;border:1px solid #4a5056!important;border-radius:16px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 22px rgba(0,0,0,.5)!important;overflow:hidden!important}",
+      "#sandbox-root #sb-scale .sb-scale-top{display:flex!important;justify-content:space-between!important;align-items:center!important;font-size:9px!important;color:#c5ced6!important;margin:0 0 4px!important}",
+      "#sandbox-root #sb-scale .sb-scale-top button{width:16px!important;height:16px!important;min-height:0!important;padding:0!important;border-radius:50%!important;border:1px solid #666!important;background:#2a2e33!important;color:#ddd!important}",
+      "#sandbox-root #sb-scale .sb-scale-read{padding:6px 6px 4px!important;background:#07090c!important;border-radius:4px!important;border:2px solid #12161b!important}",
+      "#sandbox-root #sb-scale .sb-scale-read small{display:block!important;font-size:8px!important;letter-spacing:.08em!important;color:#c5ced6!important}",
+      "#sandbox-root #sb-scale .sb-scale-read strong{display:block!important;font:700 18px/1 ui-monospace,monospace!important;color:#e7eef4!important}",
+      "#sandbox-root #sb-scale .sb-scale-read em{display:block!important;font-style:normal!important;font-size:9px!important;color:#b7c2cc!important}",
+      "#sandbox-root #sb-scale .sb-scale-row{display:flex!important;gap:4px!important;margin-top:4px!important}",
+      "#sandbox-root #sb-scale .sb-scale-row .btn{flex:1!important;min-height:26px!important;padding:0!important;font-size:12px!important}",
     ].join("\n");
     document.head.appendChild(st);
+    var oldDesk = document.getElementById("sb-desk");
+    if (oldDesk) oldDesk.remove();
+    if (document.getElementById("sb-desk-v2")) return;
+    const desk = document.createElement("style");
+    desk.id = "sb-desk-v2";
+    desk.textContent = [
+      "@media (min-width:640px) and (min-height:420px){",
+      "#sandbox-root .sb-layout{display:grid!important;grid-template-columns:240px minmax(0,1fr) 280px!important;grid-template-rows:minmax(0,1fr)!important;height:100%!important;max-height:100%!important}",
+      "#sandbox-root .sb-palette{position:relative!important;transform:none!important;inset:auto!important;order:0!important;grid-column:1!important;grid-row:1!important;width:auto!important;height:100%!important;max-height:none!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;border-radius:0!important;border-top:none!important;border-right:1px solid #2a3644!important;z-index:2!important}",
+      "#sandbox-root .sb-palette .brand-bar,#sandbox-root .sb-palette .eyebrow,#sandbox-root .sb-palette .sb-build-progress,#sandbox-root .sb-palette .sb-hint{display:block!important}",
+      "#sandbox-root .sb-palette .sb-guide-bar,#sandbox-root .sb-palette .sb-hub-coach{display:flex!important}",
+      "#sandbox-root #sb-items{display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;overflow-x:hidden!important;overflow-y:auto!important;flex:1 1 auto!important;min-height:0!important;max-height:none!important}",
+      "#sandbox-root .sb-item{flex:0 0 auto!important;width:auto!important;min-width:0!important;flex-direction:row!important}",
+      "#sandbox-root .sb-item small{display:block!important}",
+      "#sandbox-root .sb-main{order:0!important;grid-column:2!important;grid-row:1!important;min-width:0!important;min-height:0!important;width:auto!important;display:flex!important;flex-direction:column!important}",
+      "#sandbox-root .sb-toolbar{flex:0 0 48px!important;height:48px!important;max-height:48px!important;overflow-x:auto!important;overflow-y:hidden!important;flex-wrap:nowrap!important;align-items:center!important;padding:4px 8px!important}",
+      "#sandbox-root .sb-actions{flex-wrap:nowrap!important;overflow-x:auto!important}",
+      "#sandbox-root #sb-3d,#sandbox-root #sb-flat,#sandbox-root #sb-clock{display:none!important}",
+      "#sandbox-root #sb-howto,#sandbox-root .sb-phone-vitals{display:none!important}",
+      "#sandbox-root #sb-sysbanner{-webkit-line-clamp:2!important;max-height:none!important;white-space:normal!important;overflow:visible!important}",
+      "body:has(#screen-sandbox.active) #toast-host{top:48px!important;bottom:auto!important;right:300px!important;left:auto!important;width:min(180px,22vw)!important}body:has(#screen-sandbox.active) .ld-replay{bottom:88px!important;right:300px!important;top:auto!important;left:auto!important}#sandbox-root aside.sb-gauges{padding-bottom:84px!important;box-sizing:border-box!important}",
+      "#sandbox-root .sb-stage-wrap{flex:1 1 auto!important;min-height:280px!important;height:auto!important;max-height:none!important}",
+      "#sandbox-root aside.sb-gauges.sb-gauge-win{position:relative!important;transform:none!important;inset:auto!important;display:flex!important;flex-direction:column!important;order:0!important;grid-column:3!important;grid-row:1!important;width:auto!important;height:100%!important;max-height:none!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;border-radius:0!important;overflow:hidden!important;z-index:2!important}",
+      "#sandbox-root .sb-gauges-scroll{overflow:auto!important;flex:1 1 auto!important;min-height:0!important}",
+      ".pf-coach{top:auto!important;bottom:12px!important}",
+      ".ld-replay{bottom:12px!important}",
+      "}",
+      "@media (min-width:640px) and (max-width:999px) and (min-height:420px){",
+      "#sandbox-root .sb-layout{grid-template-columns:168px minmax(0,1fr) 210px!important}",
+      "}"
+    ].join("");
+    document.head.appendChild(desk);
+    if (!document.getElementById("sb-portrait")) {
+      const tall = document.createElement("style");
+      tall.id = "sb-portrait";
+      tall.textContent = [
+        "@media (orientation:portrait) and (min-width:801px){",
+        "#sandbox-root .sb-layout{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;height:100%!important;max-height:100dvh!important}",
+        "#sandbox-root .sb-main{order:1!important;flex:1 1 auto!important;min-height:0!important;width:100%!important;grid-column:auto!important}",
+        "#sandbox-root .sb-stage-wrap{flex:1 1 auto!important;min-height:42vh!important}",
+        "#sandbox-root .sb-palette{order:2!important;grid-column:auto!important;width:100%!important;height:148px!important;max-height:22vh!important;min-height:120px!important;flex:0 0 auto!important;flex-direction:column!important;border-right:none!important;border-top:2px solid #CE0034!important}",
+        "#sandbox-root #sb-items{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-content:flex-start!important;overflow-x:hidden!important;overflow-y:auto!important}",
+        "#sandbox-root .sb-item{flex:1 1 160px!important;width:auto!important;min-width:0!important;max-width:calc(25% - 8px)!important}",
+        "#sandbox-root aside.sb-gauges.sb-gauge-win{order:3!important;position:relative!important;display:flex!important;grid-column:auto!important;width:100%!important;height:34vh!important;max-height:38vh!important;min-height:220px!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;padding-bottom:8px!important}",
+        "#sandbox-root .sb-gauges-scroll{overflow:auto!important}",
+        "body:has(#screen-sandbox.active) .hub-ai-fab{top:8px!important;bottom:auto!important;right:8px!important}",
+        "body:has(#screen-sandbox.active) .walk-chip{left:12px!important;bottom:36vh!important}",
+        "}"
+      ].join("");
+      document.head.appendChild(tall);
+    }
   }
 
   function buildUI(root) {
@@ -1802,11 +2257,12 @@
     root.innerHTML = `
       <div class="sb-layout">
         <aside class="sb-palette" id="sb-palette">
+          <div class="sb-tray-handle" role="slider" aria-label="Drag the parts tray" aria-valuemin="96" aria-valuemax="240" tabindex="0"></div>
           <div class="brand-bar" style="justify-content:flex-start;margin-bottom:8px">
             <div class="brand-mark" style="width:28px;height:28px;font-size:13px">${(window.LtBrand && window.LtBrand.mark) || "LT"}</div>
             <div class="brand-word">
               <strong style="font-size:13px">${((window.LtBrand && window.LtBrand.org) || "HVAC Legends").toUpperCase()}</strong>
-              <span>System sandbox · four-part refrigeration cycle</span>
+              <span>System sandbox · full circuit</span>
             </div>
           </div>
           <p class="eyebrow">Component tray</p>
@@ -1833,12 +2289,12 @@
             <p class="eyebrow sb-xtra-label">More parts · scroll</p>
             <div id="sb-xtra" class="sb-items sb-xtra"></div>
           </div>
-          <p class="sb-hint" id="sb-hint">HUB guided: one drop box at a time, real install order. Follow the glowing box.</p>
+          <p class="sb-hint" id="sb-hint">Follow the glowing part.</p>
           <div class="hub-chip sb-hub-coach" id="sb-hub-coach" style="margin:10px 0 0;max-width:none">
             <img src="hub-portrait.jpg?v=3" alt="Professor HUB" class="hub-chip-av photo" />
             <div>
               <strong id="sb-hub-title">Professor HUB · 1 · Compressor</strong>
-              <p id="sb-hub-line">Heart of the DX loop. Drag the scroll compressor onto the glowing box.</p>
+              <p id="sb-hub-line">Drop the compressor.</p>
             </div>
           </div>
         </aside>
@@ -1872,27 +2328,6 @@
                   <option value="defrost">Defrost (force)</option>
                 </select>
               </label>
-              <label>Fault
-                <select id="sb-fault">
-                  <option value="none">None (healthy)</option>
-                  <option value="undercharge">Undercharge / leak</option>
-                  <option value="overcharge">Overcharge</option>
-                  <option value="dirty_cond">Dirty condenser</option>
-                  <option value="od_fan">OD fan dead</option>
-                  <option value="dirty_evap">Dirty evaporator</option>
-                  <option value="blower_fail">Indoor blower dead</option>
-                  <option value="restricted">Liquid-line restriction</option>
-                  <option value="noncondensables">Non-condensables (air)</option>
-                  <option value="txv_closed">TXV stuck closed / lost bulb</option>
-                  <option value="txv_open">TXV stuck open</option>
-                  <option value="weak_comp">Weak compressor valves</option>
-                  <option value="rv_stuck_heat">RV stuck in heat</option>
-                  <option value="rv_stuck_cool">RV stuck in cool</option>
-                  <option value="rv_bleed">RV internal bleed</option>
-                  <option value="defrost_fail">Defrost never starts</option>
-                  <option value="stuck_defrost">Stuck in defrost</option>
-                </select>
-              </label>
               <label>TXV SH target
                 <input id="sb-txv" type="range" min="6" max="18" value="12" />
                 <span id="sb-txv-v">12</span>
@@ -1906,17 +2341,41 @@
               </div>
               <button type="button" class="btn" id="sb-fs">Full screen</button>
               <button class="btn primary" id="sb-run">Start compressor</button>
+              <button type="button" class="btn" id="sb-repair-next" hidden>Show me the next step</button>
+              <label class="sb-fault-label">Fault
+                <select id="sb-fault">
+                  <option value="none">Healthy</option>
+                  <option value="undercharge">Undercharge</option>
+                  <option value="overcharge">Overcharge</option>
+                  <option value="dirty_cond">Dirty condenser</option>
+                  <option value="od_fan">OD fan dead</option>
+                  <option value="dirty_evap">Dirty evaporator</option>
+                  <option value="blower_fail">Blower dead</option>
+                  <option value="restricted">Restriction</option>
+                  <option value="noncondensables">Air in system</option>
+                  <option value="txv_closed">TXV shut</option>
+                  <option value="txv_open">TXV flooding</option>
+                  <option value="weak_comp">Weak compressor</option>
+                  <option value="rv_stuck_heat">Stuck in heat</option>
+                  <option value="rv_stuck_cool">Stuck in cool</option>
+                  <option value="rv_bleed">RV bleed</option>
+                  <option value="defrost_fail">No defrost</option>
+                  <option value="stuck_defrost">Stuck defrost</option>
+                </select>
+              </label>
+              <button class="btn" id="sb-healthy">Healthy example</button>
+              <button class="btn" id="sb-oem" type="button">OEM packs</button>
               <button class="btn" id="sb-sound" type="button">Sound on</button>
               <button class="btn" id="sb-3d" type="button">3D WebGL</button>
               <button class="btn" id="sb-cutaway" type="button">See inside</button>
               <button class="btn hidden" id="sb-flat" type="button">GLSL: smooth</button>
               <button class="btn" id="sb-clear">Clear board</button>
-              <button class="btn" id="sb-healthy">Healthy example</button>
               <button class="btn" id="sb-charge-open">Charging SOP</button>
+              <button class="btn" id="sb-tour-open" type="button">How to</button>
               <button class="btn" id="sb-hub">Shop floor</button>
             </div>
           </header>
-          <div id="sb-sysbanner" class="sb-sysbanner">The four: compressor → condenser → metering → evaporator. Drop them on the cycle.</div>
+          <div id="sb-sysbanner" class="sb-sysbanner">Drop the compressor.</div>
           <div class="sb-cycle-legend" id="sb-cycle-legend">
             <span class="hot">Discharge vapor</span>
             <span class="liq">Liquid</span>
@@ -1931,6 +2390,16 @@
               <button type="button" class="btn primary" id="sb-howto-go">Got it</button>
             </div>
           </div>
+          <div id="sb-tour" class="sb-tour" hidden>
+            <div class="sb-tour-card" role="dialog" aria-labelledby="sb-tour-title">
+              <div class="sb-tour-nav">
+                <button type="button" class="btn primary" id="sb-tour-close">Close</button>
+              </div>
+              <p class="eyebrow">System sandbox</p>
+              <h2 id="sb-tour-title">How to use it</h2>
+              <div id="sb-tour-list" class="sb-tour-list"></div>
+            </div>
+          </div>
           <div class="sb-stage-wrap">
             <canvas id="sb-canvas"></canvas>
             <canvas id="sb-gl" class="sb-gl hidden"></canvas>
@@ -1939,7 +2408,7 @@
             <div id="sb-charge-win" class="sb-float-win collapsed">
               <div class="sb-float-head" id="sb-charge-drag">
                 <span id="sb-charge-title">OEM charging SOP</span>
-                <button type="button" id="sb-charge-min" title="Collapse">–</button>
+                <button type="button" id="sb-charge-min" title="Close">Close</button>
               </div>
               <div class="sb-float-body" id="sb-charge-body"></div>
             </div>
@@ -1956,10 +2425,18 @@
         </main>
         <aside class="sb-gauges sb-gauge-win" id="sb-gauges-panel">
           <div class="sb-gauges-head" id="sb-gauges-drag">
-            <p class="eyebrow">Manifold · drag this bar</p>
+            <p class="eyebrow">Drag</p>
             <button type="button" class="btn" id="sb-gauges-close">Close</button>
           </div>
           <div class="sb-gauges-scroll" id="sb-gauges-scroll">
+          <div class="mf-digi" id="mf-digi">
+            <div class="mf-digi-top"><b id="mf-digi-ref">R-410A</b><span>DIGITAL</span></div>
+            <div class="mf-digi-row">
+              <div class="lo"><small>LOW</small><strong id="mf-d-lo">—</strong><em id="mf-d-losat">sat —</em></div>
+              <div class="mid"><span>SH <b id="mf-d-sh">—</b></span><span>SC <b id="mf-d-sc">—</b></span></div>
+              <div class="hi"><small>HIGH</small><strong id="mf-d-hi">—</strong><em id="mf-d-hisat">sat —</em></div>
+            </div>
+          </div>
           <div id="sb-sysinfo" class="sb-sysinfo"></div>
           <div class="mf-set" id="mf-set">
             <canvas id="mf-canvas" width="560" height="300" aria-label="Analog manifold gauge set"></canvas>
@@ -1970,6 +2447,7 @@
             </div>
             <p class="mf-read" id="mf-read">Blue suction · red liquid · yellow vac/charge. Valves CLOSED to read.</p>
           </div>
+          <div id="sb-steps" class="sb-steps"></div>
           <div class="gauge-pair">
             <div class="gauge blue">
               <span class="g-label">Low side</span>
@@ -2130,7 +2608,7 @@
             </ol>
             <p class="n2-banner" id="sb-n2-banner">N₂ SAFETY — regulator on the cylinder · dry nitrogen gas only · NEVER oxygen or shop air (oil + O₂ detonates) · N₂ displaces oxygen (asphyxiation) · stay at or below OEM test pressure · no liquid nitrogen on a lineset</p>
             <div id="sb-n2-modal" class="n2-modal hidden">
-              <h3>Nitrogen safety — read it</h3>
+              <h3>Nitrogen. Never oxygen.</h3>
               <ul>
                 <li>Cylinder is ~2200+ psig. <strong>Regulator required.</strong> Never crack a bottle into a hose.</li>
                 <li><strong>Dry nitrogen gas only.</strong> Not oxygen. Not shop air. Oil + oxygen can explode.</li>
@@ -2139,7 +2617,7 @@
                 <li>Purge while brazing at low flow. Standing test is a hold, not a fill-until-it-pops.</li>
                 <li>This is not liquid nitrogen. Freeze burns and over-pressure are both on you.</li>
               </ul>
-              <button type="button" class="btn primary" id="sb-n2-go">Regulator on · dry N₂ only · continue</button>
+              <button type="button" class="btn primary" id="sb-n2-go">Dry nitrogen only</button>
               <button type="button" class="btn" id="sb-n2-no">Cancel</button>
             </div>
             <p id="sb-coils" class="sb-coils">ODU coil: clean · IDU coil: clean · frost 0%</p>
@@ -2204,7 +2682,7 @@
           <p class="sys-notes">${s.notes}</p>
         </div>`;
     } else {
-      ban.textContent = "The four: compressor → condenser → metering → evaporator. Close the loop, then start it.";
+      ban.textContent = "Drop the four. Then start it.";
       info.innerHTML = `<p class="sys-empty">Load Goodman, Amana, Carrier, Bryant, Trane, Rheem, Lennox, York, Daikin, Mitsubishi, Fujitsu, LG, Samsung, Bosch, Danfoss — or a mini-split package.</p>`;
     }
     paintChargeWin();
@@ -2346,6 +2824,8 @@
 
   function applySystem(sys) {
     activeSystem = sys;
+    const rootEl = document.getElementById("sandbox-root");
+    if (rootEl) rootEl.classList.remove("oem-open");
     labId = sys.lab || null;
     placed = Object.assign({}, sys.parts);
     refrigerant = sys.ref;
@@ -2419,7 +2899,7 @@
       .join(" ");
     if (labId === "tu601") {
       el.innerHTML =
-        "<div class='lab-head'><strong>iConnect TU-601</strong> · Multi-head mini-split · R-410A ONLY <button type='button' class='btn' id='lab-fold'>Board</button></div>" +
+        "<div class='lab-head'><strong>" + trainerName() + " TU-601</strong> · Multi-head mini-split · R-410A ONLY <button type='button' class='btn' id='lab-fold'>Close</button></div>" +
         "<div class='lab-tu601'>" +
         "<div class='lab-odu'>DAIKIN ODU</div>" +
         "<div class='lab-glass-row'><span class='lab-sg'>SG</span><span class='lab-sg'>SG</span><span class='lab-sg'>SG</span><span class='lab-sg'>SG</span></div>" +
@@ -2430,7 +2910,7 @@
       return;
     }
     el.innerHTML =
-      "<div class='lab-head'><strong>iConnect TU-102</strong> · H-Block <button type='button' class='btn' id='lab-fold'>Board</button></div>" +
+      "<div class='lab-head'><strong>" + trainerName() + " TU-102</strong> · H-Block <button type='button' class='btn' id='lab-fold'>Close</button></div>" +
       "<div class='lab-hblock'>" +
       "<div class='lab-coil ev'>EVAPORATOR<div class='lab-sg'>sight glass</div></div>" +
       "<div class='lab-fans'>" +
@@ -2518,9 +2998,15 @@
 
   function wireLabFold(el) {
     if (!el) return;
-    if (window.innerWidth < 700) el.classList.add("collapsed");
     const b = document.getElementById("lab-fold");
-    if (b) b.onclick = () => el.classList.toggle("collapsed");
+    if (b) b.onclick = function (e) {
+      e.stopPropagation();
+      el.classList.add("hidden");
+    };
+    const head = el.querySelector(".lab-head");
+    if (head && window.LtDrag && window.LtDrag.makeMoveable) {
+      window.LtDrag.makeMoveable(head, el, "lt-labboard-pos");
+    }
   }
 
   function applyLabFault(kind) {
@@ -2676,27 +3162,11 @@
     guidedOn = false;
     setCompressor(true);
     const sim = simulate();
-    const msg =
-      "Textbook " +
-      sys.brand +
-      " " +
-      sys.name +
-      " · " +
-      sys.ref +
-      " · 95° OD / 75° ID. Suction ~" +
-      Math.round(sim.pLow) +
-      " psig · Head ~" +
-      Math.round(sim.pHigh) +
-      " psig · SH " +
-      Math.round(sim.sh) +
-      "° · SC " +
-      Math.round(sim.sc) +
-      "°. Line set, N₂, vac, and " +
-      sys.ref +
-      " cylinder are on. That's a fully operational split.";
+    const msg = "Running. Read the needles.";
     paintHubCoach(msg);
+    openGaugeWin();
     const st = document.getElementById("sb-status");
-    if (st) st.textContent = msg;
+    if (st) st.textContent = "Healthy split. Read suction, head, SH, and SC.";
   }
 
   function paintClock() {
@@ -2954,11 +3424,133 @@
     }
     paintCoils();
     document.getElementById("sb-status").textContent = "Field recreate · match the job you just left.";
+    repairSteps = [];
+    repairI = -1;
+    paintRepairWalk();
+  }
+
+  const REPAIR_WALK = {
+    leak: [
+      { say: "Read the gauges. High superheat and low subcool is a starved coil. Do not add gas yet.", fix: "" },
+      { say: "Find the leak. Soap the joints.", fix: "leak-soap" },
+      { say: "Prove it with a nitrogen standing test. Never oxygen.", fix: "leak-n2" },
+      { say: "Repair the leak.", fix: "leak-repair" },
+      { say: "Evacuate, then weigh the nameplate charge.", fix: "weigh-in" },
+    ],
+    "dirty-idu": [
+      { say: "Low superheat and ice is airflow until the numbers say otherwise.", fix: "" },
+      { say: "Clean the indoor coil.", fix: "clean-idu" },
+      { say: "Replace the air filter.", fix: "replace-filter" },
+    ],
+    "dirty-odu": [
+      { say: "High head and a furry outdoor coil. Do not pull charge to hide it.", fix: "" },
+      { say: "Clean the outdoor coil.", fix: "clean-odu" },
+    ],
+    overcharge: [
+      { say: "High head and high subcool means somebody added too much.", fix: "" },
+      { say: "Recover toward the nameplate. Don't keep adding.", fix: "pull-charge" },
+    ],
+    drier: [
+      { say: "High superheat and a cold drier is a restriction, not a low charge.", fix: "" },
+      { say: "Replace the filter-drier.", fix: "replace-drier" },
+      { say: "Evacuate, then weigh the charge back in.", fix: "weigh-in" },
+    ],
+    "txv-bulb": [
+      { say: "Starved coil, subcool still normal. That points at the valve, not the jug.", fix: "" },
+      { say: "Replace the TXV. Bulb on the suction line, insulated.", fix: "replace-txv" },
+    ],
+    "txv-flood": [
+      { say: "Superheat on the floor. The valve will not shut.", fix: "" },
+      { say: "Replace the TXV.", fix: "replace-txv" },
+    ],
+    air: [
+      { say: "High head after a bad vacuum is air in the system. Don't bleed a 410A unit.", fix: "" },
+      { say: "Replace the drier.", fix: "replace-drier" },
+      { say: "Evacuate the air out.", fix: "vac-air" },
+      { say: "Weigh the nameplate charge.", fix: "weigh-in" },
+    ],
+    "bad-cap": [
+      { say: "It hums and the pressures are not the story. Kill power before you grab the cap.", fix: "" },
+      { say: "Replace the run capacitor.", fix: "replace-cap" },
+    ],
+    "rv-stuck": [
+      { say: "Hot day and it is still heating. Check the reversing valve before the compressor.", fix: "" },
+      { say: "Replace the reversing valve if it is powered and did not shift.", fix: "replace-rv" },
+    ],
+    "rv-bleed": [
+      { say: "Both modes, no capacity, pressures too close. Not a charge problem.", fix: "" },
+      { say: "Replace the reversing valve.", fix: "replace-rv" },
+    ],
+    "no-defrost": [
+      { say: "The outdoor coil is a glacier in heat. Don't add gas for the weather.", fix: "" },
+      { say: "Force a defrost and watch the frost come off.", fix: "force-defrost" },
+      { say: "If it never terminates, replace the defrost sensor.", fix: "replace-defrost" },
+    ],
+    "stuck-defrost": [
+      { say: "Steaming outdoor unit and cool air in the house. It is stuck in defrost.", fix: "" },
+      { say: "Terminate defrost.", fix: "end-defrost" },
+    ],
+    "od-fan": [
+      { say: "High head and the outdoor fan is not spinning. Don't add gas.", fix: "" },
+      { say: "Replace the outdoor fan.", fix: "replace-odfan" },
+    ],
+    "weak-pump": [
+      { say: "Suction high, head low, amps light. Prove airflow and charge first.", fix: "" },
+      { say: "If those are right, replace the compressor.", fix: "replace-comp" },
+    ],
+  };
+  let repairSteps = [];
+  let repairI = -1;
+
+  function paintRepairWalk() {
+    const btn = document.getElementById("sb-repair-next");
+    if (!btn) return;
+    const on = jobMode === "mystery" && activeJob && repairSteps.length;
+    btn.hidden = !on;
+    if (!on) return;
+    document.querySelectorAll("#sb-repairs [data-fix]").forEach(function (b) {
+      b.classList.remove("primary");
+    });
+    if (repairI < 0) {
+      btn.textContent = "Show me the next step";
+      return;
+    }
+    const step = repairSteps[repairI];
+    btn.textContent = repairI >= repairSteps.length - 1 ? "That's the last step" : "Show me the next step";
+    const ban = document.getElementById("sb-sysbanner");
+    if (ban && step) ban.textContent = bannerSay(null, step.say);
+    const talk = document.getElementById("sb-job-talk");
+    if (talk && step) talk.textContent = "Step " + (repairI + 1) + " of " + repairSteps.length + ". " + step.say;
+    if (step && step.fix) {
+      const hit = document.querySelector('#sb-repairs [data-fix="' + step.fix + '"]');
+      if (hit) hit.classList.add("primary");
+      const panel = document.getElementById("sb-gauges-panel");
+      if (panel) panel.classList.add("drawer-open");
+      if (hit && hit.scrollIntoView) hit.scrollIntoView({ block: "nearest" });
+    }
+  }
+
+  function armRepairWalk(job) {
+    repairSteps = (job && REPAIR_WALK[job.id]) || [
+      { say: "Read both gauges, superheat, and subcool before you name a part.", fix: "" },
+      { say: (job && job.fix) || "Make the repair the readings name, then run it again.", fix: "" },
+    ];
+    repairI = -1;
+    const btn = document.getElementById("sb-repair-next");
+    if (btn && !btn.dataset.bound) {
+      btn.dataset.bound = "1";
+      btn.onclick = function () {
+        if (repairI < repairSteps.length - 1) repairI += 1;
+        paintRepairWalk();
+      };
+    }
+    paintRepairWalk();
   }
 
   function startMystery(job) {
     jobMode = "mystery";
     activeJob = job;
+    lastTicketFault = (job && job.fault) || lastTicketFault;
     jobSolved = false;
     jobAttempts = 0;
     resetLeak();
@@ -3001,13 +3593,12 @@
     placed.capacitor = "capacitor";
     placed.transformer = "transformer";
     placed.thermostat = "thermostat";
-    paintHubCoach(
-      "Live call. Disconnect, contactor, capacitor, transformer, and accumulator are already on the unit. Read the gauges. Don't rebuild it."
-    );
+    paintHubCoach("Read the needles.");
     document.getElementById("sb-status").textContent =
       dispatchCall
         ? dispatchCall.name + " · " + (dispatchCall.job || "live call") + " · gauges on"
         : "Mystery call. Diagnose, then repair. Fault list is locked.";
+    armRepairWalk(job);
   }
 
   function jobIsHealthy() {
@@ -3031,6 +3622,7 @@
       }
       return;
     }
+    if (modal.parentNode !== document.body) document.body.appendChild(modal);
     modal.classList.remove("hidden");
     const go = document.getElementById("sb-n2-go");
     const no = document.getElementById("sb-n2-no");
@@ -3044,7 +3636,10 @@
         document.getElementById("sb-status").textContent = "N₂ cancelled. No standing test without a regulator and dry nitrogen.";
       }
     };
-    if (go) go.onclick = () => done(true);
+    if (go) {
+      go.classList.add("rc-next");
+      go.onclick = () => done(true);
+    }
     if (no) no.onclick = () => done(false);
   }
 
@@ -3246,7 +3841,9 @@
           parkPartsTray();
         },
         onDrop(slotId, id) {
-          place(slotId, id);
+          const ok = place(slotId, id);
+          feelDrop(slotId, ok);
+          return ok;
         },
       });
     }
@@ -3258,7 +3855,31 @@
         delete el.dataset.justDragged;
         return;
       }
+      if (c.id === "gauges" || c.equip === "gauges") {
+        place(c.slot || "gauges", c.id);
+        applyEquip(c);
+        return;
+      }
+      if (vac.held && (c.id === "r410a" || c.id === "r22" || c.id === "r134a" || c.id === "r32")) {
+        const names = { r410a: "R-410A", r22: "R-22", r134a: "R-134a", r32: "R-32" };
+        chargeFromButton(names[c.id]);
+        return;
+      }
       const railPart = benchSlot(c.slot);
+      if (guidedOn && firstPass && !railPart) {
+        const step = currentBuildStep();
+        if (!step || step.accept.indexOf(c.id) < 0) {
+          paintHubCoach(step ? "Not yet. Drag " + step.title + "." : "The four are in. Start the compressor.");
+          return;
+        }
+        inHand = c;
+        document.querySelectorAll(".sb-item.in-hand").forEach((n) => n.classList.remove("in-hand"));
+        el.classList.add("in-hand");
+        paintInHand();
+        paintHubCoach("Drag " + c.name + " onto the glowing box.");
+        writeStatus("Drag " + c.name + " onto the glowing box.");
+        return;
+      }
       if (guidedOn && !railPart) {
         const step = currentBuildStep();
         if (step && c.slot && step.accept.indexOf(c.id) < 0 && c.slot !== step.slot) {
@@ -3417,7 +4038,7 @@
       const yt = document.createElement("p");
       yt.className = "sb-hint";
       yt.innerHTML =
-        'How-to videos (iConnect): <a href="https://www.youtube.com/watch?v=zxEDlowCQ4c" target="_blank" rel="noopener">H-block intro</a> · <a href="https://www.youtube.com/watch?v=zaTZ2biRINc" target="_blank" rel="noopener">TU-601 lessons</a> · <a href="https://www.youtube.com/@iconnecttraining" target="_blank" rel="noopener">YouTube channel</a>';
+        'How-to videos (' + trainerName() + '): <a href="https://www.youtube.com/watch?v=zxEDlowCQ4c" target="_blank" rel="noopener">H-block intro</a> · <a href="https://www.youtube.com/watch?v=zaTZ2biRINc" target="_blank" rel="noopener">TU-601 lessons</a> · <a href="https://www.youtube.com/@iconnecttraining" target="_blank" rel="noopener">YouTube channel</a>';
       box.appendChild(yt);
       return;
     }
@@ -3451,13 +4072,27 @@
       return;
     }
     const lead = ["compressor", "condenser", "metering", "evaporator"];
+    const circuit = ["filter", "accumulator", "receiver", "sightglass", "solenoid", "revvalve", "svcvalves", "checkvalve", "piston", "capillary"];
     COMPONENTS.filter((c) => {
-      if (tab !== "all" && c.group !== tab) return false;
-      return true;
+      if (tab === "all") return true;
+      if (tab === "parts") {
+        if (c.group === "parts" || c.group === "electrical" || c.id === "gauges") return true;
+        if (vac.held && (c.id === "r410a" || c.id === "r22" || c.id === "r134a" || c.id === "r32")) return true;
+        return false;
+      }
+      return c.group === tab;
     }).slice().sort((a, b) => {
-      const ia = lead.indexOf(a.id);
-      const ib = lead.indexOf(b.id);
-      return (ia < 0 ? 50 : ia) - (ib < 0 ? 50 : ib);
+      function rank(c) {
+        const i = lead.indexOf(c.id);
+        if (i >= 0) return i;
+        const j = circuit.indexOf(c.id);
+        if (j >= 0) return 10 + j;
+        if (c.id === "gauges") return 24;
+        if (c.group === "materials") return 26;
+        if (c.group === "electrical") return 40;
+        return 30;
+      }
+      return rank(a) - rank(b);
     }).forEach((c) => appendPartRow(c, box));
   }
 
@@ -3501,41 +4136,96 @@
         "Vacuum on the system. Micron gauge at the ports. About 500 microns and a decay hold — dehydration after the braze, not 0 in Hg recovery. Then the cylinder.";
     } else if (def.id === "r410a" || def.id === "r22" || def.id === "r134a" || def.id === "r32") {
       const map = { r410a: "R-410A", r22: "R-22", r134a: "R-134a", r32: "R-32" };
-      const want = map[def.id];
-      if (activeSystem && activeSystem.ref && activeSystem.ref !== want) {
-        document.getElementById("sb-status").textContent =
-          "Wrong tank. " + activeSystem.brand + " nameplate is " + activeSystem.ref + ". Don't mix.";
-        if (window.LtHubAiOn !== false) paintHubCoach("That's " + want + ". This pack is " + activeSystem.ref + ". Match the plate.");
-        return;
-      }
-      refrigerant = want;
-      chargePct = 100;
-      const refSel = document.getElementById("sb-ref");
-      if (refSel) refSel.value = want;
-      const ch = document.getElementById("sb-charge");
-      if (ch) ch.value = "100";
-      const cv = document.getElementById("sb-charge-v");
-      if (cv) cv.textContent = "100";
-      document.getElementById("sb-status").textContent =
-        want + " cylinder on the scale. Weigh-in. Then start and read SH/SC.";
+      chargeFromButton(map[def.id]);
     } else if (def.id === "lineset" || def.id === "copper" || def.id === "insulation") {
       document.getElementById("sb-status").textContent =
         "Line set in. Suction insulated. Nitrogen while brazing. Then electrical and evac.";
     }
   }
 
+  function playRoot() {
+    return host || document.getElementById("sandbox-root");
+  }
+
+  function playStage() {
+    const root = playRoot();
+    return (root && root.querySelector(".sb-stage-wrap")) || null;
+  }
+
+  function slotWantsLine(slotId) {
+    const step = BUILD_STEPS.find(function (b) { return b.slot === slotId; });
+    const slot = SLOTS.concat(RAIL).find(function (s) { return s.id === slotId; });
+    const label = (step && step.title) || (slot && slot.label) || "That box";
+    const ids = step && step.accept && step.accept.length
+      ? step.accept
+      : COMPONENTS.filter(function (c) { return c.slot === slotId; }).map(function (c) { return c.id; });
+    const names = [];
+    ids.forEach(function (id) {
+      const c = COMPONENTS.find(function (x) { return x.id === id; });
+      if (c && names.indexOf(c.name) < 0) names.push(c.name);
+    });
+    if (names.length) return label + " wants " + names.join(" or ") + ".";
+    if (step && step.hub) return step.hub;
+    const role = CORE_ROLE[slotId];
+    if (role) return label + " — " + role + ".";
+    return label + " does not take that part.";
+  }
+
+  function nextEmptyRequiredLine() {
+    const order = ["compressor", "condenser", "metering", "evaporator"];
+    let id = null;
+    for (let i = 0; i < order.length; i++) {
+      if (!placed[order[i]]) { id = order[i]; break; }
+    }
+    if (!id) return "Next open spot. Compressor, then the coils, then the metering device.";
+    const step = BUILD_STEPS.find(function (b) { return b.slot === id; });
+    const slot = SLOTS.find(function (s) { return s.id === id; });
+    const name = (step && step.title) || (slot && slot.label) || id;
+    return "Next: " + name + ".";
+  }
+
+  function feelDrop(slotId, ok) {
+    const PF = window.PlayFeel;
+    if (!PF) return;
+    const root = playRoot();
+    const stage = playStage();
+    if (!ok) {
+      PF.deny(stage);
+      PF.pop(stage, "Won't fit", "bad");
+      if (stepOnPhone()) PF.coach(root, slotWantsLine(slotId));
+      return;
+    }
+    PF.bump(stage);
+    PF.pop(stage, "In the system", "ok");
+    if (stepOnPhone()) PF.coach(root, nextEmptyRequiredLine());
+  }
+
   function place(slotId, compId) {
     const def = COMPONENTS.find((c) => c.id === compId);
     if (!def) return false;
+    function deny() {
+      if (window.LtHaptic) window.LtHaptic.miss();
+      return false;
+    }
     const railDest = RAIL.some((s) => s.id === slotId);
     if (railDest && def.slot !== slotId) {
       const msg = def.name + " does not sit on that chip.";
       paintHubCoach(msg);
       const st0 = document.getElementById("sb-status");
       if (st0) st0.textContent = msg;
-      return false;
+      return deny();
     }
     const step = guidedOn ? currentBuildStep() : null;
+    if (compId === "micron" && ((step && step.slot === "vacpump") || slotId === "vacpump")) {
+      vac.gauge = true;
+      vac.where = "system";
+      placed.micron = "micron";
+      paintVac();
+      paintHubCoach("Micron gauge is on the system. Hit Pull to 500. The gas stays in the tank.");
+      syncGuidedStep();
+      layoutSlots();
+      return true;
+    }
     const ownRail = railDest && def.slot === slotId;
     if (guidedOn && step && !ownRail) {
       const onStep = slotId === step.slot;
@@ -3547,7 +4237,7 @@
         paintHubCoach(msg);
         const st1 = document.getElementById("sb-status");
         if (st1) st1.textContent = msg;
-        return false;
+        return deny();
       }
     }
     const onBoard = SLOTS.concat(RAIL).some((s) => s.id === (def.slot || slotId));
@@ -3561,7 +4251,7 @@
           : def.name + " stays in the tray — click it to equip. Not a cycle slot.";
       }
       applyEquip(def);
-      return false;
+      return deny();
     }
     if (!onBoard) {
       if (def.slot) placed[def.slot] = def.id;
@@ -3574,9 +4264,9 @@
     const dest = accepted ? slotId || def.slot : def.slot || slotId;
     if (dest) {
       placed[dest] = compId;
-      activeSystem = null;
+      pinStatus = false;
       if (window.LtSfx && window.LtSfx.drop) window.LtSfx.drop();
-      if (window.LtHaptic) window.LtHaptic.land();
+      if (window.LtHaptic) window.LtHaptic.seat();
       refreshSlots();
       updateSysBanner();
       if (challenge) checkChallenge();
@@ -3599,7 +4289,7 @@
       layoutSlots();
       if (guidedOn && guidedStep > before) {
         const nxt = currentBuildStep();
-        paintHubCoach(nxt ? "Seated. Next: " + nxt.title + ". " + nxt.hub : null);
+        paintHubCoach(nxt ? nxt.say : "Start it. Read the needles.");
       } else if (guidedOn && currentBuildStep() && currentBuildStep().slot === dest) {
         paintHubCoach();
       } else {
@@ -3624,7 +4314,7 @@
         const slot = SLOTS.concat(RAIL).find((s) => s.id === id);
         const role = CORE_ROLE[id];
         el.innerHTML =
-          `<span class="empty">${slot ? slot.label : id}</span>` +
+          `<span class="empty sb-num">${el.dataset.n || (slot ? slot.label : id)}</span>` +
           (role ? `<small class="sb-role">${role}</small>` : "");
       }
     });
@@ -3647,28 +4337,29 @@
   }
 
   function isPhoneLab() {
-    return typeof window.matchMedia === "function" && window.matchMedia("(max-width: 700px)").matches;
+    if (typeof window.matchMedia !== "function") return false;
+    return window.matchMedia("(max-width: 700px), (max-width: 900px) and (orientation: landscape) and (max-height: 500px)").matches;
   }
 
   function slotXY(s) {
     if (!isPhoneLab()) return { x: s.x, y: s.y };
     const phone = {
-      compressor: { x: 0.28, y: 0.50 },
-      condenser: { x: 0.52, y: 0.16 },
-      filter: { x: 0.68, y: 0.34 },
-      metering: { x: 0.78, y: 0.52 },
-      evaporator: { x: 0.52, y: 0.84 },
-      accumulator: { x: 0.34, y: 0.70 },
+      compressor: { x: 0.16, y: 0.16 },
+      condenser: { x: 0.84, y: 0.16 },
+      filter: { x: 0.84, y: 0.50 },
+      metering: { x: 0.84, y: 0.84 },
+      evaporator: { x: 0.16, y: 0.84 },
+      accumulator: { x: 0.16, y: 0.50 },
       disconnect: { x: 0.12, y: 0.14 },
       contactor: { x: 0.12, y: 0.38 },
       capacitor: { x: 0.12, y: 0.62 },
       transformer: { x: 0.12, y: 0.86 },
       thermostat: { x: 0.88, y: 0.14 },
       gauges: { x: 0.88, y: 0.38 },
-      copper: { x: 0.38, y: 0.32 },
+      copper: { x: 0.35, y: 0.37 },
       nitrogen: { x: 0.88, y: 0.62 },
       vacpump: { x: 0.88, y: 0.86 },
-      chargecan: { x: 0.70, y: 0.68 },
+      chargecan: { x: 0.65, y: 0.64 },
       receiver: { x: 0.62, y: 0.32 },
       sightglass: { x: 0.78, y: 0.18 },
       revvalve: { x: 0.34, y: 0.32 },
@@ -3703,8 +4394,8 @@
     wrap.innerHTML = "";
     if (rail) rail.innerHTML = "";
     SLOTS.concat(RAIL).forEach((s) => {
+      if (s.id === "chargecan" && !placed[s.id]) return;
       const cell = {
-        copper: [1, 1],
         condenser: [1, 2],
         filter: [1, 3],
         compressor: [2, 1],
@@ -3723,11 +4414,20 @@
       const el = document.createElement("div");
       el.className = "sb-slot" + (s.core ? " core" : "") + (onRail ? " sb-rail-slot" : "");
       el.dataset.slot = s.id;
-      if (!onRail && pos) {
-        el.style.gridColumn = String(cell[1]);
-        el.style.gridRow = String(cell[0]);
+      if (!onRail && isPhoneLab() && cell) {
+        el.classList.add("sb-grid");
+        const pos = slotXY(s);
+        const n = String(s.label || "").match(/^\d/);
+        if (n) el.dataset.n = n[0];
+        el.style.setProperty("left", (pos.x * 100) + "%", "important");
+        el.style.setProperty("top", (pos.y * 100) + "%", "important");
+        el.style.setProperty("position", "absolute", "important");
+        el.style.setProperty("transform", "translate(-50%, -50%)", "important");
+      } else if (!onRail && pos) {
+        el.style.left = (pos.x * 100) + "%";
+        el.style.top = (pos.y * 100) + "%";
       }
-      if (guidedOn && stepIdx === guidedStep && !placed[s.id]) el.classList.add("hub-next", "magnet");
+      if (guidedOn && stepIdx === guidedStep && !placed[s.id] && s.id !== "chargecan") el.classList.add("hub-next", "magnet");
       el.addEventListener("dragover", (e) => {
         e.preventDefault();
         el.classList.add("over");
@@ -3737,7 +4437,7 @@
         e.preventDefault();
         el.classList.remove("over");
         const id = e.dataTransfer.getData("text/plain");
-        if (id) place(s.id, id);
+        if (id) feelDrop(s.id, place(s.id, id));
       });
       el.addEventListener("click", function () {
         if (!inHand) {
@@ -3759,6 +4459,12 @@
       }
     });
     refreshSlots();
+    requestAnimationFrame(alignBench);
+  }
+
+  function alignBench() {
+    const gauges = document.querySelector("#sandbox-root aside.sb-gauges");
+    if (gauges) gauges.style.paddingTop = "0px";
   }
 
   function paintDefrostDiagram(sim) {
@@ -3890,6 +4596,17 @@
     const fmt = (n, d = 0) => (liveP && typeof n === "number" ? n.toFixed(d) : "—");
     document.getElementById("g-plow").textContent = fmt(sim.pLow, 1);
     document.getElementById("g-phigh").textContent = fmt(sim.pHigh, 1);
+    const dlo = document.getElementById("mf-d-lo");
+    if (dlo) {
+      dlo.textContent = fmt(sim.pLow, 0);
+      document.getElementById("mf-d-hi").textContent = fmt(sim.pHigh, 0);
+      document.getElementById("mf-d-losat").textContent = liveP ? "sat " + sim.tSatLow.toFixed(0) : "sat —";
+      document.getElementById("mf-d-hisat").textContent = liveP ? "sat " + sim.tSatHigh.toFixed(0) : "sat —";
+      document.getElementById("mf-d-sh").textContent = liveSH ? sim.sh.toFixed(0) : "—";
+      document.getElementById("mf-d-sc").textContent = liveSH ? sim.sc.toFixed(0) : "—";
+      const refEl = document.getElementById("mf-digi-ref");
+      if (refEl) refEl.textContent = refrigerant || "R-410A";
+    }
     document.getElementById("g-tsatl").textContent = liveP ? "dew " + sim.tSatLow.toFixed(0) + " °F" : "dew — °F";
     document.getElementById("g-tsath").textContent = liveP ? "start of boiling " + sim.tSatHigh.toFixed(0) + " °F" : "start of boiling — °F";
     document.getElementById("g-tsuc").textContent = liveSH ? sim.tSuction.toFixed(0) + " °F" : "—";
@@ -3931,8 +4648,9 @@
       window.ShopBg.trend({ pHigh: sim.pHigh, pLow: sim.pLow, sh: sim.sh, sc: sim.sc });
     }
     highlightPT(sim);
+    paintInstallPressures(sim);
     const st = document.getElementById("sb-status");
-    if (st) st.textContent = sim.status || "";
+    if (st && !pinStatus) st.textContent = sim.status || "";
     const ml = document.getElementById("man-low");
     const mh = document.getElementById("man-high");
     if (ml) ml.textContent = liveP ? String(Math.round(sim.pLow)) : "0";
@@ -3944,6 +4662,41 @@
     drawPH(sim);
     updateBom();
     paintDxTs(sim);
+  }
+
+  function paintInstallPressures(sim) {
+    const el = document.getElementById("sb-steps");
+    if (!el) return;
+    const mini = activeSystem && String(activeSystem.type || "").indexOf("minisplit") >= 0;
+    if (!mini) {
+      el.innerHTML = "";
+      return;
+    }
+    const stand = satP(refrigerant, outdoorF);
+    const runLo = sim && sim.running ? sim.pLow : satP(refrigerant, indoorF - (activeSystem.approachEvap || 26));
+    const runHi = sim && sim.running ? sim.pHigh : satP(refrigerant, outdoorF + (activeSystem.approachCond || 14));
+    const sh = sim && sim.running ? Math.round(sim.sh) : (activeSystem.targetSH || 7);
+    const sc = sim && sim.running ? Math.round(sim.sc) : (activeSystem.targetSC || 8);
+    const rows = [
+      ["Mount the head", "No gauge. Valves stay shut."],
+      ["Wall hole", "0 psig. The hole is atmosphere."],
+      ["Set the condenser", "0 psig on the lines. Factory charge is trapped behind the service valves."],
+      ["Line set", "0 psig. The lines are open until the flares seal."],
+      ["Flares", "0 psig. Do not read an open flare."],
+      ["Torque the nuts", "0 psig. Tight is not charged."],
+      ["Nitrogen test", "500 psig both sides. That number is nitrogen, not head pressure."],
+      ["Evacuate", "500 microns. 30 inHg on a compound gauge is 0 psig. It is not done."],
+      ["Weigh the extra", "Gauges stay in a vacuum. The scale is the charge. Ounces are not psig."],
+      ["Valves open, off", Math.round(stand) + " psig both sides. " + refrigerant + " sitting at " + outdoorF + "°F outdoor."],
+      ["Running", Math.round(runLo) + " psig suction · " + Math.round(runHi) + " psig head · SH " + sh + "° · SC " + sc + "°."],
+    ];
+    const now = sim && sim.running ? 10 : 9;
+    el.innerHTML =
+      "<h3>Real pressures · " + refrigerant + "</h3><ol>" +
+      rows.map(function (r, i) {
+        return "<li class='" + (i === now ? "now" : "") + "'><span>" + (i + 1) + "</span><em>" + r[0] + "</em><b>" + r[1] + "</b></li>";
+      }).join("") +
+      "</ol>";
   }
 
   function paintTrendSpark(spark) {
@@ -4201,6 +4954,68 @@
   let pxPath = [];
   let gaugeAcc = 0;
 
+  const COPPER = [[0, "#2a160c"], [0.16, "#6d3c1f"], [0.4, "#f0c49a"], [0.55, "#c47a3a"], [0.82, "#8a4c24"], [1, "#24140c"]];
+  const HOT = [[0, "#6e120e"], [0.35, "#ff5a45"], [0.55, "#ffd2c6"], [1, "#8e1a12"]];
+  const COLD = [[0, "#0c274f"], [0.35, "#3b8cff"], [0.55, "#d7ecff"], [1, "#102e58"]];
+  function pipeSeg(gctx, a, b, half, stops) {
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len;
+    const ny = dx / len;
+    const g = gctx.createLinearGradient(a[0] + nx * half, a[1] + ny * half, a[0] - nx * half, a[1] - ny * half);
+    stops.forEach(function (st) { g.addColorStop(st[0], st[1]); });
+    gctx.beginPath();
+    gctx.moveTo(a[0] + nx * half, a[1] + ny * half);
+    gctx.lineTo(b[0] + nx * half, b[1] + ny * half);
+    gctx.lineTo(b[0] - nx * half, b[1] - ny * half);
+    gctx.lineTo(a[0] - nx * half, a[1] - ny * half);
+    gctx.closePath();
+    gctx.fillStyle = g;
+    gctx.fill();
+  }
+  function pipeJoint(gctx, p, half, stops) {
+    const g = gctx.createRadialGradient(p[0] - half * 0.28, p[1] - half * 0.32, half * 0.15, p[0], p[1], half);
+    stops.forEach(function (st) { g.addColorStop(st[0], st[1]); });
+    gctx.beginPath();
+    gctx.arc(p[0], p[1], half, 0, 6.283185);
+    gctx.fillStyle = g;
+    gctx.fill();
+  }
+
+  let copperImg = null;
+  let suctionImg = null;
+  function loadPipePics() {
+    if (copperImg) return;
+    copperImg = new Image();
+    suctionImg = new Image();
+    copperImg.onload = suctionImg.onload = function () { staticKey = ""; };
+    copperImg.src = "parts/copper-tube.jpg";
+    suctionImg.src = "parts/suction-line.jpg";
+  }
+  function stampTube(gctx, img, a, b, thick) {
+    if (!img || !img.complete || !img.naturalWidth) return false;
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    const len = Math.hypot(dx, dy);
+    gctx.save();
+    gctx.translate(a[0], a[1]);
+    gctx.rotate(Math.atan2(dy, dx));
+    gctx.drawImage(img, -1, -thick / 2, len + 2, thick);
+    gctx.restore();
+    return true;
+  }
+  function brassFit(gctx, p, r) {
+    const g = gctx.createRadialGradient(p[0] - r * 0.3, p[1] - r * 0.3, r * 0.15, p[0], p[1], r);
+    g.addColorStop(0, "#f6e7b0");
+    g.addColorStop(0.5, "#c6a15a");
+    g.addColorStop(1, "#6a5220");
+    gctx.beginPath();
+    gctx.arc(p[0], p[1], r, 0, 6.283185);
+    gctx.fillStyle = g;
+    gctx.fill();
+  }
+
   function rebuildStatic(w, h, dpr) {
     staticKey = w + "x" + h + "@" + dpr;
     staticLayer = document.createElement("canvas");
@@ -4228,29 +5043,19 @@
     pxPath = flowPath().map(function (p) {
       return [p[0] * w, p[1] * h];
     });
-    s.lineWidth = 14;
-    s.lineCap = "round";
-    s.lineJoin = "round";
-    s.strokeStyle = "#2a3644";
-    s.beginPath();
+    loadPipePics();
     pxPath.forEach(function (p, i) {
-      if (i === 0) s.moveTo(p[0], p[1]);
-      else s.lineTo(p[0], p[1]);
+      const nxt = pxPath[(i + 1) % pxPath.length];
+      const high = i / pxPath.length < 0.5;
+      const thick = high ? 18 : 28;
+      if (!stampTube(s, high ? copperImg : suctionImg, p, nxt, thick)) {
+        pipeSeg(s, p, nxt, high ? 9 : 13, high ? COPPER : COLD);
+      }
     });
-    s.closePath();
-    s.stroke();
-    s.fillStyle = "rgba(139,154,171,0.85)";
-    s.font = "bold 13px IBM Plex Sans, sans-serif";
-    s.fillText("Four-part vapor-compression cycle", 16, 22);
-    s.font = "11px IBM Plex Sans, sans-serif";
-    s.fillStyle = "#f07178";
-    s.fillText("DISCHARGE", w * 0.28, h * 0.28);
-    s.fillStyle = "#c44e52";
-    s.fillText("LIQUID", w * 0.62, h * 0.28);
-    s.fillStyle = "#7ec8d3";
-    s.fillText("EXPANSION", w * 0.72, h * 0.68);
-    s.fillStyle = "#2dd4bf";
-    s.fillText("SUCTION", w * 0.26, h * 0.72);
+    s.font = "bold 11px sans-serif";
+    s.fillStyle = "#f0d2b4";
+    s.fillText("HIGH", w * 0.36, h * 0.14);
+    s.fillText("LOW", w * 0.36, h * 0.92);
   }
 
   function drawArrow(x, y, ang) {
@@ -4285,39 +5090,26 @@
     if (fxShake > 0.4) ctx.translate((Math.random() - 0.5) * fxShake, (Math.random() - 0.5) * fxShake);
 
     const segs = pxPath.length;
-    if (requiredComplete() && segs) {
-      ctx.lineCap = "round";
-      ctx.lineWidth = 8;
-      ctx.globalAlpha = running ? 0.9 : 0.4;
+    if (running && requiredComplete() && segs) {
       for (let i = 0; i < segs; i++) {
         const a = pxPath[i];
         const b = pxPath[(i + 1) % segs];
+        pipeSeg(ctx, a, b, 2.4, i / segs < 0.5 ? HOT : COLD);
+      }
+    }
+
+    if (running) {
+      const n = particles.length;
+      for (let i = 0; i < n; i++) {
+        const p = particles[i];
+        const pt = lerpPath(p.t);
+        const x = pt[0] * w;
+        const y = pt[1] * h;
+        ctx.fillStyle = p.t < 0.5 ? "#fff1ec" : "#f4f9ff";
         ctx.beginPath();
-        ctx.moveTo(a[0], a[1]);
-        ctx.lineTo(b[0], b[1]);
-        ctx.strokeStyle = running ? PHASE_COLOR[phaseAt(i / segs)] : "#3a4a5c";
-        ctx.stroke();
+        ctx.arc(x, y, 2.1, 0, 6.283185);
+        ctx.fill();
       }
-      ctx.globalAlpha = 1;
-    }
-
-    if (running && segs) {
-      ctx.fillStyle = "rgba(255,255,255,0.55)";
-      for (let i = 0; i < segs; i += 3) {
-        const a = pxPath[i];
-        const b = pxPath[(i + 1) % segs];
-        drawArrow((a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5, Math.atan2(b[1] - a[1], b[0] - a[0]));
-      }
-    }
-
-    const n = particles.length;
-    for (let i = 0; i < n; i++) {
-      const p = particles[i];
-      const pt = lerpPath(p.t);
-      ctx.fillStyle = PHASE_COLOR[phaseAt(p.t)];
-      ctx.beginPath();
-      ctx.arc(pt[0] * w, pt[1] * h, p.r, 0, 6.283185);
-      ctx.fill();
     }
 
     if (running && requiredComplete() && pxPath[0]) {
@@ -4361,11 +5153,11 @@
 
   function seedFlow() {
     particles = [];
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 22; i++) {
       particles.push({
-        t: i / 14,
-        r: 3.4 + (i % 2),
-        speed: 0.24 + (i % 4) * 0.04,
+        t: i / 22,
+        r: 7 + (i % 3),
+        speed: 0.28 + (i % 4) * 0.05,
       });
     }
   }
@@ -4428,15 +5220,26 @@
   }
 
   function setCompressor(on) {
-    if (on && guidedOn && !(placed.copper && placed.vacpump && placed.chargecan)) {
+    const nameplateIn = weighedOz >= chargeTargetOz();
+    if (on && guidedOn && !firstPass && !(placed.copper && placed.vacpump && vac.held && nameplateIn)) {
       running = false;
-      paintHubCoach("Line set, vacuum, and the right cylinder first. Then we start it.");
-      const st = document.getElementById("sb-status");
-      if (st) st.textContent = "Commission first: lineset → N₂ → evac ≤500µ → weigh-in.";
+      if (placed.copper && placed.vacpump && vac.held) {
+        chargeFromButton(refrigerant);
+        paintHubCoach("Add 1 lb. Compressor stays off.");
+        writeStatus("Add 1 lb on the scale. Compressor stays off.");
+      } else {
+        paintHubCoach("Vacuum first. Then the jug.");
+        writeStatus("Vacuum that holds, then weigh the nameplate.");
+      }
       return;
     }
     running = !!on;
+    if (on) pinStatus = false;
     if (on) cutOut = null;
+    if (on && weighedOz >= chargeTargetOz()) {
+      paintHubCoach("Read superheat and subcool.");
+    }
+    if (on) openGaugeWin();
     if (on && window.ShopBg) window.ShopBg.reset();
     if (running && requiredComplete()) seedFlow();
     else particles = [];
@@ -4563,6 +5366,19 @@
     };
     const healthy = document.getElementById("sb-healthy");
     if (healthy) healthy.onclick = () => loadHealthyExample();
+    const oemBtn = document.getElementById("sb-oem");
+    if (oemBtn) oemBtn.onclick = () => {
+      const rootEl = host || document.getElementById("sandbox-root");
+      if (rootEl && rootEl.classList.contains("oem-open")) {
+        rootEl.classList.remove("oem-open");
+        return;
+      }
+      document.querySelectorAll(".sb-tab[data-tab]").forEach((t) => {
+        t.classList.toggle("active", t.getAttribute("data-tab") === "systems");
+      });
+      renderPalette("systems");
+      if (rootEl) rootEl.classList.add("oem-open");
+    };
     const gOn = document.getElementById("sb-guide-on");
     const gFree = document.getElementById("sb-guide-free");
     if (gOn) gOn.onclick = () => {
@@ -4663,7 +5479,10 @@
     const gClose = document.getElementById("sb-gauges-close");
     if (gClose) gClose.onclick = () => {
       const root = host || document.getElementById("sandbox-root");
-      root?.querySelector(".sb-gauges")?.classList.remove("drawer-open");
+      const win = root && root.querySelector(".sb-gauges");
+      if (win) win.classList.remove("drawer-open");
+      const gTog = document.getElementById("sb-gauges-toggle");
+      if (gTog) gTog.setAttribute("aria-expanded", "false");
       root?.querySelector(".lab-veil")?.classList.remove("show");
     };
     if (window.ManifoldSet) window.ManifoldSet.wire();
@@ -4692,6 +5511,69 @@
     bindPanScroll(document.getElementById("sb-gauges-scroll"));
     bindPanScroll(document.getElementById("sb-items"));
     bindPanScroll(document.getElementById("sb-xtra"));
+    const trayHandle = document.querySelector("#sandbox-root .sb-tray-handle");
+    const trayPal = document.querySelector("#sandbox-root .sb-palette");
+    if (trayHandle && trayPal && !trayHandle._ltDrag) {
+      trayHandle._ltDrag = true;
+      let dragOn = false;
+      let desktop = false;
+      let y0 = 0;
+      let x0 = 0;
+      let h0 = 112;
+      let w0 = 220;
+      const trayRoot = document.getElementById("sandbox-root");
+      function trayMax() { return Math.min(240, Math.round(window.innerHeight * 0.42)); }
+      function setTray(px) {
+        const h = Math.max(96, Math.min(trayMax(), px));
+        trayPal.style.setProperty("--sb-tray-h", h + "px");
+        trayHandle.setAttribute("aria-valuenow", String(Math.round(h)));
+      }
+      function setWide(px) {
+        const room = Math.max(200, window.innerWidth - 760);
+        const w = Math.max(180, Math.min(room, 320, px));
+        if (trayRoot) trayRoot.style.setProperty("--sb-tray-w", w + "px");
+        trayHandle.setAttribute("aria-valuenow", String(Math.round(w)));
+      }
+      trayHandle.addEventListener("pointerdown", function (e) {
+        if (e.button != null && e.button !== 0) return;
+        dragOn = true;
+        desktop = window.innerWidth > 800;
+        y0 = e.clientY;
+        x0 = e.clientX;
+        h0 = trayPal.getBoundingClientRect().height;
+        w0 = trayPal.getBoundingClientRect().width;
+        trayHandle.setAttribute("aria-orientation", desktop ? "horizontal" : "vertical");
+        try { trayHandle.setPointerCapture(e.pointerId); } catch (_) {}
+        e.preventDefault();
+      });
+      trayHandle.addEventListener("pointermove", function (e) {
+        if (!dragOn) return;
+        if (desktop) setWide(w0 + (e.clientX - x0));
+        else setTray(h0 + (y0 - e.clientY));
+      });
+      function endTray() {
+        if (!dragOn) return;
+        dragOn = false;
+        if (desktop) return;
+        const h = trayPal.getBoundingClientRect().height;
+        const next = h > 150 ? trayMax() : 112;
+        const moved = Math.abs(h - h0) > 8;
+        setTray(next);
+        if (moved && window.LtHaptic) window.LtHaptic.tick();
+      }
+      trayHandle.addEventListener("pointerup", endTray);
+      trayHandle.addEventListener("pointercancel", endTray);
+      trayHandle.addEventListener("keydown", function (e) {
+        if (window.innerWidth > 800) {
+          const now = trayPal.getBoundingClientRect().width;
+          if (e.key === "ArrowRight") setWide(now + 24);
+          if (e.key === "ArrowLeft") setWide(now - 24);
+          return;
+        }
+        if (e.key === "ArrowUp") setTray(trayMax());
+        if (e.key === "ArrowDown") setTray(112);
+      });
+    }
     const pal = document.querySelector("#sandbox-root .sb-palette");
     const items = document.querySelector("#sandbox-root .sb-items");
     if (pal && items && !pal._ltTabPan) {
@@ -4720,6 +5602,136 @@
         try { localStorage.setItem("lt-sb-howto", "1"); } catch (_) {}
       };
     }
+    const tourItems = [
+      ["HUB guided", "The glowing box is the only drop that counts. Professor HUB names the next part. Free build opens every box."],
+      ["The four", "Compressor, condenser, metering, evaporator. Drop them in that order and the loop closes."],
+      ["Start compressor", "The strip shows low side, high side, superheat, and subcool. Read superheat and subcool together."],
+      ["Gauges", "Opens the manifold. Drag the bar at the top to move it. Close puts it away. The trend line is high and low walking over time."],
+      ["Parts", "On a phone, Parts opens the tray. Cycle, Electrical, Tools, Materials, and All parts are the tabs."],
+      ["Electrical", "Disconnect, contactor, capacitor, transformer, thermostat. The meter in the gauge window reads volts, amps, and ohms."],
+      ["Tools and materials", "Vacuum pump, micron gauge, recovery machine, leak detector, copper, nitrogen, and the refrigerant jug."],
+      ["Sliders", "Refrigerant has to match the nameplate. Outdoor and indoor degrees move the pressures. Charge % is how full it is. Mode is cool, heat, or defrost. The TXV slider is the superheat you want."],
+      ["Fault menu", "Makes one thing sick so you can watch the gauges. Dirty coil, dead fan, low charge, bad TXV, air, reversing valve, defrost. Healthy example puts a good system back."],
+      ["Field jobs", "Pick a complaint. The unit is already broken and running. Show me the next step lights the repair button."],
+      ["Leak repair", "Visual, soap, sniffer, dry nitrogen, repair, evacuate, weigh in. Never oxygen. Never shop air. Never top off a leak."],
+      ["Charging SOP", "The weigh-in checklist for that brand. Scale the jug. Do not charge by guess."],
+      ["P-T chart", "In the gauge window. It turns pressure into temperature so superheat and subcool are real numbers."],
+      ["Defrost board", "The picture in the gauge window. Defrost means the reversing valve goes to cool and the outdoor fan stops."],
+      ["OEM packs", "Loads a brand: charge, metering, and the nameplate. Lab trainers loads the school board."],
+      ["See inside", "Cutaway of the machine. Sound is the compressor. Clear board wipes the parts. Full screen is for the bench."],
+      ["CoolGame and Class race", "Timed builds. Drop the parts, get the system running, and the scoreboard keeps the class."],
+      ["Colors on the glass", "Red is discharge vapor. Dark red is liquid. Blue mix is after the metering device. Teal is suction vapor."],
+      ["HUB AI", "On talks you through the next drop. Off leaves the board quiet. Free build still works."],
+      ["Shop floor", "Leaves the sandbox. How to, the button at the top, brings this card back."],
+    ];
+    let tourFab = document.getElementById("sb-tour-fab");
+    if (!tourFab || !tourFab.querySelector(".sb-tour-fab-x")) {
+      if (tourFab) tourFab.remove();
+      tourFab = document.createElement("div");
+      tourFab.id = "sb-tour-fab";
+      tourFab.className = "sb-tour-fab";
+      tourFab.innerHTML = '<button type="button" class="sb-tour-fab-open">How to</button><button type="button" class="sb-tour-fab-x" aria-label="Close How to">×</button>';
+      document.body.appendChild(tourFab);
+    }
+    if (tourFab && !tourFab._ltDrag) {
+      tourFab._ltDrag = true;
+      let press = false, moved = false, sx = 0, sy = 0, ox = 0, oy = 0;
+      function placeFab(x, y) {
+        const w = tourFab.offsetWidth || 120;
+        const h = tourFab.offsetHeight || 40;
+        x = Math.min(Math.max(8, window.innerWidth - w - 8), Math.max(8, x));
+        y = Math.min(Math.max(8, window.innerHeight - h - 8), Math.max(8, y));
+        tourFab.style.left = x + "px";
+        tourFab.style.top = y + "px";
+        tourFab.style.right = "auto";
+        try { localStorage.setItem("lt-sb-tour-xy", x + "," + y); } catch (_) {}
+      }
+      try {
+        const saved = localStorage.getItem("lt-sb-tour-xy");
+        if (saved) {
+          const bits = saved.split(",");
+          placeFab(+bits[0], +bits[1]);
+        }
+      } catch (_) {}
+      tourFab.addEventListener("pointerdown", function (e) {
+        if (e.target.closest && e.target.closest(".sb-tour-fab-x")) return;
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        press = true;
+        moved = false;
+        const r = tourFab.getBoundingClientRect();
+        sx = e.clientX;
+        sy = e.clientY;
+        ox = r.left;
+        oy = r.top;
+        tourFab.classList.add("dragging");
+        try { tourFab.setPointerCapture(e.pointerId); } catch (_) {}
+      });
+      tourFab.addEventListener("pointermove", function (e) {
+        if (!press) return;
+        const dx = e.clientX - sx;
+        const dy = e.clientY - sy;
+        if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+        placeFab(ox + dx, oy + dy);
+      });
+      function endDrag() {
+        press = false;
+        tourFab.classList.remove("dragging");
+      }
+      tourFab.addEventListener("pointerup", endDrag);
+      tourFab.addEventListener("pointercancel", endDrag);
+      const openBtn = tourFab.querySelector(".sb-tour-fab-open");
+      if (openBtn) openBtn.addEventListener("click", function (e) {
+        if (moved) { e.preventDefault(); e.stopPropagation(); return; }
+        openTour();
+      });
+      const xBtn = tourFab.querySelector(".sb-tour-fab-x");
+      if (xBtn) xBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        tourFab.hidden = true;
+        try {
+          localStorage.setItem("lt-sb-tour-fab-off", "1");
+          localStorage.setItem("lt-sb-tour", "1");
+        } catch (_) {}
+      });
+    }
+    const tour = document.getElementById("sb-tour");
+    const list = document.getElementById("sb-tour-list");
+    if (list && !list.childElementCount) {
+      tourItems.forEach(function (row) {
+        const item = document.createElement("div");
+        item.className = "sb-tour-item";
+        const title = document.createElement("strong");
+        title.textContent = row[0];
+        const body = document.createElement("p");
+        body.textContent = row[1];
+        item.appendChild(title);
+        item.appendChild(body);
+        list.appendChild(item);
+      });
+    }
+    function openTour() {
+      const home = document.getElementById("screen-sandbox");
+      if (tour && home && tour.parentNode !== home) home.appendChild(tour);
+      if (tour) tour.hidden = false;
+      if (tourFab) tourFab.hidden = true;
+    }
+    function closeTour() {
+      if (tour) tour.hidden = true;
+      if (tourFab) tourFab.hidden = false;
+      try { localStorage.setItem("lt-sb-tour", "1"); } catch (_) {}
+    }
+    const tourClose = document.getElementById("sb-tour-close");
+    const tourOpen = document.getElementById("sb-tour-open");
+    if (tourClose) tourClose.onclick = closeTour;
+    if (tour) tour.onclick = function (e) { if (e.target === tour) closeTour(); };
+    if (tourOpen) tourOpen.onclick = openTour;
+    let seenTour = false;
+    let fabOff = false;
+    try { seenTour = localStorage.getItem("lt-sb-tour") === "1"; } catch (_) {}
+    try { fabOff = localStorage.getItem("lt-sb-tour-fab-off") === "1"; } catch (_) {}
+    if (!seenTour && !stepOnPhone()) openTour();
+    else if (tourFab) tourFab.hidden = fabOff;
     window.addEventListener("lt-hubai", () => paintHubCoach());
     if (host && host._ltResize) window.removeEventListener("resize", host._ltResize);
     if (host) {
@@ -4757,6 +5769,12 @@
     };
     const chEl = document.getElementById("sb-charge");
     if (chEl) chEl.oninput = (e) => {
+      if ((vac.held || vac.isolated || chargeOpen) && weighedOz < chargeTargetOz()) {
+        e.target.value = "100";
+        chargeFromButton(refrigerant);
+        writeStatus("That percent slider is not the jug. Add 1 lb. Compressor stays off.");
+        return;
+      }
       chargePct = +e.target.value;
       const v = document.getElementById("sb-charge-v");
       if (v) v.textContent = chargePct;
@@ -4769,8 +5787,10 @@
       if (wasCut) running = true;
       if (fault === "defrost_fail" && frost < 70) frost = 78;
       if (fault !== "defrost_fail" && hpMode === "cool") frost = 0;
+      openGaugeWin();
       updateGauges(simulate());
       paintCoils(simulate());
+      if (running || !guidedOn) paintHubCoach("Read the needles.");
     };
     const modeEl = document.getElementById("sb-mode");
     if (modeEl) {
@@ -4795,12 +5815,18 @@
     const runBtn = document.getElementById("sb-run");
     if (runBtn) runBtn.onclick = () => {
       if (!requiredComplete()) {
-        const st = document.getElementById("sb-status");
-        if (st) st.textContent = "Need compressor, condenser, metering device, and evaporator.";
+        writeStatus("Need the four on the loop. Compressor, condenser, metering, evaporator.");
         return;
       }
-      if (guidedOn && !(placed.copper && placed.vacpump && placed.chargecan) && !running) {
-        paintHubCoach("Not a vacuum, not a charge, not a start. Finish the glowing boxes.");
+      if (guidedOn && !firstPass && !(placed.copper && placed.vacpump && vac.held && weighedOz >= chargeTargetOz()) && !running) {
+        if (placed.copper && placed.vacpump && vac.held) {
+          chargeFromButton(refrigerant);
+          paintHubCoach("Add 1 lb. Compressor stays off.");
+          writeStatus("Add 1 lb on the scale. Compressor stays off.");
+        } else {
+          paintHubCoach("Vacuum first. Then the jug.");
+          writeStatus("Vacuum that holds, then weigh the nameplate.");
+        }
         return;
       }
       setCompressor(!running);
@@ -4944,12 +5970,6 @@
       const j = Math.floor(Math.random() * (i + 1));
       const t = a[i];
       a[i] = a[j];
-      a[j] = t;
-    }
-    if (a[0] && a[0].ok && a.length > 1) {
-      const j = 1 + ((Math.random() * (a.length - 1)) | 0);
-      const t = a[0];
-      a[0] = a[j];
       a[j] = t;
     }
     return a;
@@ -5191,7 +6211,11 @@
     let job = jobs.find(function (j) {
       return call && j.id === call.jobId;
     });
-    if (!job) job = jobs[Math.floor(Math.random() * jobs.length)];
+    if (!job) {
+      const alt = jobs.filter(function (j) { return !lastTicketFault || j.fault !== lastTicketFault; });
+      const bag = alt.length ? alt : jobs;
+      job = bag[Math.floor(Math.random() * bag.length)];
+    }
     startMystery(job);
     placed.gauges = "gauges";
     placed.copper = placed.copper || "lineset";
@@ -5207,18 +6231,23 @@
     refreshSlots();
   }
 
-  function rollNextDispatch() {
-    const last = activeJob && activeJob.id;
+  function pickNextTicket(exceptFault) {
     const ids = (global.ServiceCalls && global.ServiceCalls.DIFF_POOLS && global.ServiceCalls.DIFF_POOLS[currentDiff()]) || [];
     let pool = FIELD_JOBS.filter(function (j) {
-      return j.id !== last && (!ids.length || ids.indexOf(j.id) >= 0);
+      return j.fault !== exceptFault && (!ids.length || ids.indexOf(j.id) >= 0);
     });
     if (!pool.length) {
       pool = FIELD_JOBS.filter(function (j) {
-        return j.id !== last;
+        return j.fault !== exceptFault;
       });
     }
-    const job = (pool.length ? pool : FIELD_JOBS)[Math.floor(Math.random() * (pool.length ? pool.length : FIELD_JOBS.length))];
+    const use = pool.length ? pool : FIELD_JOBS;
+    return use[Math.floor(Math.random() * use.length)];
+  }
+
+  function rollNextDispatch() {
+    const lastFault = (activeJob && activeJob.fault) || lastTicketFault || "";
+    const job = pickNextTicket(lastFault);
     const call = callFromJob(job);
     applyDispatch(call);
     if (onDispatchNext) onDispatchNext(call);
@@ -5240,6 +6269,138 @@
   }
 
   function startInner(root, opts) {
+    try { firstPass = false; } catch (e) { firstPass = false; }
+    floorFit("sb-floor-fit", [
+      "@media (max-width:800px){",
+      "body:has(#screen-sandbox.active) .ld-replay{top:110px!important;bottom:auto!important;right:8px!important;left:auto!important;max-width:120px!important;z-index:30!important}",
+      "body:has(#screen-sandbox.active) .walk-chip{display:none!important}",
+      "body:has(#screen-sandbox.active) #drip-ear{display:none!important}",
+      "body:has(#screen-sandbox.active) #toast-host{top:198px!important;bottom:auto!important;left:auto!important;right:8px!important;width:min(120px,34vw)!important;max-height:28px!important;overflow:hidden!important}",
+      "body:has(#screen-sandbox.active) #pf-coach-bar,body:has(#screen-sandbox.active) .pf-coach{top:110px!important;bottom:auto!important;left:108px!important;right:auto!important;width:min(148px,38vw)!important;max-height:44px!important}",
+      "#sandbox-root .sb-toolbar{flex:0 0 48px!important;height:48px!important;min-height:0!important;max-height:48px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:4px 6px!important;flex-wrap:nowrap!important;align-items:center!important;gap:6px!important}",
+      "#sandbox-root .sb-actions{flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;gap:6px!important;align-items:center!important}",
+      "#sandbox-root .sb-actions .btn,#sandbox-root .sb-fault-label select,#sandbox-root .lab-drawer-btn{min-height:40px!important;height:40px!important;padding:0 10px!important;font-size:13px!important}",
+      "#sandbox-root .sb-fault-label{display:flex!important;align-items:center!important;gap:4px!important;font-size:10px!important;margin:0!important;white-space:nowrap!important}",
+      "#sandbox-root #sb-sysbanner{flex:0 0 16px!important;max-height:16px!important;margin:0!important;padding:0 8px!important;font-size:11px!important;line-height:16px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}",
+      "#sandbox-root .sb-stage-wrap{flex:1 1 auto!important;min-height:0!important;height:auto!important}",
+      "#sandbox-root #sb-fs,#sandbox-root #sb-3d,#sandbox-root #sb-flat,#sandbox-root #sb-parts-toggle{display:none!important}",
+      "#sandbox-root .lab-drawers{display:flex!important}",
+      "#sandbox-root .sb-tray-handle{display:none!important}",
+      "#sandbox-root .sb-tabs{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;width:100%!important;min-width:0!important;max-width:100%!important;flex:0 0 36px!important;max-height:36px!important;gap:4px!important;margin:0!important;-webkit-overflow-scrolling:touch;touch-action:pan-x}",
+      "#sandbox-root .sb-tab{flex:0 0 auto!important;min-height:26px!important;max-height:26px!important;padding:0 8px!important;font-size:11px!important}",
+      "#sandbox-root .sb-palette{height:148px!important;max-height:148px!important}",
+      "#sandbox-root #sb-items{flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important}",
+      "#sandbox-root .sb-item{flex:0 0 92px!important;width:92px!important;max-width:92px!important}",
+      "#sandbox-root .sb-xtra-wrap{display:flex!important;flex:0 0 72px!important;max-height:72px!important;min-height:0!important;overflow:hidden!important}",
+      "#sandbox-root #sb-xtra{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important}",
+      "#sandbox-root aside.sb-gauges.sb-gauge-win.drawer-open{width:154px!important;height:160px!important;max-height:160px!important;top:58px!important;bottom:auto!important;left:118px!important;right:auto!important;padding:8px 8px 6px!important;background:linear-gradient(180deg,#3a3e44,#1a1d21)!important;border:1px solid #4a5056!important;border-radius:16px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 22px rgba(0,0,0,.5)!important}",
+      "#sandbox-root #sb-scale{position:absolute!important;z-index:24!important;left:8px!important;bottom:8px!important;top:auto!important;right:auto!important;width:148px!important;max-width:42vw!important;height:auto!important;max-height:132px!important;margin:0!important;padding:6px 6px 4px!important;background:linear-gradient(180deg,#3a3e44,#1a1d21)!important;border:1px solid #4a5056!important;border-radius:16px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 22px rgba(0,0,0,.5)!important;overflow:hidden!important}",
+      "#sandbox-root #sb-scale .sb-scale-top{display:flex!important;justify-content:space-between!important;align-items:center!important;font-size:9px!important;letter-spacing:.06em!important;color:#c5ced6!important;margin:0 0 4px!important}",
+      "#sandbox-root #sb-scale .sb-scale-top button{width:16px!important;height:16px!important;min-height:0!important;padding:0!important;border-radius:50%!important;border:1px solid #666!important;background:#2a2e33!important;color:#ddd!important;font-size:12px!important;line-height:14px!important}",
+      "#sandbox-root #sb-scale .sb-scale-read{margin:0!important;padding:6px 6px 4px!important;background:#07090c!important;color:#e7eef4!important;border-radius:4px!important;border:2px solid #12161b!important;box-shadow:inset 0 0 0 1px #2a323a,inset 0 8px 12px rgba(0,0,0,.55)!important}",
+      "#sandbox-root #sb-scale .sb-scale-read small{display:block!important;font-size:8px!important;letter-spacing:.08em!important;color:#c5ced6!important}",
+      "#sandbox-root #sb-scale .sb-scale-read strong{display:block!important;font:700 18px/1 ui-monospace,monospace!important;color:#e7eef4!important}",
+      "#sandbox-root #sb-scale .sb-scale-read em{display:block!important;margin-top:2px!important;font-style:normal!important;font-size:9px!important;color:#b7c2cc!important}",
+      "#sandbox-root #sb-scale .sb-scale-row{display:flex!important;gap:4px!important;margin-top:4px!important}",
+      "#sandbox-root #sb-scale .sb-scale-row .btn{flex:1!important;min-height:26px!important;padding:0!important;font-size:12px!important}",
+      "#sandbox-root .sb-gauges-head{position:absolute!important;top:3px!important;right:3px!important;left:auto!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;z-index:3!important;min-height:0!important}",
+      "#sandbox-root .sb-gauges-head .eyebrow{display:none!important}",
+      "#sandbox-root #sb-gauges-close{width:16px!important;height:16px!important;min-height:0!important;padding:0!important;border-radius:50%!important;font-size:0!important;background:#2a2e33!important;border:1px solid #666!important;color:#ddd!important}",
+      "#sandbox-root #sb-gauges-close::after{content:\"×\";font-size:12px;line-height:14px;color:#ddd}",
+      "#sandbox-root .sb-gauges-scroll{background:transparent!important;padding:0!important}",
+      "#sandbox-root .mf-digi{display:grid!important;gap:2px!important;margin:10px 4px 2px!important;padding:6px 6px 4px!important;background:#07090c!important;color:#e7eef4!important;font-family:ui-monospace,monospace!important;border-radius:4px!important;border:2px solid #12161b!important;box-shadow:inset 0 0 0 1px #2a323a,inset 0 10px 16px rgba(0,0,0,.55)!important}",
+      "#sandbox-root .mf-digi-top{display:flex!important;justify-content:flex-start!important;font-size:9px!important;letter-spacing:.06em!important;color:#c5ced6!important}",
+      "#sandbox-root .mf-digi-top span{display:none!important}",
+      "#sandbox-root .mf-digi-row{display:grid!important;grid-template-columns:1fr auto 1fr!important;gap:4px!important;align-items:end!important}",
+      "#sandbox-root .mf-digi small{display:block!important;font-size:8px!important;letter-spacing:.08em!important}",
+      "#sandbox-root .mf-digi .lo strong{color:#4db2ff!important;font-size:22px!important;line-height:1!important}",
+      "#sandbox-root .mf-digi .hi strong{color:#ff5a45!important;font-size:22px!important;line-height:1!important}",
+      "#sandbox-root .mf-digi em{display:block!important;font-style:normal!important;font-size:9px!important;color:#b7c2cc!important}",
+      "#sandbox-root .mf-digi .mid{font-size:10px!important;text-align:center!important;line-height:1.25!important;color:#d5dde4!important}",
+      "#sandbox-root #mf-canvas,#sandbox-root #sb-sysinfo,#sandbox-root #sb-steps,#sandbox-root .gauge-pair,#sandbox-root .sb-trend-desk,#sandbox-root .sb-trend-cap,#sandbox-root #sb-pt,#sandbox-root .mf-read,#sandbox-root .pt-chart,#sandbox-root .mf-yel{display:none!important}",
+      "#sandbox-root .mf-valves{display:flex!important;justify-content:space-between!important;gap:0!important;padding:4px 14px 0!important;background:transparent!important}",
+      "#sandbox-root #mf-lo-v,#sandbox-root #mf-hi-v{width:26px!important;height:26px!important;min-height:26px!important;padding:0!important;border-radius:50%!important;font-size:0!important;border:2px solid #111!important;box-shadow:inset 0 2px 3px rgba(255,255,255,.4),0 1px 2px #000!important}",
+      "#sandbox-root #mf-lo-v{background:radial-gradient(circle at 35% 32%,#9fd4ff,#1d6eb8)!important}",
+      "#sandbox-root #mf-hi-v{background:radial-gradient(circle at 35% 32%,#ffb0a4,#c42323)!important}",
+      "#sandbox-root #sb-sysbanner{max-height:22px!important;padding:2px 8px!important;-webkit-line-clamp:1!important;overflow:hidden!important}",
+      "#sandbox-root .sb-check{display:grid!important;grid-template-columns:1fr 1fr!important;gap:4px!important;padding:4px 6px!important}",
+      "#sandbox-root .sb-main{overflow:hidden!important}",
+      "#sandbox-root .sb-phone-vitals{flex:0 0 32px!important;padding:2px 8px!important}",
+      "#sandbox-root #sb-rail:empty{display:none!important}",
+      "#sandbox-root #sb-rail:not(:empty){display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;overflow-x:auto!important;max-height:64px!important;min-height:0!important}",
+      "#sandbox-root .sb-palette{height:108px!important;max-height:108px!important;min-height:100px!important;flex:0 0 108px!important}",
+      "#sandbox-root #sb-items{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;align-content:flex-start!important;max-width:100%!important}",
+      "#sandbox-root #sb-items .sb-item{flex:0 0 72px!important;width:72px!important;min-width:72px!important;max-width:72px!important}",
+      "#sandbox-root #sb-items .part-img{width:40px!important;height:40px!important;max-width:40px!important;max-height:40px!important}",
+      "#sandbox-root .sb-palette .brand-bar,#sandbox-root .sb-palette .eyebrow,#sandbox-root .sb-palette .sb-hint,#sandbox-root .sb-palette .sb-build-progress,#sandbox-root .sb-palette .sb-guide-bar,#sandbox-root .sb-palette .sb-hub-coach,#sandbox-root .sb-xtra-wrap{display:none!important}",
+      "#sandbox-root #sb-items{flex:1 1 auto!important;min-height:64px!important;height:auto!important}",
+      "}",
+      "@media (min-width:801px){",
+      "body:has(#screen-sandbox.active) #toast-host{top:8px!important;left:8px!important;right:auto!important;bottom:auto!important;width:min(168px,16vw)!important;max-height:40px!important;overflow:hidden!important}",
+      "body:has(#screen-sandbox.active) .ld-replay{right:156px!important;bottom:16px!important;top:auto!important;left:auto!important}",
+      "}",
+      "@media (max-width:900px) and (orientation:landscape) and (max-height:700px){",
+      "body:has(#screen-sandbox.active) .ld-replay{top:4px!important;right:8px!important;bottom:auto!important;left:auto!important;max-width:112px!important;max-height:28px!important}",
+      "body:has(#screen-sandbox.active) #pf-coach-bar,body:has(#screen-sandbox.active) .pf-coach{top:4px!important;left:8px!important;right:auto!important;bottom:auto!important;width:min(180px,26vw)!important;max-height:28px!important}",
+      "body:has(#screen-sandbox.active) #toast-host{top:4px!important;left:200px!important;right:auto!important;bottom:auto!important;width:min(140px,20vw)!important;max-height:28px!important}",
+      "body:has(#screen-sandbox.active) .walk-chip{display:none!important}",
+      "#sandbox-root .sb-layout{display:flex!important;flex-direction:row!important;grid-template-columns:none!important;height:100%!important;max-height:100dvh!important;padding-top:0!important}",
+      "#sandbox-root .sb-palette{order:0!important;grid-column:auto!important;display:flex!important;flex-direction:column!important;width:148px!important;max-width:32vw!important;height:100%!important;max-height:none!important;min-height:0!important;flex:0 0 148px!important;overflow:hidden!important;border-top:none!important;border-right:1px solid #2a3644!important}",
+      "#sandbox-root .sb-palette .brand-bar,#sandbox-root .sb-palette .eyebrow,#sandbox-root .sb-palette .sb-hint,#sandbox-root .sb-palette .sb-build-progress,#sandbox-root .sb-palette .sb-guide-bar,#sandbox-root .sb-palette .sb-hub-coach,#sandbox-root .sb-tray-handle,#sandbox-root .sb-xtra-wrap{display:none!important}",
+      "#sandbox-root .sb-tabs{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;flex:0 0 36px!important;width:100%!important;min-width:0!important;max-width:100%!important;max-height:36px!important;overflow-x:auto!important;overflow-y:hidden!important;gap:4px!important;-webkit-overflow-scrolling:touch;touch-action:pan-x}",
+      "#sandbox-root .sb-tab{flex:1 1 42%!important;min-height:22px!important;max-height:22px!important;padding:0 4px!important;font-size:10px!important}",
+      "#sandbox-root #sb-items{display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important;overflow-x:hidden!important;overflow-y:auto!important}",
+      "#sandbox-root #sb-items .sb-item{flex:0 0 auto!important;width:100%!important;min-width:0!important;max-width:100%!important;flex-direction:row!important;align-items:center!important;overflow:hidden!important}",
+      "#sandbox-root #sb-items .part-img{width:28px!important;height:28px!important;max-height:28px!important}",
+      "#sandbox-root .sb-main{order:1!important;grid-column:auto!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;width:auto!important;height:100%!important;display:flex!important;flex-direction:column!important}",
+      "#sandbox-root .sb-toolbar{flex:0 0 40px!important;height:40px!important;max-height:40px!important;overflow-x:auto!important;overflow-y:hidden!important;flex-wrap:nowrap!important;align-items:center!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-x!important}",
+      "#sandbox-root #sb-sysbanner{max-height:18px!important;-webkit-line-clamp:1!important;flex:0 0 auto!important}",
+      "#sandbox-root .sb-stage-wrap{flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important}",
+      "#sandbox-root .sb-slots{display:grid!important;position:absolute!important;inset:4px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(3,minmax(0,1fr))!important;gap:4px!important}",
+      "#sandbox-root .sb-slot.sb-grid{position:relative!important;left:auto!important;top:auto!important;transform:none!important;width:100%!important;height:100%!important;min-width:0!important;max-width:none!important;min-height:0!important;overflow:hidden!important}",
+      "#sandbox-root aside.sb-gauges.sb-gauge-win{display:flex!important;order:2!important;position:relative!important;grid-column:auto!important;width:132px!important;max-width:26vw!important;height:100%!important;max-height:none!important;min-height:0!important;flex:0 0 132px!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;overflow:hidden!important;padding-bottom:0!important}",
+      "#sandbox-root .sb-gauges-scroll{overflow:auto!important;flex:1 1 auto!important;min-height:0!important}",
+      "#sandbox-root .sb-rail{display:none!important}",
+      "}",
+      "@media (min-width:901px){",
+      "#sandbox-root .sb-toolbar{flex:0 0 40px!important;max-height:40px!important;overflow-x:auto!important;overflow-y:hidden!important;flex-wrap:nowrap!important;padding:4px 8px!important;align-items:center!important}",
+      "#sandbox-root .sb-actions .btn{min-height:30px!important;height:30px!important;padding:0 10px!important;font-size:12px!important}",
+      "#sandbox-root #sb-run{display:inline-flex!important}",
+      "#sandbox-root .sb-slots{display:block!important}",
+      "#sandbox-root .sb-slot.core:not(.sb-rail-slot){width:64px!important;min-width:64px!important;max-width:64px!important;height:64px!important;min-height:64px!important;max-height:64px!important;padding:1px!important;background:rgba(8,12,18,0.45)!important}",
+      "#sandbox-root .sb-slot.core strong,#sandbox-root .sb-slot.core .empty,#sandbox-root .sb-slot.core .sb-role{display:none!important}",
+      "#sandbox-root .sb-slot.core .part-img,#sandbox-root .sb-slot.core img{width:64px!important;height:64px!important;max-width:64px!important;max-height:64px!important}",
+      "#sandbox-root .mf-digi{display:none!important}",
+      "}",
+      "@media (max-width:800px){",
+      "#sandbox-root .sb-slots{display:block!important;position:absolute!important;inset:0!important}",
+      "#sandbox-root .sb-slot.sb-grid,#sandbox-root .sb-slot.core.sb-grid{position:absolute!important;width:90px!important;min-width:90px!important;max-width:90px!important;height:66px!important;min-height:66px!important;max-height:66px!important;padding:0!important;margin:0!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;box-sizing:border-box!important;border:1px solid #3a4654!important;border-radius:8px!important;background:#14181d!important}",
+      "#sandbox-root .sb-slot.core .empty,#sandbox-root .sb-slot.core .sb-role,#sandbox-root .sb-slot.core strong{display:none!important}",
+      "#sandbox-root .sb-slot.core::after{content:attr(data-n);font:700 12px/1 system-ui,sans-serif;color:#f7f3ea}",
+      "#sandbox-root .sb-slot.core.filled::after{content:none}",
+      "#sandbox-root .sb-slot.core .part-img,#sandbox-root .sb-slot.core img{width:40px!important;height:40px!important;max-width:40px!important;max-height:40px!important}",
+      "}",
+    ].join(""));
+    landTurn("screen-sandbox");
+    if (!document.getElementById("sb-grid-fit")) {
+      const grid = document.createElement("style");
+      grid.id = "sb-grid-fit";
+      grid.textContent = "#sandbox-root .sb-check{display:flex!important;flex-wrap:wrap!important;gap:6px!important;margin:0!important;padding:4px 8px!important;list-style:none!important;overflow-x:hidden!important;max-width:100%!important;background:#10161c!important;color:#f6f0e2!important;font:600 12px/1.2 system-ui,sans-serif!important}#sandbox-root .sb-check[hidden]{display:none!important}#sandbox-root .sb-check li{flex:1 1 140px!important;min-width:0!important;max-width:100%!important;white-space:normal!important;padding:4px 8px!important;border:1px solid #3a4654!important;border-radius:8px!important}#sandbox-root .sb-check li.now{border-color:#CE0034!important;color:#fff!important}#sandbox-root .sb-check li.done{color:#7fd99a!important;border-color:#246b45!important}#sandbox-root:has(#sb-check:not([hidden])) #sb-howto{display:none!important}@media (max-width:800px){#sandbox-root .sb-slots{display:grid!important;position:absolute!important;inset:6px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(3,minmax(0,1fr))!important;gap:6px!important}#sandbox-root .sb-slot.sb-grid{position:relative!important;left:auto!important;top:auto!important;transform:none!important;width:100%!important;height:100%!important;min-width:0!important;max-width:none!important;min-height:0!important;max-height:none!important;padding:4px!important;font-size:11px!important;box-sizing:border-box!important;overflow:hidden!important}#sandbox-root .sb-slot.sb-grid .part-img,#sandbox-root .sb-slot.sb-grid img{width:28px!important;height:28px!important;max-height:28px!important}#sandbox-root .sb-slot.sb-grid strong,#sandbox-root .sb-slot.sb-grid .empty{font-size:11px!important;line-height:1.15!important}}";
+      document.head.appendChild(grid);
+    }
+    if (!document.getElementById("sb-no-xscroll")) {
+      const nx = document.createElement("style");
+      nx.id = "sb-no-xscroll";
+      nx.textContent = [
+        "#sandbox-root .sb-check{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;overflow:visible!important;width:100%!important;max-width:100%!important}",
+        "#sandbox-root .sb-check[hidden]{display:none!important}",
+        "#sandbox-root .sb-check li{min-width:0!important;max-width:100%!important;white-space:normal!important}",
+        "@media (max-width:420px){#sandbox-root .sb-check{grid-template-columns:1fr!important}}",
+        "@media (orientation:portrait){#sandbox-root #sb-items,#sandbox-root #sb-xtra{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;overflow-x:hidden!important;overflow-y:auto!important;align-content:flex-start!important}#sandbox-root #sb-items .sb-item,#sandbox-root #sb-xtra .sb-item{flex:1 1 120px!important;width:auto!important;min-width:0!important;max-width:calc(50% - 8px)!important;box-sizing:border-box!important}}",
+        "@media (orientation:portrait) and (min-width:801px){#sandbox-root #sb-items .sb-item,#sandbox-root #sb-xtra .sb-item{flex-basis:150px!important;max-width:calc(25% - 8px)!important}}",
+      ].join("");
+      document.head.appendChild(nx);
+    }
     host = root;
     onXp = opts && opts.onXp;
     onRace = opts && opts.onRace;
@@ -5261,6 +6422,7 @@
     coilEvap = "clean";
     jobMode = null;
     activeJob = null;
+    lastTicketFault = "";
     jobSolved = false;
     leak = { visual: false, soap: false, sniffer: false, nitrogen: false, repair: false, vac: false };
     resetVac();
@@ -5286,6 +6448,142 @@
     labFanEvap = 100;
     labFanCond = 100;
     buildUI(root);
+    if (!document.getElementById("sb-cycle-see")) {
+      const see = document.createElement("style");
+      see.id = "sb-cycle-see";
+      see.textContent = [
+        "@media (max-width:800px){",
+        "#sandbox-root .sb-toolbar{flex:0 0 48px!important;max-height:48px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:4px 6px!important;flex-wrap:nowrap!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-x!important}",
+        "#sandbox-root .sb-actions{flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;gap:6px!important;-webkit-overflow-scrolling:touch!important}",
+        "#sandbox-root .lab-drawers,#sandbox-root #sb-fs,#sandbox-root #sb-3d,#sandbox-root #sb-flat{display:none!important}",
+        "#sandbox-root #sb-sysbanner{max-height:22px!important;padding:2px 8px!important;-webkit-line-clamp:1!important;overflow:hidden!important}",
+        "#sandbox-root .sb-check{display:grid!important;grid-template-columns:1fr 1fr!important;gap:4px!important;padding:4px 6px!important}",
+        "#sandbox-root .sb-check li{padding:3px 6px!important;font-size:12px!important}",
+        "#sandbox-root .sb-main{overflow:hidden!important;min-height:0!important}",
+        "#sandbox-root .sb-stage-wrap{flex:1 1 auto!important;min-height:0!important;height:auto!important}",
+        "#sandbox-root #sb-canvas{z-index:1!important}",
+        "#sandbox-root .sb-slots{z-index:2!important}",
+        "#sandbox-root .sb-phone-vitals{flex:0 0 32px!important;padding:2px 8px!important;font-size:12px!important}",
+        "#sandbox-root .sb-palette{position:relative!important;transform:none!important;order:3!important;height:136px!important;max-height:136px!important;min-height:128px!important;flex:0 0 136px!important;bottom:auto!important;left:auto!important;right:auto!important;z-index:4!important}",
+        "#sandbox-root #sb-items{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;align-content:flex-start!important;align-items:stretch!important}",
+        "#sandbox-root #sb-items .sb-item{flex:0 0 92px!important;width:92px!important;min-width:92px!important;max-width:92px!important;height:auto!important;min-height:104px!important}",
+        "#sandbox-root #sb-items .sb-item strong{display:block!important;font-size:11px!important;line-height:1.15!important;white-space:normal!important;overflow:visible!important;max-height:none!important}",
+        "#sandbox-root #sb-items .part-img{width:40px!important;height:40px!important;max-width:40px!important;max-height:40px!important}",
+        "}",
+      ].join("");
+      document.head.appendChild(see);
+    }
+    if (!document.getElementById("sb-float-last")) {
+      const last = document.createElement("style");
+      last.id = "sb-float-last";
+      last.textContent = [
+        "#sandbox-root .sb-layout{grid-template-columns:var(--sb-tray-w,220px) minmax(0,1fr)!important}",
+        "#sandbox-root aside.sb-gauges.sb-gauge-win{position:fixed!important;display:none!important;z-index:130!important;width:min(300px,86vw)!important;height:min(42dvh,380px)!important;max-height:42dvh!important;top:72px!important;right:12px!important;left:auto!important;bottom:auto!important;border-radius:14px!important;box-shadow:0 14px 32px rgba(0,0,0,.55)!important;overflow:hidden!important}",
+        "#sandbox-root aside.sb-gauges.sb-gauge-win.drawer-open{display:flex!important;flex-direction:column!important}",
+        "#sandbox-root aside.sb-gauges.sb-gauge-win.drawer-open.is-moved{left:var(--sb-gx)!important;top:var(--sb-gy)!important;right:auto!important;bottom:auto!important}",
+        "#sandbox-root .sb-gauges-head{position:relative!important;top:auto!important;right:auto!important;left:auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;width:auto!important;min-height:36px!important;margin:0!important;padding:6px 8px!important;background:#1a1d21!important;cursor:grab!important;touch-action:none!important;z-index:3!important}",
+        "#sandbox-root .sb-gauges-head .eyebrow{display:block!important;flex:1!important;margin:0!important}",
+        "#sandbox-root aside.sb-gauges.sb-gauge-win.drawer-open{left:auto!important;top:72px!important;right:12px!important;bottom:auto!important;width:min(280px,78vw)!important;height:min(240px,40dvh)!important;max-height:40dvh!important}",
+        "#sandbox-root #sb-gauges-close{font-size:13px!important;width:auto!important;height:auto!important;min-height:32px!important;padding:4px 10px!important;border-radius:8px!important}",
+        "#sandbox-root #sb-gauges-close::after{content:none!important}",
+        "#sandbox-root .sb-toolbar{flex:0 0 48px!important;height:48px!important;min-height:0!important;max-height:48px!important;overflow-x:auto!important;overflow-y:hidden!important;flex-wrap:nowrap!important;align-items:center!important;padding:4px 8px!important}",
+        "#sandbox-root #sb-run{position:relative!important;top:auto!important;display:inline-flex!important;align-items:center!important;height:40px!important;min-height:40px!important;max-height:40px!important;margin:0!important;line-height:1!important;overflow:visible!important;padding:0 10px!important;font-size:13px!important}",
+        "#sandbox-root #sb-healthy,#sandbox-root #sb-oem{display:inline-flex!important;align-items:center!important;height:40px!important;min-height:40px!important;max-height:40px!important;white-space:nowrap!important;padding:0 10px!important;font-size:13px!important}",
+        "#sandbox-root .sb-actions{flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;align-items:center!important;gap:6px!important;height:40px!important;max-height:40px!important;min-height:0!important}",
+        "#sandbox-root .lab-drawers{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;flex:0 0 auto!important;width:auto!important;height:40px!important;max-height:40px!important;align-items:center!important;gap:6px!important}",
+        "#sandbox-root .sb-actions .btn,#sandbox-root .lab-drawer-btn{height:40px!important;min-height:40px!important;max-height:40px!important;padding:0 10px!important;font-size:13px!important}",
+        "#sandbox-root .sb-fault-label{display:flex!important;flex-direction:row!important;align-items:center!important;gap:4px!important;font-size:11px!important;letter-spacing:.04em!important;text-transform:uppercase!important;color:#e8c450!important;flex:0 0 auto!important;min-width:0!important}",
+        "#sandbox-root #sb-fault{display:block!important;width:auto!important;min-width:0!important;max-width:148px!important;min-height:40px!important;height:40px!important;font-size:13px!important;text-transform:none!important;letter-spacing:0!important;color:#fff!important;background:#10161c!important}",
+        "#sandbox-root.oem-open .sb-palette{display:flex!important;position:fixed!important;left:8px!important;right:8px!important;bottom:8px!important;top:auto!important;width:auto!important;height:min(54dvh,460px)!important;max-height:54dvh!important;z-index:80!important;overflow:auto!important;border:1px solid #e8c450!important;border-radius:14px!important;background:#10161c!important;padding:8px!important}",
+        "#sandbox-root.oem-open .sb-item small,#sandbox-root.oem-open .sb-brand-head{display:block!important}",
+        "#sandbox-root.oem-open .sb-tabs{display:flex!important;max-height:none!important;flex-wrap:wrap!important}",
+        "body:has(#screen-sandbox.active) #pf-coach-bar,body:has(#screen-sandbox.active) .pf-coach{top:auto!important;bottom:156px!important;left:8px!important;right:auto!important;width:min(220px,70vw)!important;max-height:84px!important;overflow:auto!important}",
+        "body:has(#screen-sandbox.active) .ld-replay{top:auto!important;bottom:148px!important;left:auto!important;right:8px!important;max-width:108px!important;z-index:40!important}",
+        "@media (min-width:801px){",
+        "#sandbox-root aside.sb-gauges.sb-gauge-win{padding-top:0!important;padding-bottom:0!important;background:#10161c!important}",
+        "#sandbox-root aside.sb-gauges.sb-gauge-win.drawer-open{top:132px!important;width:min(420px,36vw)!important;height:min(640px,76dvh)!important;max-height:76dvh!important;background:#10161c!important;border:1px solid #CE0034!important;opacity:1!important}",
+        "#sandbox-root .sb-gauges-scroll{background:#10161c!important;overflow-x:hidden!important;overflow-y:auto!important;padding:8px 10px 16px!important}",
+        "#sandbox-root .mf-digi{display:grid!important;gap:4px!important;margin:0 0 8px!important;padding:8px!important;background:#07090c!important;color:#f7f3ea!important;border-radius:8px!important;border:1px solid #2a3644!important}",
+        "#sandbox-root .mf-digi .lo strong{display:block!important;color:#4db2ff!important;font-size:34px!important;line-height:1!important}",
+        "#sandbox-root .mf-digi .hi strong{display:block!important;color:#ff5a45!important;font-size:34px!important;line-height:1!important}",
+        "#sandbox-root .mf-digi small{display:block!important;color:#c5ced6!important;font-size:11px!important;letter-spacing:.08em!important}",
+        "#sandbox-root .gauge-pair{display:grid!important}",
+        "#sandbox-root .gauge{background:#171c22!important}",
+        "#sandbox-root .gauge.blue .g-val{color:#4db2ff!important;font-size:32px!important}",
+        "#sandbox-root .gauge.red .g-val{color:#ff5a45!important;font-size:32px!important}",
+        "#sandbox-root #mf-canvas{display:block!important;width:100%!important;height:auto!important;max-height:200px!important}",
+        "}",
+        "#sandbox-root aside.sb-gauges.sb-gauge-win.drawer-open.is-moved{left:var(--sb-gx)!important;top:var(--sb-gy)!important;right:auto!important;bottom:auto!important}",
+        "#sandbox-root .sb-gauges-head{display:flex!important;cursor:grab!important;background:#CE0034!important;color:#fff!important;touch-action:none!important}",
+        "#sandbox-root .sb-gauges-head .eyebrow{display:block!important;color:#fff!important}",
+        "#sandbox-root #sb-gauges-close{display:inline-flex!important;flex:0 0 auto!important;align-items:center!important;justify-content:center!important;width:auto!important;height:auto!important;min-width:72px!important;min-height:32px!important;margin:0 0 0 8px!important;padding:4px 12px!important;font-size:14px!important;font-weight:800!important;line-height:1!important;color:#10161c!important;background:#fff!important;border:0!important;border-radius:8px!important;position:relative!important;z-index:5!important}",
+        "#sandbox-root #sb-gauges-close::after{content:none!important}",
+        "@media (max-width:800px){",
+        "#screen-sandbox.screen.active,#sandbox-root,#sandbox-root .sb-layout{height:100svh!important;max-height:100svh!important;box-sizing:border-box!important}",
+        "#sandbox-root .sb-layout{padding-bottom:max(36px, env(safe-area-inset-bottom))!important}",
+        "#sandbox-root .sb-rail{min-height:60px!important;max-height:68px!important}",
+        "#sandbox-root .sb-palette{height:auto!important;min-height:0!important;max-height:120px!important;flex:0 0 auto!important;overflow:hidden!important;padding-bottom:4px!important}",
+        "#sandbox-root #sb-items{min-height:0!important;max-height:72px!important}",
+        "#sandbox-root #sb-items .sb-item{min-height:0!important;height:68px!important;max-height:68px!important;overflow:hidden!important}",
+        "#sandbox-root #sb-items .sb-item strong{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-height:14px!important}",
+        "body:has(#screen-sandbox.active) #form-badge{top:8px!important;bottom:auto!important;right:8px!important}",
+        "#sb-tour-fab{top:52px!important;left:auto!important;right:8px!important;bottom:auto!important}",
+        "}",
+        "@media (min-width:801px){",
+        "#sb-tour-fab{top:auto!important;bottom:12px!important;left:236px!important;right:auto!important}",
+        "#sb-tour.sb-tour{align-items:flex-end!important;justify-content:center!important;padding:8px 16px!important;background:transparent!important}",
+        "#sb-tour .sb-tour-card{width:min(480px,42vw)!important;max-height:120px!important}",
+        "}",
+        "@media (max-width:800px){",
+        "#sandbox-root .sb-actions{overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-x!important}",
+        "#sandbox-root #sb-healthy,#sandbox-root #sb-oem,#sandbox-root #sb-sound,#sandbox-root #sb-tour-open,#sandbox-root #sb-hub{display:inline-flex!important}",
+        "#sandbox-root .sb-fault-label{font-size:0!important;gap:0!important;flex:1 1 auto!important;min-width:0!important}",
+        "#sandbox-root #sb-fault{font-size:13px!important;max-width:none!important;width:100%!important;min-width:0!important}",
+        "#sandbox-root .sb-phone-vitals{background:#07090c!important;border-top:2px solid #e8c450!important;justify-content:space-between!important;gap:4px!important;padding:0 8px!important}",
+        "#sandbox-root .sb-phone-vitals span{font-size:10px!important;letter-spacing:.04em!important}",
+        "#sandbox-root #pv-l{color:#4db2ff!important;font-size:18px!important}",
+        "#sandbox-root #pv-h{color:#ff5a45!important;font-size:18px!important}",
+        "#sandbox-root #pv-sh,#sandbox-root #pv-sc{color:#e8c450!important;font-size:16px!important}",
+        "#sandbox-root #sb-trend{display:none!important}",
+        "#sandbox-root #sb-sysinfo,#sandbox-root .gauge-pair,#sandbox-root #sb-trend-desk,#sandbox-root .sb-trend-cap,#sandbox-root #sb-pt,#sandbox-root .readouts,#sandbox-root #sb-fp,#sandbox-root #sb-defrost-d,#sandbox-root #sb-ph,#sandbox-root .sb-ph-cap,#sandbox-root #sb-bom,#sandbox-root .phase-legend,#sandbox-root #sb-ts,#sandbox-root #sb-manifold,#sandbox-root .mf-read,#sandbox-root #sb-status,#sandbox-root .sb-gauges-scroll > .eyebrow{display:none!important}",
+        "#sandbox-root #mf-canvas{display:block!important;width:100%!important;height:auto!important}",
+        "#sandbox-root .mf-digi .lo strong,#sandbox-root .mf-digi .hi strong{font-size:34px!important;line-height:1!important}",
+        "#sandbox-root .sb-slot.core:not(.filled)::after{content:none!important}",
+        "#sandbox-root .sb-slot.core:not(.filled) .sb-num{display:block!important;font:800 22px/1 system-ui,sans-serif!important;color:#e8c450!important}",
+        "#sandbox-root .sb-item.hub-want{outline:none!important;box-shadow:inset 0 0 0 3px #EAB308!important}",
+        "#sandbox-root .rc-next,#sb-scale .rc-next,#sb-vac .rc-next{box-shadow:inset 0 0 0 3px #EAB308,0 0 12px rgba(234,179,8,.75)!important}",
+        "#sandbox-root #sb-sysbanner,#sandbox-root #sb-sysbanner #sb-hub-line{font-size:13px!important;line-height:16px!important;height:16px!important;max-height:16px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;margin:0!important}",
+        "#sandbox-root #sb-vac .sb-vac-read{font:800 28px/1 ui-monospace,monospace!important;color:#e8c450!important;margin:0!important}",
+        "#sandbox-root #sb-vac .sb-vac-line{margin:2px 0 4px!important;font-size:13px!important}",
+        "#sb-n2-modal{align-content:end!important}",
+        "#sb-n2-modal ul{max-height:42vh!important;overflow:auto!important;font-size:13px!important}",
+        "#sb-n2-go{min-height:44px!important;width:100%!important;max-width:100%!important}",
+        "}",
+      ].join("");
+      document.head.appendChild(last);
+    }
+    if (!document.getElementById("sb-bar-scroll")) {
+      const bar = document.createElement("style");
+      bar.id = "sb-bar-scroll";
+      bar.textContent = [
+        "#sandbox-root .sb-toolbar{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;gap:8px!important;width:100%!important;max-width:100%!important;min-width:0!important;height:48px!important;min-height:48px!important;max-height:48px!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-x!important;scrollbar-width:thin!important}",
+        "#sandbox-root .sb-controls,#sandbox-root .sb-actions{flex:0 0 auto!important;width:max-content!important;max-width:none!important;min-width:max-content!important;overflow:visible!important;flex-wrap:nowrap!important}",
+        "#sandbox-root .sb-actions>*,#sandbox-root .sb-controls>label,#sandbox-root .sb-actions .btn,#sandbox-root .lab-drawer-btn,#sandbox-root .sb-fault-label,#sandbox-root .lab-drawers{flex:0 0 auto!important;flex-shrink:0!important}",
+        "#sandbox-root #sb-fault{width:148px!important;min-width:132px!important;max-width:168px!important}",
+        "#sandbox-root #sb-healthy,#sandbox-root #sb-oem,#sandbox-root #sb-sound,#sandbox-root #sb-tour-open,#sandbox-root #sb-hub,#sandbox-root #sb-clear,#sandbox-root #sb-charge-open,#sandbox-root #sb-cutaway{display:inline-flex!important;align-items:center!important;white-space:nowrap!important;flex-shrink:0!important}",
+        "#sandbox-root .sb-toolbar::-webkit-scrollbar{height:4px}",
+        "#sandbox-root .sb-toolbar::-webkit-scrollbar-thumb{background:#e8c450;border-radius:4px}",
+        "#sandbox-root.oem-open .sb-palette{display:flex!important;flex-direction:column!important;overflow:hidden!important;height:min(72dvh,620px)!important;max-height:72dvh!important}",
+        "#sandbox-root.oem-open .sb-tabs{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;flex:0 0 auto!important;max-height:40px!important;width:100%!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-x!important}",
+        "#sandbox-root.oem-open .sb-tab{flex:0 0 auto!important}",
+        "#sandbox-root.oem-open #sb-items{display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch!important;overflow-x:hidden!important;overflow-y:auto!important;flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important;width:100%!important}",
+        "#sandbox-root.oem-open #sb-items .sb-item,#sandbox-root.oem-open #sb-items .sb-item.system{flex:0 0 auto!important;width:100%!important;min-width:0!important;max-width:none!important;height:auto!important;min-height:56px!important;max-height:none!important;overflow:visible!important;flex-direction:row!important;align-items:center!important}",
+        "#sandbox-root.oem-open #sb-items .sb-item strong{display:block!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-height:none!important;font-size:15px!important;line-height:1.2!important}",
+        "#sandbox-root.oem-open #sb-items .sb-item small{display:block!important;white-space:normal!important}",
+        "#sandbox-root.oem-open .sb-brand-head{display:block!important;width:100%!important;flex:0 0 auto!important}",
+      ].join("");
+      document.head.appendChild(bar);
+    }
     canvas = document.getElementById("sb-canvas");
     ctx = canvas && canvas.getContext("2d");
     if (!canvas || !ctx) {
@@ -5295,9 +6593,49 @@
     wire();
     if (opts && opts.dispatch) {
       applyDispatch(opts.dispatch);
+    } else if (opts && opts.chargedMini) {
+      const sys = SYSTEMS.filter(function (x) { return x.id === "daikin-aurora"; })[0];
+      if (sys) {
+        applySystem(sys);
+        const info = opts.chargedMini;
+        const ft = info.lineset || 25;
+        const oz = info.extraOz != null ? info.extraOz : 0;
+        chargePct = 100;
+        fault = "none";
+        txvTarget = sys.targetSH || 7;
+        placed.gauges = "gauges";
+        placed.copper = "lineset";
+        placed.disconnect = "disconnect";
+        placed.contactor = "contactor";
+        placed.capacitor = "capacitor";
+        placed.transformer = "transformer";
+        placed.thermostat = "thermostat";
+        gaugesEquipped = true;
+        running = true;
+        const btn = document.getElementById("sb-run");
+        if (btn) btn.textContent = "Stop";
+        const man = document.getElementById("sb-manifold");
+        if (man) man.classList.add("on");
+        const chEl = document.getElementById("sb-charge");
+        if (chEl) chEl.value = "100";
+        const cv = document.getElementById("sb-charge-v");
+        if (cv) cv.textContent = "100";
+        refreshSlots();
+        layoutSlots();
+        updateSysBanner();
+        const st = document.getElementById("sb-status");
+        if (st) st.textContent = "Charged mini-split. " + ft + " ft lineset, " + oz + " oz extra. Factory charge stayed in the condenser. It is running.";
+        paintHubCoach("It's running. Read the needles.");
+        updateGauges(simulate());
+      }
     }
     const howto = document.getElementById("sb-howto");
     if (howto) howto.classList.add("hidden");
+    if (window.matchMedia && !root._sbMq) {
+      root._sbMq = window.matchMedia("(max-width: 700px), (orientation: landscape) and (max-height: 700px)");
+      root._sbMq.addEventListener("change", function () { layoutSlots(); });
+    }
+    if (window.PlayFeel && stepOnPhone()) window.PlayFeel.coach(playRoot(), nextEmptyRequiredLine());
     if (raf) cancelAnimationFrame(raf);
     raf = requestAnimationFrame(tick);
     return {
@@ -5312,6 +6650,10 @@
           window.removeEventListener("resize", host._ltResize);
           host._ltResize = null;
         }
+        const liveTour = document.getElementById("sb-tour");
+        if (liveTour) liveTour.hidden = true;
+        const liveFab = document.getElementById("sb-tour-fab");
+        if (liveFab) liveFab.hidden = true;
       },
       getHubBtn() {
         return document.getElementById("sb-hub");

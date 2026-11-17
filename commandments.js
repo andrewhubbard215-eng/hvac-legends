@@ -51,7 +51,7 @@
     },
     {
       n: 10,
-      title: (window.LtBrand && window.LtBrand.isStore) ? "The shop is home base" : "The shop is home base",
+      title: (window.LtBrand && window.LtBrand.isStore) ? "The shop is home base" : ((window.LtBrand && window.LtBrand.org) || "HVAC Legends") + " is home base",
       line: "Log the job. Teach the next helper. HVAC Jesus still makes you do the work.",
     },
   ];
@@ -204,10 +204,10 @@
     const speak = root.querySelector("#jesus-speak");
     if (speak) {
       speak.textContent = (opts && opts.fromDefusal)
-        ? "“You cut the open, not the live. I am HVAC Jesus. Hard hat, tool belt, white shirt. Receive the Gauges of God — SH and SC will never be a coin flip again.”"
+        ? "“You cut the open, not the live. HVAC God comes out of the clouds. HVAC Jesus has the gauges. HVAC Muhammed has the golden card.”"
         : fromQuiz
-        ? "“You won the Quiz Game. I am HVAC Jesus. Kneel if you want — I’m here for the Gauges of God. SH and SC will never be a coin flip again.”"
-        : "“I am HVAC Jesus. You opened the HVAC Commandments. Recover, don’t vent. These ten are the law of the shop. Repeat them. Then receive the Gauges of God.”";
+        ? "“You passed. HVAC God comes out of the clouds. HVAC Jesus seats the gauges. HVAC Muhammed puts the golden card in your hand. Your name is on it.”"
+        : "“HVAC God comes out of the clouds. HVAC Jesus brings the gauges. HVAC Muhammed brings the golden card. Recover, don’t vent. Then take both.”";
     }
     root.classList.remove("cut-open", "cut-jesus", "cut-gauges", "cut-lore");
     const timers = [];

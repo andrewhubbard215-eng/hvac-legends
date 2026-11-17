@@ -216,8 +216,9 @@
     const lo = document.getElementById("mf-lo-v");
     const hi = document.getElementById("mf-hi-v");
     function sync() {
-      if (lo) lo.textContent = loOpen ? "Low valve OPEN" : "Low valve CLOSED";
-      if (hi) hi.textContent = hiOpen ? "High valve OPEN" : "High valve CLOSED";
+      const short = window.innerWidth <= 800;
+      if (lo) lo.textContent = short ? (loOpen ? "LO OPEN" : "LO SHUT") : (loOpen ? "Low valve OPEN" : "Low valve CLOSED");
+      if (hi) hi.textContent = short ? (hiOpen ? "HI OPEN" : "HI SHUT") : (hiOpen ? "High valve OPEN" : "High valve CLOSED");
       if (lo) lo.classList.toggle("open", loOpen);
       if (hi) hi.classList.toggle("open", hiOpen);
     }

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Superheat and Subcooling — HVAC Legends</title>
+  <style>
+    @page { size: letter; margin: 0.5in; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #14171a; background: #fff; font: 12.5px/1.4 "IBM Plex Sans", "Segoe UI", sans-serif; }
+    h1 { font-size: 22px; margin: 0; letter-spacing: 0.02em; }
+    h2 { font-size: 13px; margin: 14px 0 6px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .brand { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
+    .top { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #14171a; padding-bottom: 6px; }
+    ol { margin: 6px 0 0; padding-left: 18px; }
+    li { margin: 0 0 7px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .box { border: 1px solid #14171a; border-radius: 6px; padding: 8px 10px; }
+    .box b { display: block; font-size: 14px; margin-bottom: 2px; }
+    .ex { background: #f6f3ec; }
+    .page { break-after: page; }
+    .line { border-bottom: 1px solid #14171a; display: inline-block; min-width: 88px; }
+    .wide { min-width: 180px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+    th, td { border: 1px solid #14171a; padding: 4px 6px; text-align: left; vertical-align: top; }
+    th { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; background: #f3f1ec; }
+    .blank td { height: 26px; }
+    .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .charts table { font-size: 11px; }
+    .charts td, .charts th { padding: 2px 5px; }
+    button { font: inherit; font-weight: 700; padding: 8px 12px; border-radius: 8px; border: 1px solid #14171a; background: #14171a; color: #fff; }
+    @media print { .noprint { display: none; } }
+  </style>
+</head>
+<body>
+  <section class="page">
+    <div class="top">
+      <div>
+        <div class="brand">HVAC Legends · Manifold school</div>
+        <h1>How to take superheat and subcooling</h1>
+      </div>
+      <div>Read this page first.<br>Write on page 2.</div>
+    </div>
+    <p class="noprint"><button type="button" onclick="window.print()">Print both pages</button></p>
+
+    <h2>What the two numbers mean</h2>
+    <div class="two">
+      <div class="box">
+        <b>Superheat = suction line °F − suction saturation °F</b>
+        After the refrigerant boils in the evaporator, the vapor keeps picking up heat. Superheat is how many degrees hotter that vapor is than the boiling temperature. A piston / fixed orifice is charged by superheat.
+      </div>
+      <div class="box">
+        <b>Subcooling = liquid saturation °F − liquid line °F</b>
+        After the vapor turns back to liquid in the condenser, the liquid keeps giving up heat. Subcooling is how many degrees cooler that liquid is than the condensing temperature. A TXV is charged by subcooling.
+      </div>
+    </div>
+
+    <h2>Do it in this order</h2>
+    <ol>
+      <li><b>Read the nameplate</b> before you touch a hose. Write the refrigerant and the metering device. Piston means you will compare superheat to a target chart. TXV means you will compare subcooling to the nameplate. Do not use a number you remember from a different unit.</li>
+      <li><b>No charging cylinder.</b> This job is pressures and pipe temperatures. If refrigerant has to be added or removed later, the jug sits on a scale. The needle does not tell you the pounds.</li>
+      <li><b>Make the unit ready.</b> Filter in. Panels and doors on. Blower running. Set it to cool and let it run 15 minutes. A reading at minute 2 is a lie.</li>
+      <li><b>Seat the gauges to read.</b> Blue hose on the big vapor line. Red hose on the small liquid line. Yellow hose capped. Both handwheels turned in (seated) so you are reading the system, not dumping into the yellow hose. Crack each hose for a second at the gauge to purge air. Air in the hose fakes a low subcool.</li>
+      <li><b>Write both pressures</b> on page 2. Blue gauge is suction, psig. Red gauge is head, psig.</li>
+      <li><b>Turn each pressure into a saturation temperature.</b> Use the inner ring on the gauge for that refrigerant, or the chart on page 2. Find your psig. The °F beside it is saturation. Between two lines, estimate. Write suction saturation and liquid saturation.</li>
+      <li><b>Take the two pipe temperatures</b> with a clamp on bare copper, not on the insulation. Suction line: 6 to 12 inches from the compressor, then put the insulation back. Liquid line: leaving the condenser, before the metering device. Write both.</li>
+      <li><b>Subtract in the right direction.</b> Superheat is the line minus the saturation. Subcooling is the saturation minus the line. Backwards math makes a good unit look broken.</li>
+      <li><b>Compare, then name the call.</b> Use the target from the chart or the nameplate, not a guess. Circle one row on page 2. High superheat and low subcooling is a leak. Do not top it off.</li>
+    </ol>
+
+    <h2>One worked example — do not copy these numbers</h2>
+    <div class="box ex">
+      R-410A, running in cool. Suction reads <b>118 psig</b>. The chart says 118 psig is about <b>40°F</b> saturation. The clamp on the suction line reads <b>55°F</b>.<br>
+      Superheat = 55 − 40 = <b>15°F</b>.<br><br>
+      Head reads <b>340 psig</b>. The chart says 340 psig is about <b>105°F</b> saturation. The clamp on the liquid line reads <b>95°F</b>.<br>
+      Subcooling = 105 − 95 = <b>10°F</b>.<br><br>
+      Those two are in a normal band for a clean TXV split. You would still check the nameplate before you called it done. If superheat had come out negative, the vapor line is colder than the boiling point. That is liquid in the suction line. Stop and recheck the probe and the chart before you condemn a part.
+    </div>
+  </section>
+
+  <section>
+    <div class="top">
+      <div>
+        <div class="brand">HVAC Legends · write on this page</div>
+        <h1>Superheat and subcooling sheet</h1>
+      </div>
+      <div>Name <span class="line wide"></span><br>Date <span class="line"></span></div>
+    </div>
+
+    <h2>1. The unit</h2>
+    <p>
+      Model <span class="line wide"></span>
+      &nbsp; Outdoor °F <span class="line"></span>
+      &nbsp; Return DB <span class="line"></span> WB <span class="line"></span><br>
+      Refrigerant: &nbsp; 410A &nbsp;·&nbsp; 22 &nbsp;·&nbsp; other <span class="line"></span>
+      &nbsp; Metering: &nbsp; piston &nbsp;·&nbsp; TXV &nbsp;·&nbsp; EEV
+      &nbsp; Mode: &nbsp; cool &nbsp;·&nbsp; heat<br>
+      Supply °F <span class="line"></span> &nbsp; ΔT (return − supply) <span class="line"></span>
+    </p>
+
+    <h2>2. Pressures, then the pipe</h2>
+    <table class="blank">
+      <thead><tr><th>Step</th><th>Where</th><th>Your number</th></tr></thead>
+      <tbody>
+        <tr><td>Suction pressure</td><td>Blue gauge, psig. Handwheel seated.</td><td></td></tr>
+        <tr><td>Suction saturation</td><td>°F on the P-T scale or the chart, at that psig.</td><td></td></tr>
+        <tr><td>Suction line temp</td><td>Clamp on vapor-line copper, °F.</td><td></td></tr>
+        <tr><td>Head pressure</td><td>Red gauge, psig. Handwheel seated.</td><td></td></tr>
+        <tr><td>Liquid saturation</td><td>°F on the P-T scale or the chart, at that psig.</td><td></td></tr>
+        <tr><td>Liquid line temp</td><td>Clamp on liquid-line copper, °F.</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <h2>3. The subtraction</h2>
+    <table class="blank">
+      <tbody>
+        <tr><td>Superheat</td><td>suction line ______ − suction saturation ______ = ______ °F</td></tr>
+        <tr><td>Subcooling</td><td>liquid saturation ______ − liquid line ______ = ______ °F</td></tr>
+        <tr><td>Target</td><td>Piston: chart SH ______ °F. &nbsp; TXV: nameplate SC ______ °F.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>4. Circle one call. Do not add gas unless the row says so, and do not top off a leak.</h2>
+    <table>
+      <thead><tr><th></th><th>Superheat</th><th>Subcooling</th><th>What it usually is</th></tr></thead>
+      <tbody>
+        <tr><td>☐</td><td>High</td><td>Low</td><td>Undercharge or a leak. Find it. Do not top off.</td></tr>
+        <tr><td>☐</td><td>Low</td><td>High</td><td>Overcharge. Recover back toward the nameplate. Scale, not a cylinder.</td></tr>
+        <tr><td>☐</td><td>High</td><td>High</td><td>Restriction in the liquid line. Check the drier. Do not add gas.</td></tr>
+        <tr><td>☐</td><td>Low</td><td>Low or normal</td><td>Not enough indoor air. Filter, blower, coil. Do not add gas.</td></tr>
+        <tr><td>☐</td><td>Normal</td><td>Normal, but head is high</td><td>Dirty outdoor coil. Wash it. This is not an overcharge.</td></tr>
+        <tr><td>☐</td><td>Near 0</td><td>Low</td><td>Flooding. Valve wide open or no load. Stop.</td></tr>
+      </tbody>
+    </table>
+    <p>What I will do next: <span class="line" style="min-width:75%"></span></p>
+
+    <h2>Class pressure-temperature chart</h2>
+    <p style="margin:0 0 4px">Find the psig you wrote down. The °F in that row is the saturation temperature. Same numbers as the gauges bay.</p>
+    <div class="charts">
+      <table>
+        <caption style="text-align:left;font-weight:700">R-410A</caption>
+        <thead><tr><th>°F</th><th>psig</th><th>°F</th><th>psig</th></tr></thead>
+        <tbody>
+          <tr><td>40</td><td>118</td><td>80</td><td>235</td></tr>
+          <tr><td>45</td><td>130</td><td>90</td><td>274</td></tr>
+          <tr><td>50</td><td>142</td><td>100</td><td>317</td></tr>
+          <tr><td>55</td><td>155</td><td>105</td><td>340</td></tr>
+          <tr><td>60</td><td>170</td><td>110</td><td>365</td></tr>
+          <tr><td>70</td><td>201</td><td>120</td><td>418</td></tr>
+        </tbody>
+      </table>
+      <table>
+        <caption style="text-align:left;font-weight:700">R-22</caption>
+        <thead><tr><th>°F</th><th>psig</th><th>°F</th><th>psig</th></tr></thead>
+        <tbody>
+          <tr><td>40</td><td>69</td><td>70</td><td>121</td></tr>
+          <tr><td>45</td><td>76</td><td>80</td><td>144</td></tr>
+          <tr><td>50</td><td>84</td><td>90</td><td>168</td></tr>
+          <tr><td>55</td><td>—</td><td>100</td><td>196</td></tr>
+          <tr><td>60</td><td>102</td><td>110</td><td>226</td></tr>
+          <tr><td>32</td><td>58</td><td>120</td><td>260</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</body>
+</html>

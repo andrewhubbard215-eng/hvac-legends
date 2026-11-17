@@ -14,7 +14,7 @@ html, body {
   background: var(--bg);
   color: var(--fg);
   overflow: hidden;
-  touch-action: none;
+  touch-action: manipulation;
 }
 #game {
   display: block;

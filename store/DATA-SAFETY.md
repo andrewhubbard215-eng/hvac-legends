@@ -2,7 +2,7 @@
 
 Play Console → Policy and programs → App content → Data safety.
 
-Package: `com.hvaclegends.app`. New app. Not the HVAC Allstars package.
+Package: `com.hvaclegends.app`. New app. Upload this package only.
 
 Answer in the order Play asks: collected, then shared, then encrypted in transit, then deletion.
 

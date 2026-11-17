@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HVAC Legends pocket card</title>
+  <style>
+    @page { size: letter portrait; margin: 0.4in; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #e7e1d6; color: #1a120c; font: 13px/1.35 "IBM Plex Sans", "Segoe UI", sans-serif; }
+    .sheet { width: 8.5in; min-height: 11in; margin: 0 auto; background: #fffdf8; padding: 0.4in; }
+    header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #9a3412; padding-bottom: 8px; }
+    h1 { margin: 0; font-size: 22px; letter-spacing: 0.04em; }
+    h1 span { color: #9a3412; }
+    .who { margin: 2px 0 0; font-size: 12px; }
+    .rule { margin: 0; text-align: right; font-size: 12px; max-width: 3.4in; }
+    .chips { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 10px 0; }
+    .chip { border: 1px solid #d6cbb8; border-radius: 6px; padding: 6px 8px; }
+    .chip b { display: block; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    th, td { border: 1px solid #c9bfb0; padding: 3px 4px; text-align: right; }
+    th { background: #1a120c; color: #fffdf8; font-weight: 600; font-size: 11px; text-align: center; }
+    td:first-child, th:first-child { text-align: center; font-weight: 700; }
+    tr.ev td { background: #f3e6d0; }
+    tr.hot td { background: #f6ddd2; }
+    .groups th { border-bottom: none; }
+    .sub th { font-weight: 500; font-size: 10px; background: #3a2a22; }
+    footer { margin-top: 8px; font-size: 11px; color: #3a2a22; }
+    .math { margin: 8px 0 0; padding: 8px; border-left: 3px solid #9a3412; background: #f7f1e7; }
+    @media screen { body { padding: 16px 0 32px; } }
+    @media print { body { background: white; } .sheet { width: auto; min-height: 0; padding: 0; } }
+  </style>
+</head>
+<body>
+  <article class="sheet">
+    <header>
+      <div>
+        <h1><span>HVAC Legends</span> pocket card</h1>
+        <p class="who">Andrew Hubbard · saturation pressure, psig, sea level</p>
+      </div>
+      <p class="rule">Bubble is the liquid side. Dew is the vapor side. A pure refrigerant has one column.</p>
+    </header>
+    <div class="chips">
+      <div class="chip"><b>R-22 · one pressure · A1</b>Phased down. GWP 1810. Do not mix it with R-410A oil or fittings.</div>
+      <div class="chip"><b>R-410A · bubble ≈ dew · A1</b>GWP 2088. The two columns are the same number in the field. 118.8 psig at 40°F.</div>
+      <div class="chip"><b>R-454B · two columns · A2L</b>GWP 466. About 2°F of glide. Bubble for subcooling. Dew for superheat.</div>
+      <div class="chip"><b>R-32 · one pressure · A2L</b>GWP 675. Pure. 121 psig at 40°F, 206 at 70°F, 326 at 100°F.</div>
+    </div>
+    <table>
+      <thead>
+        <tr class="groups">
+          <th rowspan="2">°F</th>
+          <th rowspan="2">R-22</th>
+          <th colspan="2">R-410A</th>
+          <th colspan="2">R-454B</th>
+          <th rowspan="2">R-32</th>
+        </tr>
+        <tr class="sub">
+          <th>Bubble</th><th>Dew</th><th>Bubble</th><th>Dew</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>20</td><td>43.1</td><td>78.7</td><td>78.4</td><td>74.8</td><td>70.6</td><td>80.0</td></tr>
+        <tr><td>32</td><td>57.5</td><td>101.4</td><td>101.1</td><td>96.6</td><td>91.5</td><td>103.2</td></tr>
+        <tr class="ev"><td>40</td><td>68.6</td><td>118.8</td><td>118.4</td><td>113.2</td><td>107.5</td><td>121.0</td></tr>
+        <tr><td>50</td><td>84.1</td><td>143.1</td><td>142.6</td><td>136.4</td><td>129.9</td><td>145.8</td></tr>
+        <tr><td>60</td><td>101.6</td><td>170.7</td><td>170.1</td><td>162.7</td><td>155.3</td><td>174.0</td></tr>
+        <tr><td>70</td><td>121.4</td><td>201.7</td><td>201.1</td><td>192.3</td><td>183.9</td><td>205.8</td></tr>
+        <tr><td>80</td><td>143.6</td><td>236.5</td><td>235.7</td><td>225.4</td><td>216.0</td><td>241.5</td></tr>
+        <tr><td>90</td><td>168.4</td><td>275.3</td><td>274.5</td><td>262.3</td><td>251.9</td><td>281.3</td></tr>
+        <tr class="hot"><td>100</td><td>195.9</td><td>318.5</td><td>317.6</td><td>303.3</td><td>291.9</td><td>325.7</td></tr>
+        <tr><td>110</td><td>226.4</td><td>366.5</td><td>365.4</td><td>348.6</td><td>336.3</td><td>374.9</td></tr>
+        <tr class="hot"><td>115</td><td>242.8</td><td>392.3</td><td>391.2</td><td>373.0</td><td>360.3</td><td>401.4</td></tr>
+        <tr><td>120</td><td>260.0</td><td>419.5</td><td>418.3</td><td>398.6</td><td>385.5</td><td>429.3</td></tr>
+        <tr><td>130</td><td>296.9</td><td>478.0</td><td>476.8</td><td>453.6</td><td>440.0</td><td>489.5</td></tr>
+        <tr><td>140</td><td>337.4</td><td>542.6</td><td>541.5</td><td>514.0</td><td>500.1</td><td>555.8</td></tr>
+        <tr><td>150</td><td>381.7</td><td>613.9</td><td>613.0</td><td>580.3</td><td>566.7</td><td>628.8</td></tr>
+      </tbody>
+    </table>
+    <p class="math"><b>Superheat</b> = suction-line °F − dew temperature at the suction pressure. <b>Subcooling</b> = bubble temperature at the liquid pressure − liquid-line °F. Gold row is a 40°F evaporator. Copper rows are a hot condenser.</p>
+    <footer>Training card for HVAC Legends. The nameplate and the OEM chart still win. Not a publisher’s card.</footer>
+  </article>
+</body>
+</html>

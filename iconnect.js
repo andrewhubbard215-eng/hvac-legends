@@ -1,4 +1,4 @@
-/* iConnect trainers in the HVAC Legends lab.
+/* iConnect trainers in the Lincoln Tech lab.
    TU-522 single-phase compressor board with faults (R-134a).
    TU-601 multi-head mini-split heat pump (R-410A, 208/240).
    TU-210G gas boiler, hydronic. */
@@ -157,17 +157,17 @@
     {
       title: "Three trainers, two places",
       real: "In the lab you have three separate machines. TU-522 is the compressor fault board. TU-601 is the mini-split. TU-210G is the gas boiler. They do not share refrigerant, and they do not share a procedure.",
-      here: "On this screen those are the three tabs. Start on TU-522. The other two are questions taken off the plates on the real trainers.",
+      here: "The list is every trainer in this lab. The three on this floor are first. TU-522 opens the patch-cord board. Every other trainer is the job in order. Guided is one move at a time. Exercise is the job left wrong.",
     },
     {
       title: "TU-522 on the bench",
       real: "R-134a only. Read the silk screen before you pull a wire. If the contactor is out, meter the control string. If the contactor is in and the compressor is quiet or humming, meter the load. Never jumper a pressure control to make it run.",
-      here: "HUB marks one part. Tap it. That tap is the meter. Closed means leave it and go to the next mark. Open means tap that same part again and call the fault. Tapping a good part does not clear the ticket.",
+      here: "Drag a patch cord from jack to jack. Guided mode walks one cord at a time and tells you why that cord is next. Exercise mode hands you a board someone left wrong. Pull the bad cord, then land the right one. Hint if you stall. Ask HUB if you want it said another way.",
     },
     {
       title: "Which part is next",
       real: "Contactor out: temperature control, manual pump-down, low-pressure control, high-pressure control, then the contactor coil. Contactor in: overload, run capacitor, potential relay. The start capacitor is only in the circuit while it is starting.",
-      here: "The virtual board uses that same order. The solid-state relay is on the screen because it is on the real board. It is not in this circuit. Do not chase it.",
+      here: "Guided mode uses that order, one cord at a time. The start capacitor lands only on the potential relay. It does not stay on the run winding.",
     },
     {
       title: "TU-601 on the floor",
@@ -193,6 +193,16 @@
 
   function start(root) {
     if (!root) return;
+    if (!document.getElementById("ic-shell-css")) {
+      const css = document.createElement("style");
+      css.id = "ic-shell-css";
+      css.textContent =
+        "#iconnect-root .ic-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px}" +
+        "#iconnect-root .ic-head h2{font-size:22px;margin:0}" +
+        "#iconnect-root .ic-head .btn{min-height:44px}" +
+        "#iconnect-root .ic-choice{min-height:48px;text-align:left}";
+      document.head.appendChild(css);
+    }
     let tab = "tu522";
     let fault = FAULTS[Math.floor(Math.random() * FAULTS.length)];
     let metered = {};
@@ -201,7 +211,7 @@
     let boilI = 0;
     let note = "";
     let hub = "I'm HUB. Same boards as the lab. Meter first. Call the fault second. No jumping a safety to make it run.";
-    let showGuide = true;
+    let showGuide = false;
     let guideI = 0;
 
     const CONTROL = ["tstat", "pump", "lpc", "hpc", "coil"];
@@ -244,20 +254,13 @@
     }
 
     function paint() {
-      const tabs =
-        '<div class="ic-tabs">' +
-        btn("tu522", "TU-522 fault board") +
-        btn("tu601", "TU-601 mini-split") +
-        btn("tu210", "TU-210G boiler") +
-        "</div>";
       root.innerHTML =
         '<header class="hub-head ic-head">' +
-        "<div><p class=\"eyebrow\">iConnect · " + ((window.LtBrand && window.LtBrand.org) || "HVAC Legends") + "</p><h2>Virtual trainers</h2></div>" +
+        "<div><p class=\"eyebrow\">" + ((window.LtBrand && window.LtBrand.trainer) || "Hubconnect") + " · " + ((window.LtBrand && window.LtBrand.org) || "HVAC Legends") + "</p><h2>Virtual trainers</h2></div>" +
         '<button type="button" class="btn" id="ic-how">How to use it</button>' +
         '<button type="button" class="btn" id="ic-back">Shop floor</button></header>' +
-        tabs +
         '<div class="ic-body">' +
-        (showGuide ? guideCard() : hubCard() + (tab === "tu522" ? board() : tab === "tu601" ? quiz(SPLIT, splitI, "tu601") : quiz(BOILER, boilI, "tu210"))) +
+        (showGuide ? guideCard() : '<div id="ic-catalog"></div>') +
         "</div>";
       root.querySelector("#ic-back").onclick = () => {
         if (typeof window.ltPlay === "function") window.ltPlay("hub");
@@ -269,23 +272,11 @@
         guideI = 0;
         paint();
       };
-      root.querySelectorAll(".ic-tabs [data-tab]").forEach((b) => {
-        b.onclick = () => {
-          showGuide = false;
-          tab = b.getAttribute("data-tab");
-          note = "";
-          if (tab === "tu522") hub = "TU-522. R-134a only. " + fault.say + " I marked the first part. Meter that one.";
-          else if (tab === "tu601") hub = "TU-601. Read the plate out loud before you touch a hose. R-410A only. 208/240. The Daikin is the outdoor unit.";
-          else hub = "TU-210G. Gas boiler. Water, not refrigerant. If you hook gauges to that copper, you and I are going to talk.";
-          paint();
-        };
-      });
       if (showGuide) {
         bindGuide();
         return;
       }
-      if (tab === "tu522") bindBoard();
-      else bindQuiz(tab === "tu601" ? SPLIT : BOILER, tab);
+      if (window.IConnectCatalog) window.IConnectCatalog.mount(root.querySelector("#ic-catalog"));
     }
 
     function guideCard() {
@@ -298,7 +289,7 @@
         '<p class="ic-where">On this screen</p><p>' + g.here + "</p>" +
         '<div class="ms-actions">' +
         '<button type="button" class="btn" id="ic-gback"' + (guideI === 0 ? " disabled" : "") + ">Back</button>" +
-        '<button type="button" class="btn primary" id="ic-gnext">' + (guideI === GUIDE.length - 1 ? "Start on the TU-522" : "Next") + "</button>" +
+        '<button type="button" class="btn primary" id="ic-gnext">' + (guideI === GUIDE.length - 1 ? "Open the trainers" : "Next") + "</button>" +
         "</div></article>"
       );
     }
@@ -318,7 +309,7 @@
         }
         showGuide = false;
         tab = "tu522";
-        hub = "TU-522. R-134a only. " + fault.say + " The part with HUB on it is your first meter.";
+        hub = "TU-522. R-134a only. Drag a patch cord. Guided walks the string one cord at a time.";
         paint();
       };
     }
@@ -465,7 +456,7 @@
       });
     }
 
-    hub = "TU-522. R-134a only. " + fault.say + " The part with HUB on it is your first meter.";
+    hub = "TU-522. R-134a only. Drag a patch cord. Guided walks the string one cord at a time.";
     paint();
   }
 

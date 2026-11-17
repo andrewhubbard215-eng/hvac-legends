@@ -1,0 +1,59 @@
+HVAC LEGENDS — store pack notes
+Paste this whole file. Shop-floor language. Preview stays up, locker skipped (?play=1).
+Andrew is GONE. Do not wait. Play it, fix it, ship. No ports, no terminals, no GitHub PAT jargon.
+
+You are working the HVAC Legends Play pack (com.hvaclegends.app).
+
+MISSION
+A tech opens this ON THE TRUCK to do the job. A first-year plays it and gets trained without feeling lectured.
+1) Google Play store SKU — HVAC Legends. Package com.hvaclegends.app.
+2) Do not put a campus skin on this Play listing.
+
+KEEP: clock-in, lockers, shop floor, DX sandbox live SH/SC, service calls HOOKED to that box + random next-ticket faults, Easy/Medium/Spicy, All-Star Exam (608 2026 paper 100 Q UNTIMED 18/25, OSHA 30), electrical black/off-white/green zoom lugs, callback-bomb timed faults (not explosives), mini-split, testers, furnace/flare/braze, manifold school, Ohm's Law, 608 tutor, class door (?play=1&class=1 + exam PIN), HUB drip ear (LtDrip — shop one-liners, NOT lecture cards), Commandments, HVAC Jesus work clothes, Gauges of God DLC.
+REMOVE FOREVER: HVAC Bros, driving, side-scrolling shooter as the main game, EPA stars, combat.
+
+CURRENT (web v=160)
+Playable: dual SKU, skip-locker preview, live dispatch, manifold, Ohm’s demo + tickets, 608 100 Q untimed, land-lugs, furnace/flare/braze, P/T, class door, HUB drip on hub/ohms/gauges/electrical/sandbox/ptchart.
+Weak: drip is thin (glide/KVL/fractionation barely in the wrench), no truck pouch, no voltmeter school, mini-split steps, parts menu eats drops, AAB stale, PLAY-CONSOLE.txt.
+
+TEACH IN THE WRENCH (do not add a “thermo class” card)
+Students must learn these WITHOUT knowing they’re in class. Small HUB ear only. Never “today’s lesson.” Never a textbook screen.
+Concepts to drip more: Ohm’s Law, Kirchhoff (loop/rung), SH methods (coil vs total vs target), SC + dirty-roof vs overcharge, TXV vs piston, glide (dew SH / bubble SC), fractionation (liquid in, no vapor off a blend), zeotrope math, manifold hose colors, 608 recover/weigh-in.
+Rules: one sentence, once per id per ~6h, cooldown so they don’t stack. Slip the real name only after they’ve heard the shop line twice (e.g. “the 24 V got spent in the wire” before “Kirchhoff”).
+Hook more moments: furnace, flare, braze, mini-split, 608 tutor pages, quiz WHY (already there — don’t double-toast), meter mode.
+
+WORK ORDER (this sequence)
+
+0) Crash pass
+Easy call → hook gauges → grade → next ticket FAULT CHANGES. Ohm’s shorted coil OVERLOADED. 608 Core 25 untimed, Next stays, 18/25 stamp. Lug chip hides, wire stays. Parts drawer does not eat the drop. Drip ear does not cover land-lug / hose drop. Fix crashes first.
+
+1) Thicken the drip (no new lecture mode)
+Add 8–12 more event keys in drip.js and hook them. Glide on 454B P/T. Fractionation on 608 recover. KVL when meter reads 24 across an open switch. TXV vs piston when they lock a manifold call. Keep copy shop-floor.
+
+2) TRUCK POUCH — shop card “On the job”
+One-thumb, fat numbers, offline after first load.
+A) P/T + SH/SC: 410A/22/134a/32/454B. Enter suction P/T + liquid P/T. Sat, SH, SC, fingerprint. 454B: dew SH, bubble SC.
+B) Voltage drop/wire: AWG 18–10, feet, amps, 24V/240V. VD, %, volts at load, chatter if 24V < ~21V.
+C) Ohm’s calc: V I R P, 40VA max I, presets.
+D) 608 pocket: recovery table, leak-rate annualizer 10/20/30%, AIM 15 lb vs 50 lb.
+E) Airflow/temp rise: CFM ≈ Btu/(1.08×ΔT).
+HUB ear in the corner, not covering numbers.
+
+3) Voltmeter school
+24V/240V string, guided then unguided, HUB if stuck. Do not replace ladder or lugs.
+
+4) Mini-split: tap step → visual of THAT step. Phone completable.
+
+5) Phone: whole system visible. Drawers auto-stow on grab.
+
+6) Pouch offers “see it on a live box” into sandbox. Training never required to use the pouch on a real call.
+
+7) Do not build or upload an AAB from this sandbox. There is no Android SDK here. On a machine with the SDK, run gradle :app:bundleLegendsRelease and upload that AAB only.
+
+8) If 1–5 are solid: listing shots of pouch + drip-in-lab + dispatch + 608 stamp. PLAY-CONSOLE.txt: $25, app not game, Education, Ads No, PAID $9.99 day one, closed test, privacy public https (host-it note, no PAT), Data safety none, Teen, 12 testers/14 days, Publish.
+
+CONSTRAINTS
+Preview stays running, ?play=1 skip locker. Exam stays untimed. Dual SKU. No new combat. Gauges of God stays DLC. No fake OEM manuals. No lecture cards.
+
+START NOW
+Crash pass, thicken drip, then pouch, then 3–5. When Andrew is back: what a tech can do on a roof, what a first-year absorbs without noticing, what’s store-ready, what he still clicks ($25, ID, testers, Publish).

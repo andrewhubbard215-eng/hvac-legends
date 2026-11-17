@@ -79,8 +79,8 @@
     },
     {
       id: "iconnect",
-      title: "iConnect trainers",
-      say: "iConnect is the three machines in the lab. The first screen is the how-to: what you do on the real TU-522, TU-601, and TU-210G, then the same move on this screen. Meter the marked part. Do not jumper a safety. The boiler is water, not refrigerant.",
+      title: ((window.LtBrand && window.LtBrand.trainer) || "Hubconnect") + " trainers",
+      say: ((window.LtBrand && window.LtBrand.trainer) || "Hubconnect") + " is the three machines in the lab. The first screen is the how-to: what you do on the real TU-522, TU-601, and TU-210G, then the same move on this screen. Meter the marked part. Do not jumper a safety. The boiler is water, not refrigerant.",
       highlight: '[data-mode="iconnect"]',
       launch: "iconnect",
     },

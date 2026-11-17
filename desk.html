@@ -1,26 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Instructor Desk · HVAC Legends</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Instructor Desk</title>
+  <base href="/legends/" />
+  <script src="gate-hvac1.js?v=6"></script>
+  <meta name="description" content="Instructor Desk. Separate from the HVAC Allstars student trainer." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Instructor Desk" />
+  <meta name="theme-color" content="#0b1218" />
+  <link rel="manifest" href="desk.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=343" />
+  <style>
+    html, body { margin: 0; height: 100%; background: #0b1218; color: #e8edf2; }
+    #desk { height: 100%; overflow: auto; }
+  </style>
 </head>
 <body>
-<p id="boot">Opening Instructor Desk…</p>
-<script>
-fetch("https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/desk.html")
-  .then(function (r) { return r.text(); })
-  .then(function (t) {
-    var base = '<base href="https://cdn.jsdelivr.net/gh/andrewhubbard215-eng/hvac-legends@70d762ac5981ac8e314ee0954f676e51676545f0/">';
-    t = t.replace('<base href="/legends/" />', base);
-    document.open();
-    document.write(t);
-    document.close();
-  })
-  .catch(function () {
-    var n = document.getElementById("boot");
-    if (n) n.textContent = "Instructor Desk did not load. Close this tab and open the new link.";
-  });
-</script>
+  <div id="desk"></div>
+  <script src="schools/legends.js?v=5"></script>
+  <script src="schools/menu.js?v=3"></script>
+  <script src="sku.js?v=25"></script>
+  <script src="curriculum.js?v=16"></script>
+  <script src="canvas.js?v=2"></script>
+  <script src="review.js?v=6"></script>
+  <script src="cache.js?v=3"></script>
+  <script src="qrcode.min.js?v=1"></script>
+  <script src="shopschool.js?v=60"></script>
+  <script src="trainer-lessons.js?v=2"></script>
+  <script src="iconnect-teach.js?v=6"></script>
+  <script src="desk-gate.js?v=8"></script>
 </body>
 </html>

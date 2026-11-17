@@ -3,7 +3,7 @@
 (function (global) {
   "use strict";
 
-  const BRAND = "HVAC Legends";
+  const BRAND = (global.LtBrand && global.LtBrand.org) || "HVAC Legends";
 
   function round(n, d) {
     const p = Math.pow(10, d == null ? 2 : d);
@@ -12,7 +12,7 @@
 
   const PRESETS = [
     { id: "coil", name: "24V coil (healthy)", V: 24, R: 48, va: 40, note: "Contactor / relay coil. ~0.5 A." },
-    { id: "short", name: "24V coil (shorted)", V: 24, R: 4, va: 40, note: "Few ohms. Current cooks the 40 VA transformer." },
+    { id: "short", name: "24V coil (shorted)", V: 24, R: 4, va: 40, note: "Few ohms. That's smoke — the transformer is overloaded." },
     { id: "heat", name: "5 kW strip @ 240V", V: 240, R: 11.52, va: 0, note: "About 20.8 A and about 11.5 Ω. I = 5000 W ÷ 240 V. R = V ÷ I." },
     { id: "crank", name: "Crankcase heater", V: 240, R: 1440, va: 0, note: "40 W belly-band. Warm, not a space heater." },
     { id: "pump", name: "120 V resistive load", V: 120, R: 80, va: 0, note: "I = 120 ÷ 80 = 1.5 A and P = V × I = 180 W. A motor winding's ohm reading is copper only — do not treat V ÷ R as its running amps." },
@@ -54,7 +54,7 @@
       unit: "A",
       choices: [0.4, 1.3, 1.67, 40],
       why: "Max current = 40 / 24 = 1.67 A. Load is 1.30 A. It holds — barely leave room for a humidistat. Add a fourth contactor and you're in the smoke.",
-      extra: "The question is the NAMEPLATE max, 1.67 A — not the present load.",
+      extra: "The question is the nameplate max, not the amps already on the coil.",
     },
     {
       id: "strip-i",
@@ -170,6 +170,31 @@
     },
   ];
 
+  function ensureOhmScale() {
+    if (typeof document === "undefined" || document.getElementById("ohms-scale")) return;
+    const st = document.createElement("style");
+    st.id = "ohms-scale";
+    st.textContent = [
+      "#ohms-root,#ohms-root .ohms{max-width:100%;overflow-x:hidden}",
+      "#ohms-root .ohms{max-width:1100px;margin:0 auto}",
+      "#ohms-root .ohms-svg,#ohms-root .ohms-tri{width:100%;max-width:100%;height:auto;display:block}",
+      "#ohms-root img{object-fit:contain;max-width:100%;height:auto}",
+      "@media (min-width:900px){",
+      "#ohms-root .ohms-demo{display:grid;grid-template-columns:minmax(240px,360px) minmax(0,1fr);gap:8px 16px;align-items:start;max-width:1100px}",
+      "#ohms-root .ohms-demo>.ohms-hub-line,#ohms-root .ohms-demo>.ohms-coach,#ohms-root .ohms-demo>.ohms-presets,#ohms-root .ohms-demo>.ohms-note,#ohms-root .ohms-demo>.ohms-nav,#ohms-root .ohms-demo>.ohms-formula,#ohms-root .ohms-demo>.ohms-hose{grid-column:1 / -1}",
+      "#ohms-root .ohms-demo>.ohms-read,#ohms-root .ohms-demo>.ohms-slide,#ohms-root .ohms-demo>.ohms-va{grid-column:1}",
+      "#ohms-root .ohms-demo>.ohms-svg,#ohms-root .ohms-demo>.ohms-tri{grid-column:2;grid-row:2 / span 5;align-self:center;width:100%;max-width:100%;height:auto}",
+      "}",
+      "@media (max-width:899px){",
+      "#screen-ohms.screen.active{overflow-x:hidden!important;max-width:100%}",
+      "#ohms-root .ohms-tabs,#ohms-root .ohms-presets,#ohms-root .ohms-nav{flex-wrap:wrap!important;overflow-x:hidden!important;max-width:100%}",
+      "#ohms-root .ohms-tabs .btn,#ohms-root .ohms-presets .btn{flex:1 1 auto;min-width:0}",
+      "#ohms-root .ohms-read{grid-template-columns:repeat(2,minmax(0,1fr))}",
+      "}",
+    ].join("");
+    document.head.appendChild(st);
+  }
+
   function currentDiff() {
     const d = global.LtDiff;
     return d === "easy" || d === "spicy" ? d : "medium";
@@ -224,6 +249,27 @@
       return m > 0 && Iof() > m * 0.98;
     }
 
+    function xfmrStatus(i, smoke) {
+      const maxA = round(vaMax(), 2);
+      if (smoke) {
+        return (
+          "SMOKE — OVERLOADED. Coil pulls " +
+          round(i, 2) +
+          " A. " +
+          preset.va +
+          " VA max is " +
+          maxA +
+          " A."
+        );
+      }
+      return "Transformer " + preset.va + " VA · max " + maxA + " A · holding";
+    }
+
+    function xfmrPara(i, smoke) {
+      const hot = smoke ? ' style="color:#CE0034;font-weight:800"' : "";
+      return '<p class="ohms-va"' + hot + ">" + xfmrStatus(i, smoke) + "</p>";
+    }
+
     function job() {
       return JOBS[jobI] || JOBS[0];
     }
@@ -231,20 +277,20 @@
     function circuitSvg(v, i, r, smoke) {
       const glow = smoke ? "#CE0034" : "#3dd68c";
       return (
-        '<svg class="ohms-svg" viewBox="0 0 360 160" aria-hidden="true">' +
+        '<svg class="ohms-svg' + (smoke ? " smoke" : "") + '" viewBox="0 0 360 160" aria-hidden="true">' +
         '<rect x="8" y="40" width="70" height="80" rx="8" fill="#1c2126" stroke="#CE0034" stroke-width="3"/>' +
         '<text x="43" y="74" text-anchor="middle" fill="#f4efe6" font-size="11" font-family="IBM Plex Sans,sans-serif">SOURCE</text>' +
         '<text x="43" y="94" text-anchor="middle" fill="#e8c450" font-size="16" font-weight="700">' +
         round(v, 1) +
         " V</text>" +
-        '<line x1="78" y1="55" x2="150" y2="55" stroke="' +
+        '<line class="ohms-flow" x1="78" y1="55" x2="150" y2="55" stroke="' +
         glow +
         '" stroke-width="4"/>' +
         '<rect x="150" y="18" width="70" height="28" rx="4" fill="#111" stroke="#e8c450"/>' +
         '<text x="185" y="38" text-anchor="middle" fill="#e8c450" font-size="12">A ' +
         round(i, 2) +
         "</text>" +
-        '<line x1="220" y1="55" x2="280" y2="55" stroke="' +
+        '<line class="ohms-flow" x1="220" y1="55" x2="280" y2="55" stroke="' +
         glow +
         '" stroke-width="4"/>' +
         '<rect x="280" y="40" width="70" height="80" rx="8" fill="#1c2126" stroke="#e8c450" stroke-width="3"/>' +
@@ -252,13 +298,13 @@
         '<text x="315" y="94" text-anchor="middle" fill="#e8c450" font-size="16" font-weight="700">' +
         round(r, 1) +
         " Ω</text>" +
-        '<line x1="315" y1="120" x2="315" y2="140" stroke="' +
+        '<line class="ohms-flow" x1="315" y1="120" x2="315" y2="140" stroke="' +
         glow +
         '" stroke-width="4"/>' +
-        '<line x1="315" y1="140" x2="43" y2="140" stroke="' +
+        '<line class="ohms-flow" x1="315" y1="140" x2="43" y2="140" stroke="' +
         glow +
         '" stroke-width="4"/>' +
-        '<line x1="43" y1="140" x2="43" y2="120" stroke="' +
+        '<line class="ohms-flow" x1="43" y1="140" x2="43" y2="120" stroke="' +
         glow +
         '" stroke-width="4"/>' +
         (smoke
@@ -294,20 +340,102 @@
       return GUIDE[Math.min(gi, GUIDE.length - 1)];
     }
 
-    function maybeGuide(kind, extra) {
+    function nextMove() {
+      if (tab === "guide") {
+        const s = guideStep();
+        if (!s) return "Tap Next.";
+        if (s.wait === "drag") return "Slide the kink to the left.";
+        if (s.wait === "preset:coil") return "Tap 24V coil (healthy).";
+        if (s.wait === "preset:short") return "Tap 24V coil (shorted).";
+        if (s.id === "ticket") return "Open the bay and cover the letter.";
+        return "Tap Next.";
+      }
+      if (tab === "demo") return "Slide resistance, or tap a preset.";
+      if (cleared) return "Tap Run it again.";
+      if (dead) return "Tap New bay.";
+      if (locked) return "Tap Next question.";
+      const j = job();
+      const word = j.find === "P" ? "watts" : j.find === "I" ? "amps" : "ohms";
+      return "Cover " + j.find + ". Tap the " + word + ".";
+    }
+
+    function missLine(j, n) {
+      if (j.id === "coil-r") {
+        if (Math.abs(n - 12) < 0.051) return "That's watts, V × I. Cover R and divide volts by amps.";
+        if (Math.abs(n - 24) < 0.051) return "That's the voltage. Cover R: volts ÷ amps.";
+        if (Math.abs(n - 96) < 0.051) return "Too high. R = V ÷ I, not twice that.";
+      }
+      if (j.id === "coil-short") {
+        if (Math.abs(n - 0.5) < 0.051) return "That's a healthy coil. This one is 4 Ω. I = V ÷ R.";
+        if (Math.abs(n - 1.67) < 0.051) return "That's the transformer max, not what this shorted coil draws.";
+        if (Math.abs(n - 24) < 0.051) return "That's volts. Cover I: volts ÷ ohms.";
+      }
+      if (j.id === "xfmr-va") {
+        if (Math.abs(n - 1.3) < 0.051) return "That's the load already on it. The question is VA ÷ V.";
+        if (Math.abs(n - 0.4) < 0.051) return "That's one contactor. Nameplate max is VA ÷ volts.";
+        if (Math.abs(n - 40) < 0.051) return "That's volt-amps, not amps. Divide VA by volts.";
+      }
+      if (j.id === "strip-i") {
+        if (Math.abs(n - 12) < 0.051) return "That's ohms, not amps. Cover I: watts ÷ volts.";
+        if (Math.abs(n - 240) < 0.051) return "That's volts. Amps are watts ÷ volts.";
+        if (Math.abs(n - 4.8) < 0.051) return "That's kilowatts. Use watts ÷ volts.";
+      }
+      if (j.id === "strip-r") {
+        if (Math.abs(n - 20) < 0.051) return "That's amps. Ohms are volts ÷ amps, with power off.";
+        if (Math.abs(n - 240) < 0.051) return "That's volts. Cover R: volts ÷ amps.";
+        if (Math.abs(n - 0.8) < 0.051) return "That's not V ÷ I. Cover R.";
+      }
+      if (j.id === "drop") {
+        if (Math.abs(n - 3) < 0.051) return "That's the missing volts. Divide that drop by the amps.";
+        if (Math.abs(n - 21) < 0.051) return "That's voltage at the coil, not ohms of wire.";
+        if (Math.abs(n - 1.5) < 0.051) return "That's watts of drop. Ohms are volts ÷ amps.";
+      }
+      if (j.id === "pump") {
+        if (Math.abs(n - 80) < 0.051) return "That's ohms. Watts are volts × amps.";
+        if (Math.abs(n - 120) < 0.051) return "That's volts. Cover P: volts × amps.";
+        if (Math.abs(n - 800) < 0.051) return "Too high. P = V × I, not V × R.";
+      }
+      if (j.id === "lra") {
+        if (Math.abs(n - 100) < 0.051) return "That's V ÷ R. A winding's ohms are copper, not running amps.";
+        if (Math.abs(n - 60) < 0.051) return "That's locked-rotor, not running amps. Use nameplate RLA.";
+        if (Math.abs(n - 2.4) < 0.051) return "That's the ohm reading. Running current is nameplate RLA.";
+      }
+      return "Wrong number. Cover " + j.find + ". " + j.formula + ".";
+    }
+
+    function feelOhm(el, text, kind) {
+      if (!window.PlayFeel || !text) return;
+      const node = el || host || document.body;
+      if (kind === "bad") window.PlayFeel.deny(node);
+      else window.PlayFeel.bump(node);
+      window.PlayFeel.pop(node, text, kind === "bad" ? "bad" : "ok");
+      const line = nextMove();
+      if (line) window.PlayFeel.coach(document.body, line);
+    }
+
+    function maybeGuide(kind, extra, el) {
       const s = guideStep();
       if (tab !== "guide" || !s || !s.wait) return;
       if (s.wait === "drag" && kind === "drag") {
         gi = Math.min(gi + 1, GUIDE.length - 1);
+        feelOhm(el || host.querySelector("#ohms-r"), "Amps moved", "ok");
         paint();
+        return;
       }
-      if (s.wait === "preset:" + extra && kind === "preset") {
-        gi = Math.min(gi + 1, GUIDE.length - 1);
-        paint();
+      if (kind === "preset" && s.wait.indexOf("preset:") === 0) {
+        if (s.wait === "preset:" + extra) {
+          gi = Math.min(gi + 1, GUIDE.length - 1);
+          feelOhm(el, "That's the one", "ok");
+          paint();
+        } else {
+          const want = s.wait === "preset:short" ? "Tap 24V coil (shorted)." : "Tap 24V coil (healthy).";
+          feelOhm(el, "Wrong preset. " + want, "bad");
+        }
       }
     }
 
     function paint() {
+      ensureOhmScale();
       const d = currentDiff();
       const i = Iof();
       const p = Pof();
@@ -345,6 +473,10 @@
         (tab === "guide" ? paintGuide(i, p, smoke) : tab === "demo" ? paintDemo(i, p, smoke, d) : paintTickets(j, d)) +
         "</div>";
       bind();
+      if (window.PlayFeel) {
+        const line = nextMove();
+        if (line) window.PlayFeel.coach(document.body, line);
+      }
       if (smoke && global.LtDrip) global.LtDrip.say("ohms.smoke");
       else if (preset && preset.id === "coil" && global.LtDrip) global.LtDrip.say("ohms.coil");
       else if (preset && preset.id === "short" && global.LtDrip) global.LtDrip.say("ohms.smoke");
@@ -371,15 +503,7 @@
         round(p, 0) +
         " W</span></div>" +
         "</div>" +
-        (preset.va
-          ? '<p class="ohms-va">Transformer ' +
-            preset.va +
-            " VA · max " +
-            round(vaMax(), 2) +
-            " A" +
-            (smoke ? " · <strong>OVERLOADED</strong>" : " · holding") +
-            "</p>"
-          : "") +
+        (preset.va ? xfmrPara(i, smoke) : "") +
         '<label class="ohms-slide">Resistance (coil / heater / wire)' +
         '<input id="ohms-r" type="range" min="1" max="2000" step="1" value="' +
         Math.min(2000, Math.max(1, Math.round(R))) +
@@ -465,15 +589,7 @@
             round(p, 0) +
             " W</span></div></div>"
           : "") +
-        (preset.va && (s.id === "short" || s.id === "healthy" || s.id === "va")
-          ? '<p class="ohms-va">Transformer ' +
-            preset.va +
-            " VA · max " +
-            round(vaMax(), 2) +
-            " A" +
-            (smoke ? " · <strong>OVERLOADED — that's the smoke</strong>" : " · holding") +
-            "</p>"
-          : "") +
+        (preset.va && (s.id === "short" || s.id === "healthy" || s.id === "va") ? xfmrPara(i, smoke) : "") +
         (s.id === "drag" || s.id === "healthy" || s.id === "short"
           ? '<label class="ohms-slide">Resistance — this is the kink in the hose' +
             '<input id="ohms-r" type="range" min="1" max="200" step="1" value="' +
@@ -628,12 +744,14 @@
       if (locked || dead || cleared) return;
       if (val == null || String(val).trim() === "" || !isFinite(Number(val))) {
         lastFb = "Type the number, or tap a tile. Blank doesn't count.";
+        feelOhm(host.querySelector("#ohms-ans") || host, "Type the number, or tap a tile.", "bad");
         paint();
         return;
       }
       const j = job();
       const n = Number(val);
       const ok = Math.abs(n - j.answer) < 0.051;
+      const anchor = host.querySelector('[data-ans="' + n + '"]') || host.querySelector("#ohms-ans") || host;
       locked = true;
       lastPick = n;
       deadline = 0;
@@ -642,6 +760,7 @@
         right++;
         score += 100 * streak;
         lastFb = "<strong>That's the call.</strong> " + j.why;
+        feelOhm(anchor, "That's the call", "ok");
         if (onXp) onXp(20);
         if (global.CurriculumTrain) global.CurriculumTrain.stamp("ohms");
         if (global.LtDrip) {
@@ -654,6 +773,7 @@
         lives--;
         lastFb = "<strong>Not that one.</strong> " + j.answer + " " + j.unit + ". " + j.why;
         if (lives <= 0) dead = true;
+        feelOhm(anchor, missLine(j, n), "bad");
       }
       paint();
     }
@@ -703,7 +823,7 @@
           R = +sl.value;
           dragged = true;
           paintKeepSlider(sl);
-          maybeGuide("drag");
+          maybeGuide("drag", "", sl);
         };
       }
       const pres = host.querySelector("#ohms-presets");
@@ -716,7 +836,7 @@
           }) || PRESETS[0];
           V = preset.V;
           R = preset.R;
-          maybeGuide("preset", preset.id);
+          maybeGuide("preset", preset.id, b);
           paint();
         };
       }
@@ -801,13 +921,9 @@
       if (cells[3]) cells[3].textContent = round(p, 0) + " W";
       const va = host.querySelector(".ohms-va");
       if (va && preset.va) {
-        va.innerHTML =
-          "Transformer " +
-          preset.va +
-          " VA · max " +
-          round(vaMax(), 2) +
-          " A" +
-          (smoke ? " · <strong>OVERLOADED</strong>" : " · holding");
+        va.innerHTML = xfmrStatus(i, smoke);
+        va.style.color = smoke ? "#CE0034" : "";
+        va.style.fontWeight = smoke ? "800" : "";
       }
     }
 
@@ -823,6 +939,7 @@
           const j = job();
           lastFb = "<strong>Time.</strong> " + j.answer + " " + j.unit + ". " + j.why;
           if (lives <= 0) dead = true;
+          feelOhm(host.querySelector("#ohms-choices") || host, "Time. Cover " + j.find + ".", "bad");
           paint();
         }
       }

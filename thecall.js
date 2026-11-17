@@ -73,8 +73,11 @@
     "#call-root .call-lab{max-width:880px;margin:0 auto;padding:8px 12px 28px;color:#e8eef2}",
     "#call-root .call-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}",
     "#call-root .call-top .btn{padding:8px 12px;min-height:44px}",
-    "#call-root .call-photo{display:block;width:100%;height:112px;max-height:112px;object-fit:cover;border-radius:12px;margin-top:8px;background:#111}",
-    "#call-root .call-lab.is-locked .call-photo{display:none}",
+    "#call-root .call-photo{display:block;width:100%;height:auto;max-height:min(42vh,280px);object-fit:contain;object-position:center;border-radius:12px;margin-top:8px;background:#111;box-shadow:0 0 0 2px #e8c450}",
+    "#call-root .call-built{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}",
+    "#call-root .call-built figure{margin:0;width:84px}",
+    "#call-root .call-built img{display:block;width:84px;height:56px;object-fit:contain;object-position:center;background:#111;border-radius:8px}",
+    "#call-root .call-built figcaption{font-size:11px;color:#e8c450;margin-top:2px}",
     "#call-root .call-who-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}",
     "#call-root .call-who{margin:0}",
     "#call-root .call-hear{padding:8px 12px;min-height:40px;font-size:13px}",
@@ -115,24 +118,7 @@
     } catch (err) {}
   }
 
-  function speak(text) {
-    try {
-      if (!global.speechSynthesis || !global.SpeechSynthesisUtterance) return;
-      var synth = global.speechSynthesis;
-      var line = new global.SpeechSynthesisUtterance(String(text || ""));
-      line.lang = "en-US";
-      line.rate = 0.96;
-      if (synth.speaking || synth.pending) {
-        synth.cancel();
-        if (speakTimer) global.clearTimeout(speakTimer);
-        speakTimer = global.setTimeout(function () {
-          try { synth.speak(line); } catch (err) {}
-        }, 80);
-        return;
-      }
-      synth.speak(line);
-    } catch (err) {}
-  }
+  function speak() {}
 
   function start(root, opts) {
     opts = opts || {};
@@ -160,20 +146,7 @@
       );
     }
 
-    function sayCall(c, showProof) {
-      if (!c) return;
-      if (!showProof) {
-        speak(c.who + ". " + c.complaint);
-        return;
-      }
-      var hit = picked === c.right;
-      speak(
-        (hit ? "That's the first move. " : "Not the first move. ") +
-        "Low side " + c.low.psi + " psi, superheat " + c.low.sh + ". " +
-        "High side " + c.high.psi + " psi, subcool " + c.high.sc + ". " +
-        c.why
-      );
-    }
+    function sayCall() {}
 
     function fit() {
       var screen = screenEl();
@@ -210,7 +183,6 @@
           "<h2>You called " + firstRight + " of " + CALLS.length + " on the first try.</h2>" +
           "<p class=\"call-why\">The rule you just used: one pressure lies. Superheat and subcool together tell you whether it is air, charge, a fan, or a valve. Say the first move out loud next time, before the hoses are on. Airflow before charge. Do not add gas to a leak. Do not jump a float.</p>" +
           '<button type="button" class="btn primary call-next" data-act="again">Run the calls again</button></div>';
-        speak("You called " + firstRight + " of " + CALLS.length + " on the first try. Airflow before charge. Do not add gas to a leak. Do not jump a float.");
         global.requestAnimationFrame(fit);
         return;
       }
@@ -232,14 +204,18 @@
           '<button type="button" class="btn primary call-next" data-act="next">' +
           (i === CALLS.length - 1 ? "See how you did" : "Next call") + "</button></div>";
       }
+      var prior = "";
+      for (var n = 0; n < i; n++) {
+        prior += '<figure><img src="' + esc(CALLS[n].photo) + '" alt="" /><figcaption>' + (n + 1) + " · called</figcaption></figure>";
+      }
       root.innerHTML =
         '<style>' + FIT + "</style>" +
         '<div class="call-lab' + (locked ? " is-locked" : "") + '">' +
         '<div class="call-top"><p class="eyebrow">Call ' + (i + 1) + " of " + CALLS.length + " · R-410A</p>" +
         '<button type="button" class="btn" data-act="hub">Shop floor</button></div>' +
+        (prior ? '<div class="call-built"><p class="ms-chapter" style="flex:0 0 100%;margin:0">Calls already made</p>' + prior + "</div>" : "") +
         '<img class="call-photo" src="' + esc(c.photo) + '" alt="" />' +
-        '<div class="call-who-row"><p class="call-who">' + esc(c.who) + "</p>" +
-        '<button type="button" class="btn call-hear" data-act="hear">Hear it</button></div>' +
+        '<div class="call-who-row"><p class="call-who">' + esc(c.who) + "</p></div>" +
         '<p class="call-complaint">“' + esc(c.complaint) + "”</p>" +
         "<h3>" + esc(c.ask) + "</h3>" +
         '<div class="call-choices">' + choices + "</div>" +
@@ -257,10 +233,6 @@
       if (act === "hub") {
         hush();
         if (opts.onHub) opts.onHub();
-        return;
-      }
-      if (act === "hear") {
-        if (CALLS[i]) speak(CALLS[i].who + ". " + CALLS[i].complaint);
         return;
       }
       if (act === "again") {

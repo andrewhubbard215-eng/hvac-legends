@@ -1,27 +1,39 @@
-/* Shop cards stay tiles. Parts tray scrolls. Guide bar stays one line. */
+/* Grok live-preview handshake — no nested iframe. */
 (function () {
-  var css = document.createElement("style");
-  css.id = "pc-card-fix";
-  css.textContent = [
-    "#screen-title:not(.active) { display: none !important; height: 0 !important; }",
-    "#sb-palette, .sb-palette { max-height: 42vh !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }",
-    "#sb-items, .sb-items, #sb-xtra { overflow-y: auto !important; overflow-x: hidden !important; -webkit-overflow-scrolling: touch !important; touch-action: pan-y !important; max-height: 36vh !important; min-height: 120px !important; padding-bottom: 12px !important; }",
-    ".sb-rail { overflow-x: auto !important; overflow-y: hidden !important; -webkit-overflow-scrolling: touch !important; touch-action: pan-x !important; max-height: 96px !important; }",
-    "#student-dock { position: fixed !important; left: 8px !important; right: 8px !important; bottom: 8px !important; max-height: 56px !important; overflow: hidden !important; z-index: 30 !important; pointer-events: none !important; display: flex !important; gap: 8px; align-items: center; background: #14110c; border: 1px solid #c9a227; border-radius: 12px; padding: 6px; }",
-    "#student-dock[hidden] { display: none !important; }",
-    "#student-dock button { pointer-events: auto !important; min-height: 44px; }",
-    "#student-dock span { pointer-events: none !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f3e2b0; font-size: 12px; }",
-    "#screen-sandbox { padding-bottom: 64px !important; }"
-  ].join("");
-  document.head.appendChild(css);
-
-  function scrollTray() {
-    var box = document.getElementById("sb-items") || document.querySelector(".sb-items");
-    if (!box) return;
-    box.style.overflowY = "auto";
-    box.style.webkitOverflowScrolling = "touch";
-    box.style.touchAction = "pan-y";
-    box.style.maxHeight = "36vh";
+  if (typeof window === "undefined" || window.parent === window) return;
+  var CHANNEL = "grok-preview-bridge";
+  var parentOrigin = null;
+  var ancestor =
+    typeof location.ancestorOrigins !== "undefined" && location.ancestorOrigins.length
+      ? location.ancestorOrigins[0]
+      : "";
+  var candidates = [document.referrer, ancestor].filter(Boolean);
+  for (var i = 0; i < candidates.length; i++) {
+    try {
+      var c = candidates[i];
+      var u = new URL(c.indexOf("://") >= 0 ? c : "https://" + c);
+      if (u.protocol === "https:" || u.protocol === "http:") {
+        parentOrigin = u.origin;
+        break;
+      }
+    } catch (_) {}
   }
-  setInterval(scrollTray, 800);
+  if (!parentOrigin) return;
+  function post(extra) {
+    var msg = { channel: CHANNEL, version: 1 };
+    for (var k in extra) msg[k] = extra[k];
+    window.parent.postMessage(msg, parentOrigin);
+  }
+  function announce() {
+    post({ type: "location", path: location.pathname, search: location.search, hash: "" });
+    post({ type: "routes", paths: ["/", "/legends/index.html?play=1"] });
+    post({ type: "ready" });
+  }
+  window.addEventListener("message", function (ev) {
+    if (ev.source !== window.parent) return;
+    if (ev.origin !== parentOrigin) return;
+    if (!ev.data || ev.data.channel !== CHANNEL) return;
+    if (ev.data.type === "hello") announce();
+  });
+  announce();
 })();

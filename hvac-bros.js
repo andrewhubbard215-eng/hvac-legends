@@ -1,4 +1,4 @@
-/* HVAC BROS — original HVAC Legends 8-bit platformer (not Nintendo IP) */
+/* HVAC BROS — original Lincoln Tech 8-bit platformer (not Nintendo IP) */
 (function (global) {
   "use strict";
 
@@ -676,7 +676,7 @@
     ctx.fillText("HVAC BROS", 28, 54);
     ctx.font = "14px sans-serif";
     ctx.fillStyle = "#f2d07a";
-    ctx.fillText("Two-tech rooftop run  ·  stomp iced coils, dirty filters, oil leaks  ·  commission the ODU", 28, 78);
+    ctx.fillText(((window.LtBrand && window.LtBrand.org) || "HVAC Legends") + " two-tech rooftop run  ·  stomp iced coils, dirty filters, oil leaks  ·  commission the ODU", 28, 78);
     ctx.fillStyle = "#cbd5e1";
     ctx.fillText("Red tech  P1  ← →  jump SPACE     Green tech  P2  A D  jump W     recover cans · hit TXV crates", 28, 102);
   }
@@ -790,7 +790,7 @@
       <div class="hb-shell">
         <header class="hb-head">
           <div>
-            <p class="eyebrow">Shop arcade</p>
+            <p class="eyebrow">${(window.LtBrand && window.LtBrand.org) || "HVAC Legends"} arcade</p>
             <h2>HVAC BROS</h2>
           </div>
           <p class="hb-sub">Install crew platformer. Stomp iced coils, dirty filters, and oil leaks. Recover cans. Commission the outdoor unit.</p>

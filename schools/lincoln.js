@@ -1,0 +1,297 @@
+/* SCHOOL PACK — Lincoln Tech.
+   This is the only Lincoln course file. The rest of the app is shared.
+   Another school: copy this file, change the name and the courses, then point
+   index.html and desk.html at schools/yourschool.js. Delete this file to remove Lincoln Tech. */
+window.SchoolPack = {
+  id: "lincoln",
+  org: "Lincoln Tech",
+  title: "Lincoln Tech HVAC Allstars",
+  mark: "LT",
+  wordmark: 'HVAC <span class="lt-red">Allstars</span>',
+  eyebrow: "Lincoln Tech - HVAC",
+  exam: "EPA 608 · OSHA 30 · Lincoln Tech",
+  school: "Lincoln Tech",
+  roof: "Lincoln Tech roof · the heavens open",
+  packCurriculum: "Lincoln Tech",
+  unbranded: false,
+  coachMap: { copper: "piping", elec: "hcr102", ref: "hcr105", ac: "hcr117", epa: "epa608" },
+  units: [
+    {
+      id: "hcr101",
+      code: "HCR101",
+      title: "Introduction to Climate Control",
+      hours: "60 lec / 60 lab",
+      credits: "5.0",
+      topics: [
+        "Heat transfer & energy",
+        "Temperature / pressure relationships",
+        "Copper cut, bend, flare, swage",
+        "Safety & PPE",
+      ],
+      labGoal: "Identify cycle parts and practice flaring before shop copper work.",
+      practice: [
+        { mode: "sandbox", label: "Build a basic cycle in sandbox" },
+        { mode: "minisplit", label: "Mini-split install · flare & torque steps" },
+      ],
+    },
+    {
+      id: "hcr102",
+      code: "HCR102",
+      title: "Electricity",
+      hours: "60 lec / 60 lab",
+      credits: "5.0",
+      topics: [
+        "Ohm’s law & circuits",
+        "Motors & capacitors",
+        "Multimeter use",
+        "Control circuits & schematics",
+      ],
+      labGoal: "Read voltage/amps mentally; wire power & comms on a mini-split.",
+      practice: [
+        { mode: "minisplit", label: "Electrical & communication step" },
+        { mode: "service", label: "Diagnose electrical faults quiz" },
+      ],
+    },
+    {
+      id: "hcr105",
+      code: "HCR105",
+      title: "Basic Refrigeration Systems",
+      hours: "60 lec / 60 lab",
+      credits: "5.0",
+      topics: [
+        "Refrigeration cycle",
+        "Compressors, TXV, capillary",
+        "Evacuation & charging",
+        "P/T chart & SH/SC",
+      ],
+      labGoal: "Assemble a cycle, watch refrigerant flow, read live pressures.",
+      practice: [
+        { mode: "gauges", label: "Manifold school · hookup + SH/SC" },
+        { mode: "sandbox", label: "Sandbox · pressures + flow particles" },
+        { mode: "service", label: "SH/SC fault diagnosis" },
+      ],
+    },
+    {
+      id: "hcr117",
+      code: "HCR117",
+      title: "Air Conditioning Systems",
+      hours: "60 lec / 60 lab",
+      credits: "5.0",
+      topics: [
+        "Split & package units",
+        "Ductless mini-splits",
+        "Heat pumps",
+        "Start-up & commissioning",
+      ],
+      labGoal: "Run a full mini-split install sequence before lab day.",
+      practice: [
+        { mode: "minisplit", label: "Full 11-step mini-split install" },
+        { mode: "sandbox", label: "Load Daikin / Carrier / Goodman templates" },
+      ],
+    },
+    {
+      id: "hcr108",
+      code: "HCR108",
+      title: "A/C Design & Energy Conservation",
+      hours: "60 lec / 60 lab",
+      credits: "5.0",
+      topics: [
+        "Load concepts",
+        "Equipment selection",
+        "Air distribution basics",
+        "Efficiency & SEER ideas",
+      ],
+      labGoal: "Compare brand systems in sandbox and note operating bands.",
+      practice: [
+        { mode: "sandbox", label: "Compare brand system templates" },
+      ],
+    },
+    {
+      id: "hcr109",
+      code: "HCR109",
+      title: "Commercial Refrigeration",
+      hours: "60 lec / 60 lab",
+      credits: "5.0",
+      topics: [
+        "Walk-ins & reach-ins",
+        "Parallel racks concepts",
+        "Defrost strategies",
+        "Commercial troubleshooting",
+      ],
+      labGoal: "Practice commercial fault thinking with diagnose quizzes.",
+      practice: [
+        { mode: "service", label: "Commercial-leaning fault quiz" },
+        { mode: "sandbox", label: "Build high-side / low-side scenarios" },
+      ],
+    },
+    {
+      id: "hcr110",
+      code: "HCR110",
+      title: "Troubleshooting",
+      hours: "60 lec / 60 lab",
+      credits: "5.0",
+      topics: [
+        "Systematic diagnosis",
+        "Superheat / subcooling",
+        "Electrical vs mechanical",
+        "Customer communication",
+      ],
+      labGoal: "Close service tickets; get paid for correct diagnoses.",
+      practice: [
+        { mode: "service", label: "Service ticket quiz (paid)" },
+      ],
+    },
+    {
+      id: "epa608",
+      code: "EPA 608",
+      title: "Refrigerant Standards & Certification",
+      hours: "Prep module",
+      credits: "Cert track",
+      topics: [
+        "Clean Air Act Section 608",
+        "Recovery / recycle / reclaim",
+        "Cylinder handling",
+        "Core + Type I/II/III ideas",
+      ],
+      labGoal: "Respect recovery rules; never vent. Practice vacuum discipline.",
+      practice: [
+        { mode: "minisplit", label: "Nitrogen test + deep vacuum steps" },
+        { mode: "sandbox", label: "Evacuation mindset in cycle sim" },
+      ],
+    },
+    {
+      id: "piping",
+      code: "SHOP LAB",
+      title: "Brazing, Soldering & Piping",
+      hours: "Lab intensive",
+      credits: "Shop",
+      topics: [
+        "Cut, deburr, flare",
+        "Nitrogen purge while brazing",
+        "Joint inspection",
+        "Torque specs",
+      ],
+      labGoal: "Nail flare quality and torque in sim before torch time.",
+      practice: [
+        { mode: "minisplit", label: "Flare · torque · N₂ pressure test" },
+      ],
+    },
+  ],
+  coach: {
+    hcr101: {
+      focus: ["heat transfer", "flare steps", "safety PPE", "copper cut deburr"],
+      open: "I'm on HCR101 — walk me through heat transfer and a perfect flare before lab.",
+      drills: ["Flare steps", "Install checklist", "Tools I need"],
+    },
+    hcr102: {
+      focus: ["multimeter", "capacitor", "contactor", "thermostat wiring"],
+      open: "HCR102 electricity — how do I test a dual run capacitor and read R-C on a thermostat?",
+      drills: ["Capacitor testing", "Electrical", "Diagnostic order"],
+    },
+    hcr105: {
+      focus: ["superheat", "subcooling", "undercharge", "vacuum"],
+      open: "HCR105 refrigeration — explain high SH low SC and how to pull a vacuum to 500 microns.",
+      drills: ["High SH and low SC means?", "How do I pull a vacuum?", "Pressure fingerprints"],
+    },
+    hcr117: {
+      focus: ["mini-split install", "additional charge", "commissioning", "comms wires"],
+      open: "HCR117 air conditioning — full mini-split install order and additional charge for long linesets.",
+      drills: ["Mini-split install order", "Additional charge", "Commissioning"],
+    },
+    hcr108: {
+      focus: ["load concepts", "SEER", "equipment selection", "brand systems"],
+      open: "HCR108 design — how do brand charge charts and SEER ideas show up on a real job?",
+      drills: ["Brand systems", "Nameplate help", "Install checklist"],
+    },
+    hcr109: {
+      focus: ["commercial refrigeration", "defrost", "restriction", "recovery"],
+      open: "HCR109 commercial — restriction vs undercharge fingerprints and recovery rules.",
+      drills: ["Restriction / TXV", "EPA recovery rules", "Diagnostic order"],
+    },
+    hcr110: {
+      focus: ["troubleshooting order", "short cycling", "customer talk", "no cool"],
+      open: "HCR110 troubleshooting — give me the diagnostic order for a no-cool call.",
+      drills: ["Diagnostic order", "No cooling", "Short cycling"],
+    },
+    epa608: {
+      focus: ["recovery", "venting", "cylinders", "vacuum"],
+      open: "EPA 608 prep — recovery rules, cylinder fill limits, and why we never vent.",
+      drills: ["EPA recovery rules", "How do I pull a vacuum?", "Nitrogen pressure test"],
+    },
+    piping: {
+      focus: ["flare", "torque", "nitrogen purge braze", "leak test"],
+      open: "Shop piping lab — flare, torque, and nitrogen while brazing. Don't let me skip the nut.",
+      drills: ["Flare steps", "Torque", "Brazing"],
+    },
+  },
+  track: [
+    {
+      id: "copper",
+      code: "Shop",
+      title: "Copper",
+      blurb: "A flare and a braze. The picture does not count until the joint is good.",
+      labs: [
+        { id: "flare", mode: "flare", label: "Flare a line", xp: 25, what: "Nut on first. Deburr. Clean 45°." },
+        { id: "braze", mode: "braze", label: "Braze with nitrogen", xp: 25, what: "Both sides of the cup. Nitrogen flowing, not blasting." },
+      ],
+    },
+    {
+      id: "elec",
+      code: "HCR102",
+      title: "Electricity",
+      blurb: "Meter it, land it, then find the open on the trainer.",
+      labs: [
+        { id: "ohms", mode: "ohms", label: "Ohms lab", xp: 20, what: "One right reading." },
+        { id: "lugs", mode: "electrical", label: "Land a device", xp: 25, what: "Black, off-white, green. The can has to match." },
+        { id: "callback", mode: "defusal", label: "Saturday callback", xp: 40, what: "Meter first. Close the no-cool." },
+        { id: "tu522", mode: "iconnect", label: "TU-522 fault board", xp: 40, what: "Three faults. Do not jump a safety." },
+      ],
+    },
+    {
+      id: "ref",
+      code: "HCR105",
+      title: "Refrigeration",
+      blurb: "Read the manifold, hook recovery, close a real ticket.",
+      labs: [
+        { id: "gauges", mode: "gauges", label: "Manifold school", xp: 30, what: "Call the charge from SH and SC." },
+        { id: "recover", mode: "recover", label: "Recovery room", xp: 40, what: "Recover, nitrogen hold, decay test, weigh the extra, soap the leak." },
+        { id: "service", mode: "service", label: "Service call", xp: 25, what: "Name the fault. One right call." },
+        { id: "route", mode: "route", label: "Service route", xp: 40, what: "Comic call. Meter, megger, or gauges before the part." },
+      ],
+    },
+    {
+      id: "ac",
+      code: "HCR117",
+      title: "Air and heat",
+      blurb: "Commission a mini-split. Then make a furnace satisfy a heat call.",
+      labs: [
+        { id: "minisplit", mode: "minisplit", label: "Mini-split install", xp: 50, what: "Right tool, then the whole install." },
+        { id: "furnace", mode: "furnace", label: "Furnace sequence", xp: 30, what: "Call for heat and let it run to blower." },
+      ],
+    },
+    {
+      id: "epa",
+      code: "EPA 608",
+      title: "608 prep",
+      blurb: "Name the card, hit the recovery level, handle the cylinder, then the three R's. The 80% drill is last. The card is still a real sitting.",
+      labs: [
+        { id: "e608type", mode: "e608type", label: "Which card", xp: 25, what: "Type I, II, or III from the appliance." },
+        { id: "e608vac", mode: "e608vac", label: "How empty", xp: 30, what: "0 inches, 10 inches, 90%, or 25 mm Hg." },
+        { id: "e608cyl", mode: "e608cyl", label: "The cylinder", xp: 25, what: "80% by weight. Nitrogen, not oxygen." },
+        { id: "e608rrr", mode: "e608rrr", label: "Three R's", xp: 25, what: "Recover, recycle, reclaim. New owner means reclaim." },
+        { id: "epa608", mode: "epa608", label: "608 drill", xp: 40, what: "80% on a section." },
+      ],
+    },
+    {
+      id: "iconnect",
+      code: "Lab",
+      title: "iConnect trainers",
+      blurb: "The machines in this lab. At the machine, fill the phone sheet. At home, practice the picture.",
+      labs: [
+        { id: "ic522", mode: "iconnect", label: "TU-522 board", xp: 40, what: "At the machine. Land the cords. Do not jumper a safety." },
+        { id: "ic601", mode: "iconnect", label: "TU-601 mini-split", xp: 40, what: "Read the plate. Two line sets. R-410A. No Nest." },
+        { id: "ic210", mode: "iconnect", label: "TU-210G boiler", xp: 40, what: "Water, three zones, gas valve last. No gauges on the copper." },
+      ],
+    },
+  ]
+};

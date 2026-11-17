@@ -17,14 +17,17 @@
     try {
       if (localStorage.getItem(KEY) === "0") return false;
     } catch (_) {}
-    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return false;
-    }
     return true;
   }
 
+  var armed = false;
+  function arm() { armed = true; }
+  window.addEventListener("pointerdown", arm, { once: true, capture: true });
+  window.addEventListener("touchstart", arm, { once: true, capture: true });
+  window.addEventListener("keydown", arm, { once: true, capture: true });
+
   function go(kind, pattern) {
-    if (!allowed()) return;
+    if (!allowed() || !armed) return;
     var n = nativeBridge();
     if (n) {
       try { n.pulse(kind); return; } catch (_) {}
@@ -56,10 +59,12 @@
   }
 
   global.LtHaptic = {
-    tick: function () { go("tick", 10); },
-    land: function () { go("land", [12, 18, 22]); },
-    ok: function () { go("ok", 16); },
-    bad: function () { go("bad", [28, 36, 28]); },
+    tick: function () { go("tick", 25); },
+    land: function () { go("land", [35, 45, 50]); },
+    seat: function () { go("land", [30, 250, 40]); },
+    ok: function () { go("ok", 30); },
+    bad: function () { go("bad", [50, 70, 60]); },
+    miss: function () { go("bad", [40, 80, 40]); },
     kick: function () { go("kick", [40, 40, 55, 30, 80]); },
     stop: function () { go("stop", 40); },
     warn: function () { go("warn", [24, 70, 24]); },

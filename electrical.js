@@ -1,8 +1,43 @@
-/* HVAC Legends — Electrical sandbox + timed callback-bomb trainer.
+/* Lincoln Tech HVAC Allstars — Electrical sandbox + timed callback-bomb trainer.
    Field faults only. Not explosive devices.
    Player runs the box: black = hot, off-white = neutral, green = ground. */
 (function (global) {
   "use strict";
+  function landTurn(screenId) {
+    try {
+      if (sessionStorage.getItem("land-upright-off")) return;
+    } catch (e) {}
+    var cssId = "land-css-" + screenId;
+    if (!document.getElementById(cssId)) {
+      var st = document.createElement("style");
+      st.id = cssId;
+      st.textContent = ".land-turn{display:none}@media (orientation:landscape) and (max-height:500px){body.land-on:has(#" + screenId + ".active) .land-turn{display:flex;position:fixed;z-index:220;inset:0;align-items:center;justify-content:center;padding:8px;background:rgba(8,10,12,.55);color:#f6f0e2;box-sizing:border-box}body.land-on:has(#" + screenId + ".active) .land-card{display:flex;flex-direction:column;align-items:center;gap:4px;width:min(200px,52vw);padding:8px 10px;background:#1c2126;border:1px solid #e8c450;border-radius:12px;text-align:center}body.land-on:has(#" + screenId + ".active) .land-phone{width:22px;height:36px;border:2px solid #e8c450;border-radius:6px;position:relative}body.land-on:has(#" + screenId + ".active) .land-phone:before{content:\"\";position:absolute;left:50%;bottom:3px;width:10px;height:2px;margin-left:-5px;background:#e8c450;border-radius:2px}body.land-on:has(#" + screenId + ".active) .land-turn strong{font:700 15px/1.2 system-ui,sans-serif;color:#fff}body.land-on:has(#" + screenId + ".active) .land-turn span{font:600 12px/1.3 system-ui,sans-serif;color:#d7d0c4;max-width:180px}body.land-on:has(#" + screenId + ".active) .land-turn button{min-height:32px;margin-top:2px;padding:0 10px;background:transparent;color:#f6f0e2;border:1px solid #6d5b3c;border-radius:8px;cursor:pointer;font:600 13px system-ui,sans-serif}}";
+      document.head.appendChild(st);
+    }
+    document.body.classList.add("land-on");
+    if (!document.getElementById("land-turn")) {
+      var bar = document.createElement("div");
+      bar.className = "land-turn";
+      bar.id = "land-turn";
+      bar.innerHTML = "<div class=\"land-card\"><div class=\"land-phone\" aria-hidden=\"true\"></div><strong>Turn the phone upright</strong><span>Rotate it. This card goes away on its own.</span><button type=\"button\" id=\"land-dismiss-btn\">Stay sideways</button></div>";
+      document.body.appendChild(bar);
+      document.getElementById("land-dismiss-btn").addEventListener("click", function () {
+        try { sessionStorage.setItem("land-upright-off", "1"); } catch (e2) {}
+        document.body.classList.remove("land-on");
+        bar.remove();
+      });
+    }
+  }
+  function floorFit(id, css) {
+    let st = document.getElementById(id);
+    if (!st) { st = document.createElement("style"); st.id = id; document.head.appendChild(st); }
+    st.textContent = css;
+    document.head.appendChild(st);
+    function bump() { if (st.parentNode) document.head.appendChild(st); }
+    requestAnimationFrame(bump);
+    setTimeout(bump, 80);
+    setTimeout(bump, 400);
+  }
 
   const PARTS = [
     { id: "breaker", name: "2-pole breaker", group: "line", img: null, icon: "⬛", slot: "breaker", desc: "L1 / L2 feed · 240 VAC" },
@@ -598,6 +633,7 @@
   let pending = null;
   let runSeq = 1;
   let resizeObs = null;
+  let floatWatch = 0;
   let zoomSlot = null;
   let view = "ladder"; /* ladder | lugs */
   let meteredOpen = false;
@@ -839,10 +875,102 @@
     paintZoomSpools();
   }
 
+  function lugEl(id) {
+    if (!host || !id) return null;
+    const q = '[data-lug="' + id + '"]';
+    return host.querySelector(".el-zoom.show .el-zoom-screw" + q)
+      || host.querySelector(".el-zoom-screw" + q)
+      || host.querySelector(q);
+  }
+
+  function nextWireLine() {
+    try {
+      const spec = guideLandSpec();
+      if (spec && spec.color && spec.lug && !wireOnLug(spec.lug, spec.color)) {
+        const tm = termOf(spec.lug);
+        const w = WIRE[spec.color];
+        if (w && w.code && tm && tm.label) return "Next: " + w.code + " on " + tm.label + ".";
+      }
+      const slots = [];
+      if (zoomSlot) slots.push(zoomSlot);
+      const nxt = nextNeedySlot();
+      if (nxt) slots.push(nxt);
+      const seen = {};
+      for (let i = 0; i < slots.length; i++) {
+        const slotId = slots[i];
+        if (!slotId || seen[slotId]) continue;
+        seen[slotId] = 1;
+        const miss = missingTerms(slotId);
+        if (!miss || !miss.length) continue;
+        const t = miss[0];
+        const w = WIRE[t.accept];
+        if (w && w.code && t.label) return "Next: " + w.code + " on " + t.label + ".";
+      }
+    } catch (_) {}
+    return "Drag the next wire onto its screw. One wire, one lug.";
+  }
+
+  function guideNextMove() {
+    if (!guideOn) return "";
+    const s = guideStep();
+    if (!s) return "Drag the next wire onto its screw.";
+    if (!s.wait) return "Tap Next.";
+    if (s.wait.indexOf("zoom:") === 0) {
+      const name = s.wait.split(":")[1];
+      return name === "disconnect" ? "Tap the disconnect." : "Tap " + name + ".";
+    }
+    if (s.wait.indexOf("land:") === 0) return nextWireLine();
+    return "Tap Next.";
+  }
+
+  function belongLine(color) {
+    const w = WIRE[color];
+    if (!w || !w.code) return "Drag the next wire onto its screw. One wire, one lug.";
+    const word = w.code.charAt(0).toUpperCase() + w.code.slice(1);
+    try {
+      const spec = guideLandSpec();
+      if (spec && spec.color === color) {
+        const tm = termOf(spec.lug);
+        if (tm && tm.label) return word + " belongs on " + tm.label + ".";
+      }
+      const slots = [];
+      if (zoomSlot) slots.push(zoomSlot);
+      if (placed) {
+        Object.keys(placed).forEach(function (id) {
+          if (placed[id]) slots.push(id);
+        });
+      }
+      slots.push("src");
+      const seen = {};
+      let any = "";
+      for (let s = 0; s < slots.length; s++) {
+        const slotId = slots[s];
+        if (!slotId || seen[slotId]) continue;
+        seen[slotId] = 1;
+        const terms = DEVICE_LUGS[slotId] || [];
+        for (let i = 0; i < terms.length; i++) {
+          const t = terms[i];
+          if (!t || t.accept !== color || !t.label) continue;
+          const id = lugId(slotId, t.id);
+          if (!wireOnLug(id, color)) return word + " belongs on " + t.label + ".";
+          if (!any) any = t.label;
+        }
+      }
+      if (any) return word + " belongs on " + any + ".";
+    } catch (_) {}
+    return "Drag the next wire onto its screw. One wire, one lug.";
+  }
+
   function dropWireOnLug(color, toLug, fromLug) {
     if (labMode === "defusal" || !toLug || !WIRE[color]) return false;
     if (!lugMatch(color, toLug)) {
       refuseWire(color, toLug);
+      if (window.PlayFeel) {
+        const el = lugEl(toLug);
+        window.PlayFeel.deny(el || host);
+        window.PlayFeel.pop(el || host, why, "bad");
+        window.PlayFeel.coach(document.body, belongLine(color));
+      }
       return false;
     }
     const from = fromLug || originForColor(color);
@@ -873,6 +1001,13 @@
     }
     hideSpentSpools();
     if (global.LtDrip) global.LtDrip.say(ok ? "elec.ok" : "elec.bad");
+    if (ok && window.PlayFeel) {
+      const landed = lugEl(toLug);
+      if (landed) window.PlayFeel.bump(landed);
+      const clearOfWire = host.querySelector("#el-zoom-hint") || host.querySelector("#el-status") || host;
+      window.PlayFeel.pop(clearOfWire, "Landed", "ok");
+      window.PlayFeel.coach(document.body, nextWireLine());
+    }
     return true;
   }
 
@@ -955,6 +1090,7 @@
     }
     paintGuideTarget();
     if (zoomSlot) paintZoomNeed();
+    if (guideOn) feelCoach(guideNextMove());
   }
 
   function paintGuideTarget() {
@@ -1206,13 +1342,23 @@
     return 0;
   }
 
+  function capProbePair(a, b) {
+    const pair = (x, y) => (a === x && b === y) || (a === y && b === x);
+    return pair("caph", "capc") || pair("capf", "capc") || pair("caph", "capf");
+  }
+
+  function shellProbePair(a, b) {
+    const pair = (x, y) => (a === x && b === y) || (a === y && b === x);
+    return pair("compc", "gnd") || pair("compr", "gnd") || pair("comps", "gnd");
+  }
+
   function ohmsBetween(a, b, c) {
     if (c.loadHot || c.rHot) return null;
     const pair = (x, y) => (a === x && b === y) || (a === y && b === x);
-    if (pair("compr", "compc") && has("compressor")) return c.grounded ? 0.2 : 1.8;
-    if (pair("comps", "compc") && has("compressor")) return c.grounded ? 0.2 : 2.6;
+    if (pair("compr", "compc") && has("compressor")) return 1.8;
+    if (pair("comps", "compc") && has("compressor")) return 2.6;
     if (pair("compr", "comps") && has("compressor")) return 4.3;
-    if (pair("compc", "gnd") && has("compressor")) return c.grounded ? 0.4 : 9999;
+    if (shellProbePair(a, b) && has("compressor")) return c.grounded ? 0 : 9999;
     if (pair("caph", "capc") && has("capacitor")) return 9999;
     if (pair("capf", "capc") && has("capacitor")) return 9999;
     if (pair("caph", "capf") && has("capacitor")) return 9999;
@@ -1271,11 +1417,129 @@
     if (s.wait === "jacks" && type === "jack" && dmmJackBlk === "com" && dmmJackRed === "v") { meterGuideI += 1; paintMeterGuide(); return; }
     if (parts[0] === "dial" && type === "dial" && mode === parts[1]) { meterGuideI += 1; paintMeterGuide(); return; }
     if (parts[0] === "read" && type === "read") {
-      const pair = (red === parts[1] && black === parts[2]) || (red === parts[2] && black === parts[1]);
-      if (pair && typeof val === "number" && val >= Number(parts[3] || 0)) { meterGuideI += 1; paintMeterGuide(); if (onXp) onXp(8); }
+      const ordered = red === parts[1] && black === parts[2];
+      if (ordered && typeof val === "number" && val >= Number(parts[3] || 0)) { meterGuideI += 1; paintMeterGuide(); if (onXp) onXp(8); }
+      return;
     }
-    if (s.wait === "ohm-lesson" && (type === "ohm-live" || type === "ohm-ok" || (type === "dial" && mode === "ohm"))) { meterGuideI += 1; paintMeterGuide(); }
+    if (s.wait === "ohm-lesson" && (type === "ohm-live" || type === "ohm-ok")) { meterGuideI += 1; paintMeterGuide(); }
   }
+
+  function probeLabel(id) {
+    try {
+      const face = meterFace(leadBoard);
+      const hit = face.points.find(function (x) { return x.id === id; });
+      if (hit && hit.label) return hit.label;
+    } catch (_) {}
+    const pr = PROBES.find(function (x) { return x.id === id; });
+    return pr ? pr.label : String(id || "").toUpperCase();
+  }
+
+  function ohmLessonReady() {
+    if (mode !== "ohm") return false;
+    const c = circuit();
+    return !c.loadHot && !c.rHot;
+  }
+
+  function meterNextMove() {
+    if (meterGuideOn) {
+      const s = METER_GUIDE[meterGuideI] || METER_GUIDE[0];
+      const w = (s && s.wait) || "";
+      if (!w || s.id === "free") return "Pick a device. Put red on one screw.";
+      if (w === "jacks") {
+        if (dmmJackBlk !== "com") return "Select black, then tap COM.";
+        return "Select red, then tap VΩ.";
+      }
+      if (w === "dial:vac") return mode === "vac" ? "Put red on L1." : "Dial VAC.";
+      if (w.indexOf("read:") === 0) {
+        const p = w.split(":");
+        if (red !== p[1]) return "Put red on " + probeLabel(p[1]) + ".";
+        if (black !== p[2]) return "Put black on " + probeLabel(p[2]) + ".";
+        return "Read it. Red is on " + probeLabel(p[1]) + ".";
+      }
+      if (w === "ohm-lesson") {
+        const c = circuit();
+        if (c.loadHot || c.rHot) return "Pull the disconnect. Do not ohm a live circuit.";
+        if (mode !== "ohm") return "Dial OHMS.";
+        return "Power is off. Leave the dial on OHMS.";
+      }
+      return "Put red on the screw this step names.";
+    }
+    if (dmmJackBlk !== "com") return "Select black, then tap COM.";
+    if (dmmJackRed === "a") return "Red is in the amp jack. Move red to VΩ.";
+    if (dmmJackRed !== "v" && mode !== "aac") return "Select red, then tap VΩ.";
+    if (mode === "ohm" || mode === "cont" || mode === "cap") {
+      const c = circuit();
+      if (c.loadHot || c.rHot) return "Kill power before ohms or microfarads.";
+      if ((mode === "ohm" || mode === "cont") && capProbePair(red, black)) return "Dial µF. Ohms cannot pass or fail a run cap.";
+    }
+    if (!red) return "Put red on the first screw.";
+    if (!black) return "Put black on the other screw.";
+    if (mode === "cap") return "Read microfarads across HERM–C or FAN–C.";
+    return "Dial the function for this measurement.";
+  }
+
+  function feel(el, text, kind) {
+    if (!window.PlayFeel || !text) return;
+    const node = el && el.getBoundingClientRect ? el : (host || document.body);
+    if (kind === "bad") window.PlayFeel.deny(node);
+    else window.PlayFeel.bump(node);
+    window.PlayFeel.pop(node, text, kind === "bad" ? "bad" : "ok");
+  }
+
+  function feelCoach(text) {
+    if (window.PlayFeel && text) window.PlayFeel.coach(document.body, text);
+  }
+
+  function judgeProbe(probeId, hand) {
+    if (mode === "ohm" || mode === "cont" || mode === "cap") {
+      const other = hand === "blk" ? red : black;
+      if (other) {
+        const c = circuit();
+        if (c.loadHot || c.rHot) return { kind: "bad", text: "Ohms on a live circuit opens the fuse. Kill power first." };
+      }
+    }
+    if (!meterGuideOn) return { kind: "ok", text: (hand === "blk" ? "Black on " : "Red on ") + probeLabel(probeId) };
+    const s = METER_GUIDE[meterGuideI];
+    const w = (s && s.wait) || "";
+    if (w === "jacks") return { kind: "bad", block: true, text: "Not a screw yet. Select black, then tap COM." };
+    if (w.indexOf("dial:") === 0) return { kind: "bad", block: true, text: "Dial VAC before the leads land." };
+    if (w === "ohm-lesson") {
+      const c = circuit();
+      if ((mode === "ohm" || mode === "cont" || mode === "cap") && (c.loadHot || c.rHot)) {
+        return { kind: "bad", text: "Ohms on a live circuit opens the fuse. Pull the disconnect first." };
+      }
+      if (!(c.loadHot || c.rHot)) return { kind: "bad", block: true, text: "Dial OHMS. Power is already off." };
+      return { kind: "bad", block: true, text: "Pull the disconnect, then dial OHMS." };
+    }
+    if (w.indexOf("read:") === 0) {
+      const p = w.split(":");
+      if (hand === "red" && probeId === p[1]) return { kind: "ok", text: "Red on " + probeLabel(p[1]) };
+      if (hand === "blk" && probeId === p[2]) return { kind: "ok", text: "Black on " + probeLabel(p[2]) };
+      if ((hand === "red" && probeId === p[2]) || (hand === "blk" && probeId === p[1])) {
+        return { kind: "bad", text: "Reversed leads. Red goes on " + probeLabel(p[1]) + ", black on " + probeLabel(p[2]) + "." };
+      }
+      return { kind: "bad", text: "Wrong point. " + (hand === "red" ? "Put red on " + probeLabel(p[1]) + "." : "Put black on " + probeLabel(p[2]) + ".") };
+    }
+    return { kind: "ok", text: (hand === "blk" ? "Black on " : "Red on ") + probeLabel(probeId) };
+  }
+
+  function setMeterMode(next, el) {
+    mode = next || mode;
+    ladderProof = false;
+    const modeEl = host && host.querySelector("#el-mode");
+    if (modeEl && modeEl.value !== mode) modeEl.value = mode;
+    onMeterEvent("dial");
+    if (ohmLessonReady()) onMeterEvent("ohm-ok");
+    paintMeter();
+    if ((mode === "ohm" || mode === "cont" || mode === "cap") && !ladderProof) {
+      const live = circuit();
+      if (live.loadHot || live.rHot) {
+        feel(el || (host && host.querySelector('[data-mdial="ohm"]')), "Ohms on a live circuit opens the fuse. Kill power first.", "bad");
+      }
+    }
+    if (meterSchool || meterGuideOn) feelCoach(meterNextMove());
+  }
+
   let pendingLeadBoard = "";
   function paintMeterGuide() {
     const box = host && host.querySelector("#el-guide");
@@ -1296,6 +1560,7 @@
       pendingLeadBoard = "";
       openLeadZoom(next);
     }
+    feelCoach(meterNextMove());
   }
   function askHubMeter() {
     const s = METER_GUIDE[meterGuideI] || METER_GUIDE[0];
@@ -1317,11 +1582,26 @@
     if (lb) lb.classList.toggle("active", dmmLead === "blk");
   }
   function plugJack(jack) {
+    const who = dmmLead === "blk" ? "blk" : "red";
+    const jackEl = (host && (host.querySelector('[data-mjack="' + jack + '"]') || host.querySelector('[data-jack="' + jack + '"]'))) || host;
+    if (who === "blk" && jack !== "com") {
+      feel(jackEl, "Reversed leads. Black goes in COM. Red goes in VΩ.", "bad");
+      feelCoach("Select black, then tap COM.");
+      return;
+    }
+    if (who === "red" && jack === "com") {
+      feel(jackEl, "Reversed leads. Red goes in VΩ. Black goes in COM.", "bad");
+      feelCoach("Select red, then tap VΩ.");
+      return;
+    }
     if (jack === "com") dmmJackBlk = "com";
     else dmmJackRed = jack;
     onMeterEvent("jack");
     paintDmmJacks();
     paintMeter();
+    if (who === "red" && jack === "a") feel(jackEl, "Red in the amp jack opens the fuse. Put red in VΩ.", "bad");
+    else feel(jackEl, who === "blk" ? "Black in COM" : "Red in VΩ", "ok");
+    if (meterSchool || meterGuideOn) feelCoach(meterNextMove());
   }
   function isContactNode(id) {
     return id === "hpc" || id === "lpc" || id === "float" || id === "limit";
@@ -1402,7 +1682,12 @@
         return { val: u ? u.toFixed(1) : "OL", unit: "µF", note: note };
       }
       if (ladderProof && mode === "ohm") {
-        return { val: "0.4", unit: "Ω", note: "Power-off. 0.4 Ω common to ground. Don't ohm a live circuit — that opens the meter fuse. Isolate compressor C." };
+        if (shellProbePair(red, black) && fault === "grounded") {
+          return { val: "0.0", unit: "Ω", note: "Short to ground. About 0 ohms. A megger would sit near 0. A good winding to the shell is open, hundreds of megohms. Isolate compressor C." };
+        }
+        if (shellProbePair(red, black)) {
+          return { val: "OL", unit: "Ω", note: "Open to the shell. A good winding is hundreds of megohms on a megger. A short reads about 0." };
+        }
       }
     }
     if (mode === "vac") {
@@ -1424,21 +1709,22 @@
     if (mode === "ohm") {
       const r = ohmsBetween(red, black, c);
       if (r == null) return { val: "OL", unit: "Ω", note: "Lock it out first." };
-      const onCap = has("capacitor") && (
-        (red === "caph" || red === "capf" || black === "caph" || black === "capf") &&
-        (red === "capc" || black === "capc" || red === "caph" || red === "capf")
-      );
+      const onCap = capProbePair(red, black);
       if (r >= 9999) {
-        if (onCap) return { val: "OL", unit: "Ω", note: "A run cap charges to OL on ohms. That is not a short, and it is not the µF. Kill power, then read µF. HERM and FAN are parallel — an open HERM does not kill the fan section." };
+        if (onCap) return { val: "OL", unit: "Ω", note: "Ohms cannot pass or fail a run cap. A good one and an open one both climb to OL. Read microfarads with power off." };
+        if (shellProbePair(red, black) && has("compressor")) return { val: "OL", unit: "Ω", note: "Open to the shell. A good winding is hundreds of megohms on a megger. Ohms only prove a short, which would read about 0." };
         return { val: "OL", unit: "Ω", note: "Open circuit." };
+      }
+      if (shellProbePair(red, black) && has("compressor") && r < 1) {
+        return { val: "0.0", unit: "Ω", note: "Short to ground. About 0 ohms. A megger would sit near 0 too. A good winding to the shell is open, hundreds of megohms." };
       }
       const winding = (red === "compr" && (black === "compc" || black === "comps")) ||
         (black === "compr" && (red === "compc" || red === "comps")) ||
         ((red === "comps" && black === "compc") || (black === "comps" && red === "compc"));
-      if (winding && has("compressor") && fault !== "grounded") {
-        return { val: r.toFixed(1), unit: "Ω", note: "Copper only. Do not treat V ÷ R as running current. RLA is on the nameplate. LRA is locked-rotor, not this ohm reading." };
+      if (winding && has("compressor")) {
+        const groundBit = fault === "grounded" ? " The short is terminal to the shell — about 0 there, not on this pair." : "";
+        return { val: r.toFixed(1), unit: "Ω", note: "Copper only. Do not treat V ÷ R as running current. RLA is on the nameplate. LRA is locked-rotor, not this ohm reading." + groundBit };
       }
-      if (r < 1 && fault === "grounded") return { val: r.toFixed(1), unit: "Ω", note: "Winding to ground — bad compressor." };
       const coilPair = (red === "coil" && black === "c24") || (black === "coil" && red === "c24");
       if (coilPair && has("contactor")) {
         return { val: r.toFixed(1), unit: "Ω", note: "Contactor coil. R = V ÷ I. About 48 Ω on 24 V is about 0.5 A. That is coil current, not a motor winding." };
@@ -1447,6 +1733,11 @@
       return { val: r.toFixed(1), unit: "Ω", note: "Power off. A motor winding's ohms are copper only — do not treat V ÷ R as running amps." };
     }
     if (mode === "cont") {
+      if (capProbePair(red, black)) return { val: "OL", unit: "CONT", note: "No beep on a run cap is normal. Ohms cannot pass or fail it. Read microfarads." };
+      if (shellProbePair(red, black) && has("compressor")) {
+        if (fault === "grounded") return { val: "BEEP", unit: "CONT", note: "Beep to the shell is a short to ground. About 0. A good winding stays open." };
+        return { val: "OL", unit: "CONT", note: "No beep to the shell. A good winding is open. A megger should show hundreds of megohms, not a short." };
+      }
       const r = ohmsBetween(red, black, c);
       if (r == null) return { val: "OL", unit: "CONT", note: "Lockout first." };
       return { val: r < 50 ? "BEEP" : "OL", unit: "CONT", note: r < 50 ? "Path closed." : "Open." };
@@ -1455,7 +1746,7 @@
       const u = capBetween(red, black);
       const fanLeg = (red === "capf" && black === "capc") || (black === "capf" && red === "capc");
       const hermLeg = (red === "caph" && black === "capc") || (black === "caph" && red === "capc");
-      let note = u ? "Power off. Discharge the cap, then read HERM–C or FAN–C." : "No cap in circuit, or that section is open. Read µF with power off — ohms on a cap goes to OL and is not the microfarad.";
+      let note = u ? "Power off. Discharge the cap, then read HERM–C or FAN–C in microfarads. Ohms on a cap is not a pass or a fail." : "No cap in circuit, or that section is open. Read µF with power off — ohms on a cap goes to OL and is not the microfarad.";
       if (fault === "open_cap" && hermLeg) note = "OL µF on HERM. Open herm section. FAN is parallel and can still read microfarads. Outdoor fan can still run. Don't size a breaker from inrush.";
       if (fault === "open_cap" && fanLeg && u) note = "FAN section is still about 5 µF. HERM is the open parallel section. The outdoor fan can still run.";
       return { val: u ? u.toFixed(1) : "OL", unit: "µF", note: note };
@@ -2164,20 +2455,13 @@
     const svg = host && host.querySelector("#el-zoom-svg");
     if (!svg || !zoomSlot) return;
     const terms = termsFor(zoomSlot);
-    const paths = terms.map(function (tm, i) {
+    const paths = terms.map(function (tm) {
       const color = tm.accept;
+      if (!wireOnLug(lugId(zoomSlot, tm.id), color)) return "";
       const w = WIRE[color] || WIRE.hot;
-      const on = wireOnLug(lugId(zoomSlot, tm.id), color);
-      const dock = 8 + (i % 4) * 6;
-      const d = "M " + dock + " 6 C " + dock + " " + (tm.y * 0.4) + ", " + tm.x + " " + (tm.y * 0.62) + ", " + tm.x + " " + tm.y;
-      const ghost = '<path d="' + d + '" fill="none" stroke="' + w.fill + '" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="2.2 1.6" opacity="0.85"/>';
-      const live = on
-        ? '<path d="' + d + '" fill="none" stroke="' + w.stroke + '" stroke-width="7" stroke-linecap="round"/>' +
-          '<path d="' + d + '" fill="none" stroke="' + w.fill + '" stroke-width="4.2" stroke-linecap="round"/>' +
-          '<circle cx="' + tm.x + '" cy="' + tm.y + '" r="3.4" fill="' + w.fill + '" stroke="' + w.stroke + '" stroke-width="0.7"/>'
-        : "";
-      const label = '<text x="' + dock + '" y="5" fill="' + (w.fill === "#d8d0c0" || w.fill === "#cbb892" || w.fill === "#e8c450" ? "#3a2e20" : w.fill) + '" font-size="3.1" font-weight="700">' + w.code + "</text>";
-      return ghost + live + label;
+      return '<path d="M 50 0 C 50 ' + (tm.y * 0.35) + ", " + tm.x + " " + (tm.y * 0.55) + ", " + tm.x + " " + tm.y +
+        '" fill="none" stroke="' + w.fill + '" stroke-width="5" stroke-linecap="round"/>' +
+        '<circle cx="' + tm.x + '" cy="' + tm.y + '" r="3.2" fill="' + w.fill + '" stroke="' + w.stroke + '" stroke-width="0.8"/>';
     }).join("");
     svg.innerHTML = paths;
   }
@@ -2231,7 +2515,7 @@
       ico.textContent = info.icon;
     }
     z.querySelector("#el-zoom-name").textContent = info.name;
-    z.querySelector("#el-zoom-desc").textContent = (info.desc || "Drag the matching color onto each screw.") + " Dashed line is the jacket that belongs on that screw. Solid line means it is landed.";
+    z.querySelector("#el-zoom-desc").textContent = info.desc || "Drag the matching color onto each screw on this close-up.";
     const screws = z.querySelector("#el-zoom-screws");
     if (screws) screws.innerHTML = zoomScrewsHtml(slotId);
     bindLugs(z);
@@ -2302,9 +2586,9 @@
     if (unit) unit.textContent = reading ? reading.unit : "";
     if (dial) dial.textContent = "Dial · " + dialName();
     if (note) {
-      note.textContent = !red || !black
-        ? "Drag the red lead and the black lead onto two screws. The number follows the dial."
-        : (reading ? reading.note : "");
+      if (reading && reading.unit === "FUSE") note.textContent = reading.note;
+      else if (!red || !black || dmmJackBlk !== "com" || (mode !== "aac" && dmmJackRed !== "v")) note.textContent = meterNextMove();
+      else note.textContent = reading ? reading.note : "";
     }
     paintLeadControls();
   }
@@ -2383,27 +2667,32 @@
   function landLead(probeId) {
     if (!probeId) return;
     const hand = leadHand === "blk" ? "blk" : "red";
+    const verdict = judgeProbe(probeId, hand);
+    const el = host && host.querySelector('[data-probe="' + probeId + '"]');
+    if (verdict && verdict.block) {
+      feel(el, verdict.text, "bad");
+      feelCoach(meterNextMove());
+      return;
+    }
     if (hand === "blk") {
       if (red === probeId) red = "";
       black = probeId;
-      dmmJackBlk = "com";
       leadHand = "red";
       dmmLead = "red";
     } else {
       if (black === probeId) black = "";
       red = probeId;
-      if (dmmJackRed !== "a") dmmJackRed = "v";
       leadHand = "blk";
       dmmLead = "blk";
     }
-    if (red && black) {
-      dmmJackBlk = "com";
-      if (dmmJackRed !== "a") dmmJackRed = "v";
-    }
     probed = true;
-    if (dmmJackBlk === "com" && (dmmJackRed === "v" || dmmJackRed === "a")) onMeterEvent("jack");
     paintDmmJacks();
     paintMeter();
+    if (verdict && verdict.kind === "bad") feel(el, verdict.text, "bad");
+    else if (red && black && (mode === "ohm" || mode === "cont") && capProbePair(red, black) && !(circuit().loadHot || circuit().rHot)) {
+      feel(el, "Ohms cannot pass or fail a run cap. Dial microfarads.", "bad");
+    } else if (verdict) feel(el, verdict.text, verdict.kind);
+    if (meterSchool || meterGuideOn) feelCoach(meterNextMove());
   }
 
   function bindLeadDrags() {
@@ -2554,6 +2843,7 @@
       const eyebrow = z.querySelector(".eyebrow");
       if (eyebrow) eyebrow.textContent = "Wire this device";
     }
+    ensureHubReachable();
   }
 
   function showLoupe(partId, slotEl, ev) {
@@ -2840,6 +3130,8 @@
       ${labMode === "defusal" ? "" : `<ol class="el-ts" id="el-ts"></ol>
       <div class="el-ts-actions">
         <button type="button" class="btn primary" id="el-ts-go">Start no-cool sheet</button>
+        <button type="button" class="btn" id="el-directions">Directions</button>
+        <button type="button" class="btn primary el-next-step" id="el-next-step">Next step</button>
         <button type="button" class="btn" id="el-ts-practice">Practice a no-cool</button>
         <button type="button" class="btn primary" id="el-wire-this">Land lugs on this device</button>
       </div>`}
@@ -2869,7 +3161,7 @@
         }
         if (n.id === "coil") face = v >= 20 ? Math.round(v) + " V on coil" : (circuit().y ? "0.0 V at coil" : "no call");
         if (tapped && n.id === "cap") face = (fault === "open_cap" ? "OL" : "35") + " µF";
-        if (tapped && job && job.id === "fuse" && n.id === "comp") face = "0.4 Ω to GND";
+        if (tapped && job && job.id === "fuse" && n.id === "comp") face = "0 Ω to GND";
         if (tapped && job && job.id === "swap" && n.id === "stat") face = "Y landed on G";
         const curTs = labMode !== "defusal" && tsOn ? TS_NOCOOL[tsI] : null;
         const foundSheet = !!(curTs && curTs.node === n.id && tsDone[curTs.id] === "found");
@@ -2883,16 +3175,17 @@
           foundSheet ? "found" : "",
           labMode === "defusal" && meteredOpen && tapped && isOpen ? "found" : "",
         ].filter(Boolean).join(" ");
-        const wire = i < list.length - 1 ? '<i class="el-node-wire' + (n.live ? " on" : "") + '"></i>' : "";
+        const wire = i < list.length - 1 ? '<i class="el-node-wire' + (n.live ? " on" : "") + '" aria-hidden="true"></i>' : "";
         return '<button type="button" class="' + cls + '" data-node="' + n.id + '"><b>' + n.label + "</b><small>" +
-          (tapped && faultHere ? "OPEN · " : "") + face + "</small>" + wire + "</button>";
+          (tapped && faultHere ? "OPEN · " : "") + face + "</small></button>" + wire;
       }).join("");
     });
     root.querySelectorAll("[data-call]").forEach((b) => {
       const k = b.getAttribute("data-call");
       const needY = !!(labMode !== "defusal" && tsOn && tsStep() && tsStep().wantCall && !callCool && k === "cool");
       b.classList.toggle("on", (k === "cool" && callCool) || (k === "fan" && callFan) || (k === "heat" && callHeat) || (k === "rev" && callRev));
-      b.style.boxShadow = needY ? "0 0 0 3px #CE0034" : "";
+      b.classList.toggle("hub-point", needY);
+      b.style.boxShadow = "";
     });
     const read = host.querySelector("#el-ladder-read");
     const kick = root.querySelector(".el-ladder-kicker");
@@ -2918,7 +3211,7 @@
             ? (job.id === "cap"
               ? "Cap reads OL µF with power off. Locked-rotor, not running amps. Outdoor fan can still run. Replace the dual run cap."
               : job.id === "fuse"
-                ? "0.4 Ω to ground. That's copper to the chassis. Isolate compressor C. A new 3A pops on that short."
+                ? "About 0 Ω to ground. That's a short to the shell. Isolate compressor C. A new 3A pops on that short."
                 : job.id === "swap"
                   ? "Yellow is on G. Move Y off G. Green is the fan, not the cool call."
                   : job.id === "coil"
@@ -3002,6 +3295,95 @@
     paintTs();
   }
 
+  function directionsText() {
+    if (labMode === "defusal") {
+      return "Saturday callback. Tap the lit box. About 0 V drop means that contact is closed. About 24 V across it means it is open, and the coil sees 0. Replace that part. Do not jump a safety.";
+    }
+    const step = tsOn ? tsStep() : null;
+    const now = step ? " Hub is on step " + step.n + ": " + step.say : "";
+    return "Follow the call. Hit the lit button. First is Y · Cool. Then tap each lit box: line, disconnect, R, the safeties, the coil." + now;
+  }
+
+  function currentStepLine() {
+    if (labMode === "defusal") {
+      if (!job) return "Hit Walk it with me. Hub lights the first box. You tap that box.";
+      if (meteredOpen && !defused) {
+        const id = satWantId();
+        const node = id && ladderNodes().find(function (n) { return n.id === id; });
+        const name = node ? node.label : "the part";
+        return "You found it. Hit Replace " + name + ". Do not jump the safety.";
+      }
+      return satHubSay() || "Tap the lit box.";
+    }
+    if (!tsOn) return "Hit Y · Cool. No Y, no cool.";
+    const step = tsStep();
+    if (!step) return "That sheet is done. Hit Practice a no-cool, or open Saturday callback.";
+    return "Step " + step.n + " · " + step.title + ". " + step.say;
+  }
+
+  let stepPeek = 0;
+
+  function peekedLine() {
+    if (stepPeek > 0 && labMode !== "defusal" && tsOn) {
+      const nxt = TS_NOCOOL[tsI + stepPeek];
+      if (nxt) return "After this one · Step " + nxt.n + " · " + nxt.title + ". " + nxt.say;
+      return "That was the last box. Name the open, then replace it. Do not jump a safety.";
+    }
+    return currentStepLine();
+  }
+
+  function showNextStep() {
+    if (!host) return;
+    if (labMode !== "defusal" && !tsOn) beginTs(false);
+    const cardNow = host.querySelector("#el-directions-card");
+    const continuing = !!(cardNow && cardNow.dataset.kind === "next");
+    const left = labMode === "defusal" ? 1 : Math.max(1, TS_NOCOOL.length - tsI);
+    stepPeek = continuing ? (stepPeek + 1) % left : 0;
+    if (host.querySelector("#el-ladder")) paintLadder();
+    let card = host.querySelector("#el-directions-card");
+    if (!card) {
+      card = document.createElement("div");
+      card.id = "el-directions-card";
+      card.className = "el-dir";
+      card.dataset.kind = "next";
+      card.innerHTML = '<p class="eyebrow">Next step</p><p id="el-dir-say"></p><button type="button" class="btn" id="el-dir-close">Close</button>';
+      const main = host.querySelector(".el-main") || host;
+      main.insertBefore(card, main.firstChild);
+      const close = card.querySelector("#el-dir-close");
+      if (close) close.onclick = function () { card.remove(); };
+    }
+    const eyebrow = card.querySelector(".eyebrow");
+    if (eyebrow) eyebrow.textContent = stepPeek ? "After this one" : "Next step";
+    const say = card.querySelector("#el-dir-say");
+    if (say) say.textContent = peekedLine();
+    card.dataset.kind = "next";
+    const start = host.querySelector("#el-sat-start");
+    if (start && labMode === "defusal" && !job) start.classList.add("hub-point");
+    const focus = host.querySelector(".hub-point, .el-node.ts-now, #el-sat-start");
+    if (focus && focus.scrollIntoView) focus.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+
+  function showDirections() {
+    if (!host) return;
+    const old = host.querySelector("#el-directions-card");
+    if (old) {
+      old.remove();
+      return;
+    }
+    if (labMode !== "defusal" && !tsOn) beginTs(false);
+    const card = document.createElement("div");
+    card.id = "el-directions-card";
+    card.className = "el-dir";
+    card.innerHTML = '<p class="eyebrow">Professor HUB</p><p id="el-dir-say"></p><button type="button" class="btn" id="el-dir-close">Close</button>';
+    card.querySelector("#el-dir-say").textContent = directionsText();
+    const main = host.querySelector(".el-main") || host;
+    main.insertBefore(card, main.firstChild);
+    const close = card.querySelector("#el-dir-close");
+    if (close) close.onclick = function () { card.remove(); };
+    const focus = host.querySelector(".hub-point, .el-node.ts-now");
+    if (focus && focus.scrollIntoView) focus.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+
   function paintTs() {
     const ol = host && host.querySelector("#el-ts");
     if (!ol) return;
@@ -3047,6 +3429,8 @@
     if (!s) return;
     if (s.node !== node.id) {
       sheetNote = "Not that box. Step " + s.n + " is " + s.title + ". " + s.say;
+      feel(host && host.querySelector('[data-node="' + node.id + '"]'), "Wrong point. This step is " + s.title + ".", "bad");
+      feelCoach(s.say);
       return;
     }
     if (s.wantCall && !callCool) {
@@ -3063,11 +3447,15 @@
     }
     if (s.across && !contactFed(s.node, c)) {
       sheetNote = "No call on " + s.title.toLowerCase() + ". About 0 V is not a closed contact. Put the call in, then meter this box. Don't jump it.";
+      feel(host && host.querySelector('[data-node="' + node.id + '"]'), "No call yet. 0 V is not a closed contact.", "bad");
+      feelCoach(sheetNote);
       paintTs();
       return;
     }
     if (s.id === "coil" && !c.y) {
       sheetNote = "No Y call. 0 V at the coil is not an open winding. Hit Y and walk the safeties.";
+      feel(host && host.querySelector('[data-node="' + node.id + '"]'), "No Y call. 0 V here is not an open winding.", "bad");
+      feelCoach("Hit Y. No Y, no cool.");
       paintTs();
       return;
     }
@@ -3083,6 +3471,8 @@
       else if (capFound) sheetNote = "Voltage is here and it won't run. Locked-rotor amps, not running amps. Open HERM cap. The outdoor fan is parallel and can still run. Don't size a breaker from inrush.";
       else if (coilFound) sheetNote = "About 24 V on the coil and it doesn't pull in. Open winding. 0 V at the coil would mean a safety upstream. Don't jump a safety.";
       else sheetNote = "0 volts on " + s.title.toLowerCase() + ". That's the open on this measurement. Don't shotgun the next part.";
+      feel(host && host.querySelector('[data-node="' + node.id + '"]'), capFound ? "Open cap. Read microfarads." : "That's the open.", "ok");
+      feelCoach(sheetNote);
       paintTs();
       return;
     }
@@ -3096,11 +3486,15 @@
       } else {
         sheetNote = "Sheet's done. You walked stat, line, disconnect, R-C, Y, safeties, coil, load, and the compressor.";
       }
+      feel(host && host.querySelector('[data-node="' + node.id + '"]'), "Reading", "ok");
+      feelCoach(sheetNote);
       paintTs();
       return;
     }
     tsDone[s.id] = "fail";
     sheetNote = s.title + " failed. " + s.say;
+    feel(host && host.querySelector('[data-node="' + node.id + '"]'), "Wrong reading. " + s.title + " failed.", "bad");
+    feelCoach(s.say);
     paintTs();
   }
 
@@ -3111,6 +3505,8 @@
       const want = satWantId();
       if (want && nodeId !== want) {
         sheetNote = "Not that box. " + satCue(want, job);
+        feel(host && host.querySelector('[data-node="' + nodeId + '"]'), "Wrong point.", "bad");
+        feelCoach(sheetNote);
         paintLadder();
         paintDefusal();
         const note = host.querySelector("#el-note");
@@ -3211,7 +3607,7 @@
     if (last && who && who.id === "coil") return "Tap COIL. About 24 V and the contactor never pulls in. The winding is open. Hit Replace contactor.";
     if (last && who && who.id === "disc") return "Tap DISC. Load at 0 with L1 still hot means the puller is open. Hit Replace fused disconnect.";
     if (last && who && who.id === "cap") return "Tap CAP. Power-off OL µF is an open HERM cap. Locked-rotor, not running amps. The outdoor fan can still run. Hit Replace. Don't condemn the compressor.";
-    if (last && who && who.id === "fuse") return "Tap COMP. About 0.4 Ω to ground means the compressor is shorted. Hit Isolate compressor C. A new 3A pops on that short.";
+    if (last && who && who.id === "fuse") return "Tap COMP. About 0 ohms to ground means the compressor is shorted. Hit Isolate compressor C. A new 3A pops on that short.";
     if (last && who && who.id === "swap") return "Tap STAT. Yellow is landed on G. Hit Move Y off G. Green is the fan, not the cool call.";
     if (last && who && who.id === "limit") return "Tap LIMIT. About 24 V across the limit on a heat call means it is open. The gas valve sees 0. Hit Replace high-limit. Don't jump it.";
     if (last && who && who.id === "rv") return "Tap the 3A. It is open. Hit Isolate O before you replace the fuse. A new 3A on a shorted reversing valve pops.";
@@ -3310,12 +3706,16 @@
   function revealInLadder(el) {
     const sc = host && host.querySelector("#el-ladder");
     if (!sc || !el) return;
+    const pad = sc.querySelector(".el-statpad");
+    let guard = 12;
+    if (pad) {
+      const ps = getComputedStyle(pad);
+      if (ps.position === "sticky" || ps.position === "fixed") guard = pad.offsetHeight + 10;
+    }
     const er = el.getBoundingClientRect();
     const sr = sc.getBoundingClientRect();
-    const topGuard = 44;
-    if (er.top >= sr.top + topGuard && er.bottom <= sr.bottom - 8 && er.left >= sr.left - 2 && er.right <= sr.right + 2) return;
-    const delta = (er.top + er.height / 2) - (sr.top + sr.height / 2);
-    sc.scrollTop += delta;
+    if (er.top >= sr.top + guard && er.bottom <= sr.bottom - 12 && er.left >= sr.left - 2 && er.right <= sr.right + 2) return;
+    sc.scrollTop += er.top - (sr.top + guard);
   }
 
   function fitChrome() {
@@ -3329,7 +3729,8 @@
       el.style.display = hideBench ? "none" : "";
     });
     const lad = host.querySelector("#el-ladder");
-    if (lad) lad.style.paddingBottom = (window.innerWidth || 390) <= 800 ? "96px" : "";
+    if (lad) lad.style.paddingBottom = "";
+    parkFloats();
   }
 
   function onResizeChrome() { fitChrome(); }
@@ -3495,6 +3896,7 @@
             <h2 style="font-size:22px;margin:0 0 4px">Walk the first call with me</h2>
             <p style="margin:0 0 8px">Hit Walk it with me, or pick a bay if you already know the move.</p>
             <button type="button" class="btn primary" id="el-sat-start">Walk it with me</button>
+            <button type="button" class="btn primary el-next-step">Next step</button>
           </div>
         </div>`
       : "";
@@ -3560,6 +3962,8 @@
       </div>
       ${wantsReplace ? `<button type="button" class="btn primary" id="el-replace">Replace ${replaceName}</button>` : ""}
       ${isolateLabel ? `<button type="button" class="btn primary" id="el-isolate" hidden>${isolateLabel}</button>` : ""}
+      <button type="button" class="btn" id="el-directions">Directions</button>
+      <button type="button" class="btn primary el-next-step">Next step</button>
     </div>`;
   }
 
@@ -3585,6 +3989,7 @@
   }
 
   function build() {
+    rescueFloats();
     const kitOpts = Object.keys(KITS).map((k) =>
       `<option value="${k}"${k === activeKit ? " selected" : ""}>${KITS[k].name}</option>`
     ).join("");
@@ -3632,6 +4037,7 @@
               <button type="button" class="el-mode-btn ${meterSchool && !meterGuideOn ? "active" : ""}" data-lab="meterfree">Meter practice</button>
               <button type="button" class="el-mode-btn ${labMode === "defusal" ? "active" : ""}" data-lab="defusal" id="el-mode-defuse">Saturday callback</button>
             </div>
+            <button type="button" class="btn primary el-next-step" id="el-next-step-bar">Next step</button>
             <div class="lab-drawers" role="toolbar" aria-label="Phone trays">
               <button type="button" class="btn lab-drawer-btn" id="el-parts-toggle">Parts</button>
               <button type="button" class="btn lab-drawer-btn" id="el-meter-toggle">DMM</button>
@@ -3661,8 +4067,9 @@
             ` : `
             <button class="btn" id="el-jobs-back" ${job ? "" : "style='display:none'"}>All callbacks</button>
             `}
-            <button class="btn" id="el-hub">Shop floor</button>
+            <button class="btn el-floor-chip" id="el-hub" type="button">Shop floor</button>
           </header>
+          <div id="el-float-dock" class="el-float-dock"></div>
           ${showPicker ? jobPickerMarkup() : `
           ${labMode === "defusal" ? defusalBarMarkup() : ""}
           ${meterSchool ? meterBenchMarkup() : ""}
@@ -3748,14 +4155,19 @@
           </div>
         </div>
         <div class="el-guide" id="el-guide">
-          <img src="hub-portrait.jpg?v=3" alt="Professor HUB" />
-          <div>
+          <header class="el-guide-head" id="el-guide-head">
             <p class="eyebrow" id="el-guide-step">GUIDED WIRING</p>
-            <strong id="el-guide-title">Three colors</strong>
-            <p id="el-guide-say">Black is hot. Off-white is neutral. Green is ground.</p>
-            <div class="el-guide-row">
-              <button type="button" class="btn primary" id="el-guide-next">Next</button>
-              <button type="button" class="btn" id="el-guide-skip">Skip</button>
+            <button type="button" class="el-guide-x" id="el-guide-x" aria-label="Close walk-through">×</button>
+          </header>
+          <div class="el-guide-body">
+            <img src="hub-portrait.jpg?v=3" alt="Professor HUB" />
+            <div>
+              <strong id="el-guide-title">Three colors</strong>
+              <p id="el-guide-say">Black is hot. Off-white is neutral. Green is ground.</p>
+              <div class="el-guide-row">
+                <button type="button" class="btn primary" id="el-guide-next">Next</button>
+                <button type="button" class="btn" id="el-guide-skip">Skip</button>
+              </div>
             </div>
           </div>
         </div>
@@ -3867,30 +4279,176 @@
     }
   }
 
-  function ensureHubReachable() {
-    const btn = host && host.querySelector("#el-hub");
-    if (!btn) return;
-    const zoomOn = !!(host.querySelector("#el-zoom.show"));
-    if (!zoomOn) return;
-    const r = btn.getBoundingClientRect();
-    const vw = window.innerWidth || 390;
-    const vh = window.innerHeight || 844;
-    const onScreen = r.width > 8 && r.height > 8 && r.left < vw - 8 && r.right > 8 && r.top < vh - 8 && r.bottom > 8;
-    const cx = Math.min(vw - 2, Math.max(2, r.left + r.width / 2));
-    const cy = Math.min(vh - 2, Math.max(2, r.top + r.height / 2));
-    const hit = onScreen ? document.elementFromPoint(cx, cy) : null;
-    const mine = !!(hit && (hit === btn || btn.contains(hit)));
-    if (onScreen && mine) return;
+  function ensureElScale() {
+    if (document.getElementById("el-scale")) return;
+    const style = document.createElement("style");
+    style.id = "el-scale";
+    style.textContent = [
+      "#electrical-root .el-zoom.show:not(.lead-mode) .el-zoom-svg{z-index:5!important;pointer-events:none!important}",
+      "#electrical-root .el-zoom-screw.wired{background:transparent!important;color:#1a1612!important}",
+      "#electrical-root .part-img,#electrical-root .el-zoom-work img,#electrical-root .el-dmm-img{object-fit:contain!important;object-position:center;max-width:100%;max-height:100%}",
+      "#electrical-root .el-dmm-img{width:min(88px,100%);height:auto}",
+      "#electrical-root .el-slot .part-img{width:40px;height:40px}",
+      "#electrical-root .el-zoom-work{width:min(100%,42vh,380px)!important;max-width:100%!important;height:auto!important;aspect-ratio:1/1!important;min-height:0!important;margin-left:auto;margin-right:auto;overflow:hidden}",
+      "#electrical-root .el-zoom-work img{inset:0!important;width:100%!important;height:100%!important;padding:0!important;object-fit:contain!important}",
+      "@media (min-width:821px){",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-zoom-card{display:flex!important;flex-wrap:wrap;align-items:flex-start;align-content:flex-start;gap:6px 12px;width:min(1040px,100%)!important;max-height:calc(100dvh - 120px);overflow:auto}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-zoom-card>*{flex:1 1 100%;min-width:0;max-width:100%}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-lead-face{order:1;flex:1 1 250px!important;max-width:300px!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-zoom-stage{order:2;flex:2 1 340px!important;min-width:0;max-width:100%}",
+      "#electrical-root .el-layout.meter-on .el-zoom-work{width:min(100%,44vh,380px)!important}",
+      "}",
+      "@media (max-width:820px){",
+      "#electrical-root{max-width:100%;overflow-x:hidden}",
+      "#electrical-root .el-layout.meter-on .sb-palette,#electrical-root .el-layout.meter-on .el-bench,#electrical-root .el-layout.meter-on #el-status,#electrical-root .el-layout.meter-on #el-chips,#electrical-root .el-layout.meter-on #el-zoom-desc,#electrical-root .el-layout.meter-on .el-zoom-hint{display:none!important}",
+      "#electrical-root .el-layout.meter-on .sb-toolbar{flex-wrap:nowrap;overflow-x:auto;max-height:64px;max-width:100%}",
+      "#electrical-root .el-layout.meter-on{height:100dvh!important;min-height:0!important;overflow:hidden!important}",
+      "#electrical-root .el-layout.meter-on .el-main{min-height:0;overflow:auto;padding-bottom:8px}",
+      "#electrical-root .el-layout.meter-on .el-main>.el-zoom.show.lead-mode{flex:1 1 auto;height:auto!important;max-height:none!important;overflow:visible!important;padding:4px 8px 8px!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-zoom-card{display:flex!important;flex-direction:column!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-lead-face{order:1}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-zoom-stage{order:2}",
+      "#electrical-root .el-layout.meter-on .el-zoom-work{width:min(100%,52vw,210px)!important}",
+      "#electrical-root .el-layout.meter-on .el-guide.show{max-height:78px;overflow:auto}",
+      "#electrical-root .el-layout.meter-on .el-lead-lcd{font-size:26px;padding:4px 8px}",
+      "#electrical-root .el-zoom.show:not(.lead-mode){position:fixed!important;inset:0!important;width:auto!important;height:auto!important;max-height:none!important;z-index:40;overflow:hidden!important;align-items:stretch!important;justify-content:stretch!important;padding:8px!important;box-sizing:border-box}",
+      "#electrical-root .el-zoom.show:not(.lead-mode) .el-zoom-card{display:flex!important;flex-direction:column!important;width:100%!important;max-width:100%!important;height:100%!important;max-height:100%!important;margin:0!important;overflow:hidden!important}",
+      "#electrical-root .el-zoom.show:not(.lead-mode) .el-zoom-stage{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;max-width:100%}",
+      "#electrical-root .el-zoom.show:not(.lead-mode) .el-zoom-work{flex:1 1 auto!important;width:min(100%,92vw,420px)!important;height:auto!important;aspect-ratio:1/1!important;min-height:220px!important;max-height:52vh!important;margin:4px auto!important}",
+      "#electrical-root .el-zoom.show:not(.lead-mode) .el-zoom-work img{width:100%!important;height:100%!important;max-width:100%!important;object-fit:contain!important;padding:0!important}",
+      "#electrical-root .el-zoom.show:not(.lead-mode) .el-zoom-screw{width:52px;height:52px}",
+      "#electrical-root .el-zoom.show:not(.lead-mode) #el-zoom-desc,#electrical-root .el-zoom.show:not(.lead-mode) .el-zoom-hint{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}",
+      "#electrical-root .el-zoom.show:not(.lead-mode) .el-zoom-need{max-height:72px;overflow:auto}",
+      "}",
+    ].join("");
+    document.head.appendChild(style);
+  }
+
+  function ensureElChrome() {
+    if (document.getElementById("el-chrome-fix")) return;
+    const style = document.createElement("style");
+    style.id = "el-chrome-fix";
+    style.textContent =
+      "@media (max-width:800px){" +
+      "#electrical-root .el-modes{flex-wrap:wrap!important;overflow:visible!important;max-width:100%}" +
+      "#electrical-root .el-mode-btn{flex:1 1 auto!important;width:auto;min-width:0;white-space:normal;padding:0 10px;font-size:12px;letter-spacing:.02em}" +
+      "}";
+    document.head.appendChild(style);
+  }
+
+  function ensureElPlayFit() {
+    if (document.getElementById("el-play-fit")) return;
+    const style = document.createElement("style");
+    style.id = "el-play-fit";
+    style.textContent = [
+      "#electrical-root .part-img,#electrical-root .el-zoom-work img,#electrical-root .el-dmm-img,#electrical-root .el-slot img,#electrical-root .el-loupe-shot img{object-fit:contain!important;object-position:center;background:#101418}",
+      "#electrical-root .el-rail{display:flex;flex-wrap:wrap;align-items:center;gap:6px 0}",
+      "#electrical-root .el-node{flex:0 0 auto;width:max-content;min-width:max-content;max-width:100%;margin:4px 0;padding:6px 10px;overflow:hidden;white-space:normal;align-items:flex-start;justify-content:center}",
+      "#electrical-root .el-node b,#electrical-root .el-node small{display:block;white-space:normal;overflow:visible;overflow-wrap:anywhere;max-width:11rem}",
+      "#electrical-root .el-node-wire{position:relative;right:auto;top:auto;transform:none;flex:0 0 12px;width:12px;height:4px;margin:0;display:block}",
+      "#electrical-root .el-float-dock{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;margin:0 12px 2px;flex:0 0 auto;min-width:0;max-width:100%}",
+      "#electrical-root .el-float-dock:not(:has(> :not([hidden]))){display:none}",
+      "#electrical-root #el-hub.el-floor-chip{position:fixed!important;top:8px!important;right:8px!important;left:auto!important;bottom:auto!important;z-index:30!important;width:auto;max-width:112px;margin:0;flex:0 0 auto}",
+      "#electrical-root .el-float-dock > #drip-ear,#electrical-root .el-float-dock > #walk-chip,#electrical-root .el-float-dock > #pf-coach-bar,#electrical-root .el-float-dock > #hub-ai-fab,#electrical-root .el-float-dock > .el-guide.show,#electrical-root .el-float-dock > .ld-replay,#electrical-root .el-float-dock > #toast-host{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;inset:auto!important;margin:0;z-index:2}",
+      "#electrical-root .el-float-dock > #drip-ear,#electrical-root .el-float-dock > #walk-chip,#electrical-root .el-float-dock > #pf-coach-bar,#electrical-root .el-float-dock > .el-guide.show{width:min(100%,520px)!important;max-width:100%;flex:1 1 240px;overflow:visible}",
+      "#electrical-root .el-float-dock > #hub-ai-fab,#electrical-root .el-float-dock > .ld-replay{flex:0 0 auto!important;width:auto!important;max-width:100%}",
+      "#electrical-root .el-float-dock > #toast-host{flex:0 1 auto;width:auto!important;max-width:100%;display:flex;flex-direction:column;gap:6px;pointer-events:none}",
+      "#electrical-root .el-float-dock > #toast-host:empty{display:none!important}",
+      "@media (min-width:801px){#electrical-root .el-main{min-height:0;overflow:hidden}#electrical-root .el-ladder{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:8px 12px 6px}#electrical-root .el-statpad{flex:0 0 auto;margin-bottom:6px;padding:8px 10px}#electrical-root .el-ladder-kicker{flex:0 0 auto;margin:0 0 4px!important;padding:4px 2px!important}#electrical-root .el-rail,#electrical-root .el-ladder-read,#electrical-root .el-ts-actions{flex:0 0 auto}#electrical-root .el-rail{margin:4px 0}#electrical-root .el-ladder-read{margin:4px 0;padding:8px 10px}#electrical-root .el-ts{flex:1 1 auto;min-height:72px;max-height:none;overflow:auto}#electrical-root .el-ts-actions{margin-top:4px}}",
+      "#electrical-root .el-float-dock > #drip-ear{cursor:grab;touch-action:none;max-height:none!important;overflow:visible!important}",
+      "#electrical-root .el-float-dock > #drip-ear::before{content:\"\";flex:0 0 8px;width:8px;align-self:stretch;border-radius:4px;background:repeating-linear-gradient(#e8c450,#e8c450 2px,transparent 2px,transparent 5px);cursor:grab}",
+      "#electrical-root .el-float-dock > #walk-chip{width:min(100%,420px)!important}",
+      "#electrical-root .el-float-dock > .el-guide.show{max-height:220px;overflow:auto}",
+      "@media (max-width:800px){body:has(#screen-electrical.active) #electrical-root{padding-bottom:0!important}#screen-electrical.screen.active{overflow:hidden!important;height:100dvh!important;max-height:100dvh!important}#electrical-root{height:100%!important;max-height:100dvh!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}#electrical-root .el-layout{height:100%!important;min-height:0!important;max-height:100%!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}#electrical-root .sb-palette{order:3!important;flex:0 0 148px!important;height:148px!important;max-height:148px!important;overflow:hidden!important;padding:4px 6px!important}#electrical-root .sb-palette .brand-bar,#electrical-root .sb-palette .eyebrow,#electrical-root .sb-palette .sb-hint,#electrical-root .sb-palette .hub-chip{display:none!important}#electrical-root .sb-tabs{flex-wrap:wrap!important;overflow:visible!important;max-height:none!important}#electrical-root #el-items{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-content:flex-start!important;overflow-x:hidden!important;overflow-y:auto!important;height:auto!important;min-height:0!important;max-height:96px!important}#electrical-root #el-items .sb-item{flex:1 1 46%!important;width:auto!important;min-width:0!important;max-width:calc(50% - 6px)!important}#electrical-root .el-main{order:1!important;flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}#electrical-root .sb-toolbar{flex:0 0 auto!important}#electrical-root .el-modes{flex-wrap:wrap!important;overflow:visible!important;max-height:none!important}#electrical-root .el-mode-btn{flex:1 1 30%!important;min-width:0!important;min-height:28px!important;padding:0 4px!important;font-size:10px!important;white-space:nowrap!important}#electrical-root .el-float-dock{flex:0 0 auto!important;max-height:none!important;overflow:visible!important;flex-wrap:wrap!important;margin:0 6px!important}#electrical-root .el-float-dock > #drip-ear,#electrical-root .el-float-dock > #toast-host{display:none!important}#electrical-root .el-float-dock > #walk-chip{flex:1 1 100%!important;width:100%!important;max-width:100%!important;min-width:0!important;max-height:none!important;overflow:visible!important}#electrical-root .el-float-dock > #walk-chip .walk-chip-head{min-width:0!important}#electrical-root .el-float-dock > #walk-chip .walk-chip-head strong{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important}#electrical-root #walk-chip-x,#electrical-root #walk-chip-steps{flex:0 0 auto!important}body:has(#screen-electrical.active) .walk-chip{left:8px!important;right:8px!important;width:auto!important;max-width:calc(100vw - 16px)!important;overflow:visible!important}#electrical-root .el-ladder{flex:1 1 auto!important;min-height:0!important;overflow:auto!important;display:flex!important;flex-direction:column!important;padding:4px 6px 6px!important}#electrical-root .el-statpad{position:sticky!important;top:0!important;z-index:3!important;padding:4px 6px!important;margin:0!important}#electrical-root .el-ladder-kicker{margin:0!important;padding:2px!important}#electrical-root .el-node{margin:2px 0!important;padding:3px 6px!important}#electrical-root .el-ts{display:none!important}#electrical-root .el-ladder-read{margin:2px 0!important;padding:4px 6px!important}#electrical-root .el-ts-actions{display:flex!important;flex-wrap:wrap!important;gap:4px!important;margin:0!important}#electrical-root .el-ts-actions .btn{min-height:34px!important;padding:4px 8px!important}body:has(#screen-electrical.active) #drip-ear{display:none!important}body:has(#screen-electrical.active) .ld-replay{position:fixed!important;top:auto!important;bottom:8px!important;left:auto!important;right:8px!important;z-index:40!important;display:block!important;animation:none!important}#electrical-root .lab-veil.show{top:42%!important;pointer-events:auto!important}#electrical-root .el-ladder{padding-bottom:64px!important}}",
+      "body:has(#screen-electrical.active) #el-float-dock{position:fixed!important;left:8px!important;right:8px!important;bottom:8px!important;top:auto!important;max-height:72px!important;overflow:auto!important;z-index:20!important;margin:0!important}",
+      "@media (max-width:800px){#electrical-root .el-ladder-kicker{position:static!important;top:auto!important;z-index:auto!important}}",
+    ].join("");
+    document.head.appendChild(style);
+  }
+
+  function ensureElRead() {
+    if (document.getElementById("el-read")) return;
+    const style = document.createElement("style");
+    style.id = "el-read";
+    style.textContent = [
+      "#electrical-root .el-next-step{flex:1 1 100%;min-height:44px;margin:4px 0 0;font-size:16px}",
+      "#electrical-root .el-node{min-width:0!important;width:auto!important;flex:1 1 84px!important;max-width:100%!important}",
+      "#electrical-root .el-node b{font-size:13px!important;max-width:8.5rem!important}",
+      "#electrical-root .el-mode-btn{white-space:normal!important;font-size:13px!important;line-height:1.15!important;min-height:40px!important;letter-spacing:.03em!important}",
+      "#electrical-root .el-layout.defusal .el-timer{font-size:clamp(26px,6vw,40px)!important;min-width:0!important}",
+      "#electrical-root .el-layout.defusal .el-jobs{grid-template-columns:1fr!important}",
+      "body:has(#screen-electrical.active) #hub-ai-fab{display:none!important}",
+      "#electrical-root .el-dir{margin:8px 12px;padding:12px 14px;border:1px solid #e8c450;border-radius:12px;background:#14181e;color:#f7f3ea}",
+      "#electrical-root .el-dir p{margin:0 0 10px;line-height:1.4}",
+      "#electrical-root .hub-point,#electrical-root .el-node.ts-now{outline:3px solid #CE0034!important;box-shadow:0 0 0 3px #e8c450!important}",
+      "@media (max-width:800px){",
+      "#electrical-root .el-mode-btn{font-size:12px!important;min-height:36px!important;padding:4px 6px!important}",
+      "#electrical-root .el-ts{display:block!important;max-height:96px!important;overflow:auto!important}",
+      "#electrical-root .el-defuse-bar{margin:4px 8px!important;padding:8px!important}",
+      "#electrical-root .el-node{flex:1 1 46%!important;margin:2px!important}",
+      "}",
+    ].join("");
+    document.head.appendChild(style);
+  }
+
+  function floatShown(el) {
+    if (!el || el.hidden) return false;
+    const cs = getComputedStyle(el);
+    return cs.display !== "none" && cs.visibility !== "hidden";
+  }
+
+  function rescueFloats() {
+    const app = document.getElementById("app") || document.body;
+    ["drip-ear", "walk-chip", "pf-coach-bar", "hub-ai-fab", "toast-host"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el && host && host.contains(el)) app.appendChild(el);
+    });
+    const replay = document.querySelector(".ld-replay");
+    if (replay && host && host.contains(replay)) app.appendChild(replay);
+  }
+
+  function parkFloats() {
+    const dock = host && host.querySelector("#el-float-dock");
+    if (!dock) return;
+    const app = document.getElementById("app") || document.body;
+    ["drip-ear", "walk-chip", "pf-coach-bar", "hub-ai-fab"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (floatShown(el)) {
+        if (el.parentNode !== dock) dock.appendChild(el);
+      } else if (el.parentNode === dock) {
+        app.appendChild(el);
+      }
+    });
+    const toast = document.getElementById("toast-host");
+    if (toast) {
+      if (toast.childElementCount) {
+        if (toast.parentNode !== dock) dock.appendChild(toast);
+      } else if (toast.parentNode === dock) {
+        app.appendChild(toast);
+      }
+    }
+    const guide = host.querySelector("#el-guide");
     const layout = host.querySelector(".el-layout");
-    if (layout && btn.parentNode !== layout) layout.appendChild(btn);
-    btn.style.position = "fixed";
-    btn.style.zIndex = "90";
-    btn.style.left = "12px";
-    btn.style.right = "12px";
-    btn.style.bottom = "8px";
-    btn.style.top = "auto";
-    btn.style.width = "auto";
-    btn.style.margin = "0";
+    if (guide && layout) {
+      if (guide.classList.contains("show")) {
+        if (guide.parentNode !== dock) dock.appendChild(guide);
+      } else if (guide.parentNode === dock) {
+        layout.appendChild(guide);
+      }
+    }
+  }
+
+  function ensureHubReachable() {
+    const btn = document.getElementById("el-hub");
+    if (!btn) return;
+    btn.classList.add("el-floor-chip");
+    if (btn.parentNode !== document.body) document.body.appendChild(btn);
+    btn.style.setProperty("position", "fixed", "important");
+    btn.style.setProperty("z-index", "30", "important");
+    btn.style.setProperty("top", "8px", "important");
+    btn.style.setProperty("left", "auto", "important");
+    btn.style.setProperty("right", "8px", "important");
   }
 
   function wire() {
@@ -3963,6 +4521,15 @@
     }
     const gSkip = host.querySelector("#el-guide-skip");
     if (gSkip) gSkip.onclick = () => { meterGuideOn = false; stopGuide(); };
+    const gX = host.querySelector("#el-guide-x");
+    if (gX) gX.onclick = () => { meterGuideOn = false; stopGuide(); };
+    if (global.LtDrag && global.LtDrag.makeMoveable) {
+      const floor = document.getElementById("el-hub");
+      if (floor) global.LtDrag.makeMoveable(floor, floor, "lt-el-floor-pos");
+      const gHead = host.querySelector("#el-guide-head");
+      const gBox = host.querySelector("#el-guide");
+      if (gHead && gBox) global.LtDrag.makeMoveable(gHead, gBox, "lt-el-guide-pos");
+    }
     function toggleDrawer(sel) {
       const el = host.querySelector(sel);
       if (!el) return;
@@ -4012,7 +4579,7 @@
       };
     }
     const modeEl = host.querySelector("#el-mode");
-    if (modeEl) modeEl.onchange = (e) => { mode = e.target.value; ladderProof = false; onMeterEvent("dial"); paintMeter(); };
+    if (modeEl) modeEl.onchange = (e) => { setMeterMode(e.target.value, modeEl); };
     host.querySelectorAll("[data-lead]").forEach(function (b) {
       b.onclick = function () { dmmLead = b.dataset.lead; paintDmmJacks(); };
     });
@@ -4033,10 +4600,7 @@
         e.stopPropagation();
         mode = b.getAttribute("data-mdial");
         ladderProof = false;
-        const modeEl = host.querySelector("#el-mode");
-        if (modeEl) modeEl.value = mode;
-        onMeterEvent("dial");
-        paintMeter();
+        setMeterMode(mode, b);
       };
     });
     host.querySelectorAll("[data-mlead]").forEach(function (b) {
@@ -4063,6 +4627,8 @@
         const faultEl = host.querySelector("#el-fault");
         if (faultEl && (fault === "none" || fault === "open_disc")) faultEl.value = fault;
         paintMeter();
+        if (ohmLessonReady()) onMeterEvent("ohm-ok");
+        if (meterGuideOn) feelCoach(meterNextMove());
       };
     }
     const faultEl = host.querySelector("#el-fault");
@@ -4124,6 +4690,9 @@
     }
     const tsGo = host.querySelector("#el-ts-go");
     if (tsGo) tsGo.onclick = () => beginTs(false);
+    const dirs = host.querySelectorAll("#el-directions");
+    dirs.forEach((btn) => { btn.onclick = () => showDirections(); });
+    host.querySelectorAll(".el-next-step").forEach((btn) => { btn.onclick = () => showNextStep(); });
     const tsPr = host.querySelector("#el-ts-practice");
     if (tsPr) tsPr.onclick = () => beginTs(true);
     const wireThis = host.querySelector("#el-wire-this");
@@ -4201,7 +4770,7 @@
     if (jobsBack) jobsBack.onclick = () => setLabMode("defusal");
     const clockBtn = host.querySelector("#el-clock-out");
     if (clockBtn) clockBtn.onclick = () => clockOutSaturday();
-    const hubBtn = host.querySelector("#el-hub");
+    const hubBtn = document.getElementById("el-hub");
     if (hubBtn) {
       hubBtn.onclick = function () {
         clearTimer();
@@ -4218,6 +4787,7 @@
     }
     ensureHubReachable();
     fitChrome();
+    parkFloats();
     window.removeEventListener("resize", onResizeChrome);
     window.addEventListener("resize", onResizeChrome);
     const zClose = host.querySelector("#el-zoom-close");
@@ -4248,6 +4818,60 @@
   }
 
   function start(root, opts) {
+    floorFit("el-floor-fit", [
+      "@media (min-width:801px){",
+      "#electrical-root .el-layout{height:100dvh;max-height:100dvh;min-height:0;overflow:hidden}",
+      "#electrical-root .el-meter{max-height:100dvh;overflow-x:hidden;overflow-y:auto;box-sizing:border-box}",
+      "#electrical-root .el-dmm-img{display:block;width:72px;height:72px;max-height:72px;object-fit:contain;object-position:center;background:transparent;margin:0 auto}",
+      "#electrical-root .el-probes{display:flex;flex-wrap:wrap;gap:4px}",
+      "}",
+      "@media (max-width:800px){",
+      "#electrical-root .el-meter.drawer-open{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;max-height:62dvh!important;overflow:auto!important;transform:none!important;z-index:60!important}",
+      "#electrical-root .el-meter.drawer-open .el-dmm-img{height:56px;max-height:56px;width:auto;object-fit:contain}",
+      "}",
+      "#electrical-root .el-layout.meter-on .el-ladder{display:none!important}",
+      "@media (max-width:1100px){",
+      "#electrical-root .el-layout.meter-on{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;height:100dvh!important;max-height:100dvh!important;overflow:hidden!important}",
+      "#electrical-root .el-layout.meter-on .sb-palette{display:none!important}",
+      "#electrical-root .el-layout.meter-on .el-main{order:1!important;flex:1 1 auto!important;width:100%!important;max-width:100%!important;min-width:0!important;min-height:0!important;overflow:auto!important}",
+      "#electrical-root .el-layout.meter-on .sb-toolbar{flex:0 0 auto!important;width:100%!important;max-height:none!important;flex-wrap:wrap!important}",
+      "#electrical-root .el-layout.meter-on .el-modes{display:flex!important;flex-wrap:wrap!important;width:100%!important;max-width:100%!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-zoom-card{display:flex!important;flex-direction:column!important;width:100%!important;max-width:100%!important;max-height:none!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-zoom-card>*{flex:0 0 auto!important;max-width:100%!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-zoom-stage{order:1!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-lead-face{order:2!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom-work{width:min(100%,72vw,320px)!important;max-width:100%!important;aspect-ratio:1/1!important;height:auto!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom-work img{width:100%!important;height:100%!important;object-fit:contain!important}",
+      "}",
+      "@media (min-width:1101px){",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-zoom-card{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-items:flex-start!important;width:100%!important;max-width:none!important;max-height:none!important;overflow:visible!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-zoom-card>*{flex:1 1 220px!important;max-width:100%!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .eyebrow,#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-zoom-name{flex:1 1 100%!important;margin:0!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-lead-face{order:1!important;flex:0 1 320px!important;max-width:340px!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom.show.lead-mode .el-zoom-stage{order:2!important;flex:0 0 280px!important;max-width:300px!important}",
+      "#electrical-root .el-layout.meter-on .el-zoom-work{width:240px!important;max-width:100%!important}",
+      "}",
+      "@media (orientation:landscape) and (max-height:500px){",
+      "#screen-electrical.screen.active,#electrical-root,#electrical-root .el-layout{height:100dvh!important;max-height:100dvh!important;overflow:hidden!important}",
+      "#electrical-root .el-layout{display:grid!important;grid-template-columns:minmax(0,1.35fr) minmax(168px,0.65fr)!important}",
+      "#electrical-root .el-main{min-height:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}",
+      "#electrical-root .el-float-dock{display:none!important}",
+      "#electrical-root .sb-toolbar{max-height:40px!important;overflow:hidden!important;flex:0 0 40px!important}",
+      "#electrical-root .el-ladder{flex:1 1 auto!important;min-height:0!important;overflow:auto!important}",
+      "#electrical-root .el-status,#electrical-root .el-chips{flex:0 0 auto!important;max-height:22px!important;overflow:hidden!important;margin:0!important}",
+      "#electrical-root .el-meter{overflow:auto!important;max-height:100dvh!important;min-height:0!important}",
+      "#electrical-root .el-node{max-height:46px!important;min-height:34px!important;margin:1px 0!important;padding:2px 4px!important}",
+      "}",
+      "@media (min-width:1101px) and (max-height:860px){",
+      "#electrical-root .el-layout.meter-on .el-float-dock{max-height:0!important;overflow:hidden!important;margin:0!important}",
+      "#electrical-root .el-layout.meter-on #el-status,#electrical-root .el-layout.meter-on #el-chips,#electrical-root .el-layout.meter-on #el-zoom-desc,#electrical-root .el-layout.meter-on .el-zoom-hint{display:none!important}",
+      "}",
+    ].join(""));
+    landTurn("screen-electrical");
+    ensureElChrome();
+    ensureElScale();
+    ensureElPlayFit();
+    ensureElRead();
     host = root;
     onXp = opts && opts.onXp;
     onWin = opts && opts.onWin;
@@ -4319,9 +4943,17 @@
       paintGuide();
       ensureHubReachable();
     }
+    parkFloats();
+    if (floatWatch) clearInterval(floatWatch);
+    floatWatch = setInterval(parkFloats, 400);
     return {
       stop() {
         clearTimer();
+        if (floatWatch) {
+          clearInterval(floatWatch);
+          floatWatch = 0;
+        }
+        rescueFloats();
         closeZoom();
         hideLoupe();
         document.removeEventListener("keydown", onKeyZoom);
@@ -4331,7 +4963,7 @@
           resizeObs = null;
         }
       },
-      getHubBtn() { return host.querySelector("#el-hub"); },
+      getHubBtn() { return document.getElementById("el-hub"); },
       startJob,
       cutWire,
       replacePart,

@@ -192,7 +192,7 @@
             <div class="brand-bar" style="justify-content:flex-start;margin-bottom:6px">
               <div class="brand-mark" style="width:28px;height:28px;font-size:13px">LT</div>
               <div class="brand-word">
-                <strong style="font-size:13px">LINCOLN TECH</strong>
+                <strong style="font-size:13px">${(window.LtBrand && window.LtBrand.org) || "HVAC Legends"}</strong>
                 <span>AI field helper</span>
               </div>
             </div>

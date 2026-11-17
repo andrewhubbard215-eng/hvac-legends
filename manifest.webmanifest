@@ -1,7 +1,7 @@
 {
   "name": "HVAC Legends",
-  "short_name": "Legends",
-  "description": "HVAC Legends — install, service, sandbox, Professor HUB",
+  "short_name": "HVAC Legends",
+  "description": "Vocational HVAC trainer. Shop floor, recovery, sandbox, EPA 608 practice.",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "any",

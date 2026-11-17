@@ -48,7 +48,7 @@
       gauges: "Manifold school",
       minisplit: "Mini-split install",
       compchange: "Compressor change-out",
-      iconnect: "iConnect lab",
+      iconnect: ((window.LtBrand && window.LtBrand.trainer) || "Hubconnect") + " lab",
       recover: "Recovery",
       cutaway: "See inside",
       epa608: "EPA 608",
@@ -105,8 +105,10 @@
     compchange: "Compressor change-out",
     cutaway: "See inside",
     epa608: "EPA 608 tutor",
-    iconnect: "iConnect lab",
+    iconnect: ((window.LtBrand && window.LtBrand.trainer) || "Hubconnect") + " lab",
     furnace: "Furnace SOO",
+    call90: "90% furnace call",
+    train: "Training deck",
     flare: "Flaring lab",
     braze: "Brazing lab",
     quiz: "All-Star Exam",
@@ -245,9 +247,154 @@
     el.querySelector("#rv-load").onclick = function () {
       const code = (saved() || {}).code;
       if (!code) return;
-      fetch("/api/review-notes?code=" + code).then(function (r) { return r.json(); }).then(paint);
+      fetch("/api/review-notes?code=" + code).then(function (r) {
+        if (!r.ok) return { code: code, notes: [] };
+        return r.json();
+      }).then(function (pad) {
+        if (!pad || pad.error) pad = { code: code, notes: [] };
+        paint(pad);
+      });
     };
     if (row.code) el.querySelector("#rv-load").click();
+  }
+
+  function instructorOn() {
+    try {
+      if (new URLSearchParams(location.search).get("desk") === "instructor") return true;
+      if (localStorage.getItem("lt-desk-pass-allstars") === "1") return true;
+      if (global.LtBrand && global.LtBrand.desk) return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function fixNotes() {
+    try {
+      var rows = JSON.parse(localStorage.getItem("lt-fix-notes-v1") || "[]");
+      return Array.isArray(rows) ? rows : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function keepFix(rows) {
+    localStorage.setItem("lt-fix-notes-v1", JSON.stringify(rows.slice(0, 80)));
+  }
+
+  function escFix(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      if (c === "&") return "&" + "amp;";
+      if (c === "<") return "&" + "lt;";
+      if (c === ">") return "&" + "gt;";
+      return "&" + "quot;";
+    });
+  }
+
+  function paintFix(rows) {
+    var list = document.getElementById("fix-list");
+    if (!list) return;
+    if (!rows.length) {
+      list.innerHTML = "<li class=\"fix-empty\">No notes yet.</li>";
+      return;
+    }
+    list.innerHTML = rows.map(function (n) {
+      return "<li><b>" + escFix(n.screen || "Shop floor") + "</b> " + escFix(n.text) + "</li>";
+    }).join("");
+  }
+
+  function mountFix() {
+    if (!instructorOn() || /desk\.html/i.test(location.pathname)) return;
+    if (document.getElementById("fix-notes")) return;
+    var hub = document.getElementById("screen-hub");
+    if (!hub) return;
+    var style = document.createElement("style");
+    style.textContent =
+      ".fix-notes{max-width:1100px;margin:12px auto 16px;padding:14px;border-radius:16px;border:1px solid rgba(232,196,80,.65);background:#1a160f;color:#e8eef2}" +
+      ".fix-notes h3{margin:0 0 4px;color:#f0d878;font-size:18px}" +
+      ".fix-notes p{margin:0 0 8px;color:#d5dde4;font-size:14px}" +
+      ".fix-notes select,.fix-notes textarea{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid #6a5a32;background:#12100c;color:#fff;padding:10px;font:16px/1.4 'IBM Plex Sans',sans-serif}" +
+      ".fix-notes textarea{min-height:72px;margin-top:8px}" +
+      ".fix-notes .fix-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}" +
+      "#fix-list{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}" +
+      "#fix-list li{background:#12100c;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.4}" +
+      "#fix-list b{color:#f0d878}";
+    document.head.appendChild(style);
+    var el = document.createElement("section");
+    el.id = "fix-notes";
+    el.className = "fix-notes";
+    el.innerHTML =
+      "<h3>What should we fix?</h3>" +
+      "<p>Instructor only. One note about a card. It stays on this page.</p>" +
+      "<select id=\"fix-card\">" +
+      "<option>Shop floor</option><option>Take the call</option><option>See inside</option>" +
+      "<option>Land the lugs</option><option>Saturday call</option><option>System sandbox</option>" +
+      "<option>Recovery</option><option>Mini-split</option><option>90% furnace call</option><option>Training deck</option><option>Instructor desk</option><option>Other</option>" +
+      "</select>" +
+      "<textarea id=\"fix-text\" maxlength=\"500\" placeholder=\"On this card I would…\"></textarea>" +
+      "<div class=\"fix-actions\">" +
+      "<button type=\"button\" class=\"btn primary\" id=\"fix-save\">Save note</button>" +
+      "<button type=\"button\" class=\"btn\" id=\"fix-copy\">Copy notes</button>" +
+      "</div>" +
+      "<p id=\"fix-status\"></p>" +
+      "<ul id=\"fix-list\"></ul>";
+    var anchor = hub.querySelector(".floor-start");
+    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor.nextSibling);
+    else hub.appendChild(el);
+    paintFix(fixNotes());
+    fetch("/api/review-notes?code=100001")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.notes) return;
+        keepFix(j.notes);
+        paintFix(j.notes);
+      })
+      .catch(function () {});
+    el.querySelector("#fix-save").onclick = function () {
+      var text = el.querySelector("#fix-text").value.trim();
+      var status = el.querySelector("#fix-status");
+      if (text.length < 4) {
+        status.textContent = "Write the change first.";
+        return;
+      }
+      var note = {
+        name: "Instructor",
+        screen: el.querySelector("#fix-card").value,
+        text: text,
+        at: Date.now(),
+      };
+      var rows = fixNotes();
+      rows.unshift(note);
+      keepFix(rows);
+      paintFix(rows);
+      el.querySelector("#fix-text").value = "";
+      status.textContent = "Saved on this page.";
+      post({ action: "fix", name: note.name, screen: note.screen, text: note.text }, true)
+        .then(function (j) {
+          if (j && j.notes) {
+            keepFix(j.notes);
+            paintFix(j.notes);
+          }
+          status.textContent = "Saved. It stays on this instructor page.";
+        })
+        .catch(function () {
+          status.textContent = "Saved on this phone only. Save it again on Wi-Fi so the other phone can see it.";
+        });
+    };
+    el.querySelector("#fix-copy").onclick = function () {
+      var lines = fixNotes().map(function (n) {
+        return (n.screen || "Shop floor") + ": " + n.text;
+      });
+      var blob = lines.length ? lines.join("\n") : "No notes yet.";
+      var status = el.querySelector("#fix-status");
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(blob).then(function () {
+          status.textContent = "Copied. Paste it into the chat so it can be fixed.";
+        }).catch(function () {
+          status.textContent = blob;
+        });
+      } else {
+        status.textContent = blob;
+      }
+    };
   }
 
   function mount() {
@@ -255,8 +402,8 @@
     const code = (q.get("review") || "").replace(/\D/g, "").slice(0, 6);
     if (/^\d{6}$/.test(code) && !/desk\.html/i.test(location.pathname)) {
       bar(code);
-      return;
     }
+    mountFix();
     if (!/desk\.html/i.test(location.pathname)) return;
     if (document.getElementById("review-fab")) return;
     const btn = document.createElement("button");
@@ -264,9 +411,20 @@
     btn.type = "button";
     btn.className = "btn";
     btn.textContent = "Review copy";
-    btn.style.cssText = "position:fixed;left:12px;bottom:64px;z-index:80";
+    btn.style.cssText = "position:fixed;left:12px;bottom:12px;z-index:80";
     btn.onclick = openDesk;
     document.body.appendChild(btn);
+    var desk = document.getElementById("desk");
+    function park() {
+      var head = document.querySelector("#desk .ss-head");
+      if (!head || btn.parentElement === head) return;
+      btn.style.cssText = "position:relative;left:auto;right:auto;top:auto;bottom:auto;z-index:2;margin:0";
+      head.appendChild(btn);
+    }
+    if (desk) {
+      park();
+      new MutationObserver(park).observe(desk, { childList: true, subtree: true });
+    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount);

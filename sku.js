@@ -1,38 +1,84 @@
-/* HVAC Legends — duplicate of the trainer. No Lincoln name, no HCR catalog. */
+/* Dual SKU: campus (Lincoln Tech, default) vs store (unbranded HVAC Allstars).
+   ?sku=store | ?sku=campus  — also persisted. Store hostnames force store. */
 (function (global) {
   "use strict";
   var params = new URLSearchParams(location.search);
-  var sku = "store";
-  var isStore = true;
+  var saved = "";
+  try {
+    saved = localStorage.getItem("lt-sku") || "";
+  } catch (_) {}
+  var host = (location.hostname || "").toLowerCase();
+  var sku = "campus";
+  if (/hvacallstars\.(app|com|net)|play\.google/.test(host)) sku = "store";
+  if (saved === "store" || saved === "campus") sku = saved;
+  var q = (params.get("sku") || params.get("edition") || "").toLowerCase();
+  if (q === "store" || q === "campus") {
+    sku = q;
+    try {
+      localStorage.setItem("lt-sku", sku);
+    } catch (_) {}
+  }
+
+  var isStore = sku === "store";
   var brand = {
     sku: sku,
     isStore: isStore,
-    org: "HVAC Legends",
-    title: "HVAC Legends",
-    mark: "HL",
-    exam: "EPA 608 · OSHA 30 · shop curriculum",
-    school: "the shop",
-    roof: "Rooftop · the heavens open",
-    packCurriculum: "Shop curriculum",
+    org: isStore ? "HVAC Allstars" : "Lincoln Tech",
+    title: isStore ? "HVAC Allstars" : "Lincoln Tech HVAC Allstars",
+    mark: isStore ? "HA" : "LT",
+    exam: isStore ? "EPA 608 · OSHA 30 · shop curriculum" : "EPA 608 · OSHA 30 · Lincoln Tech",
+    school: isStore ? "trade school" : "Lincoln Tech",
+    roof: isStore ? "Rooftop · the heavens open" : "Lincoln Tech roof · the heavens open",
+    packCurriculum: isStore ? "Shop curriculum" : "Lincoln Tech",
   };
 
+  var pack = global.SchoolPack || null;
+  if (pack) {
+    if (pack.org) brand.org = pack.org;
+    if (pack.title) brand.title = pack.title;
+    if (pack.mark) brand.mark = pack.mark;
+    if (pack.exam) brand.exam = pack.exam;
+    if (pack.school) brand.school = pack.school;
+    if (pack.roof) brand.roof = pack.roof;
+    if (pack.packCurriculum) brand.packCurriculum = pack.packCurriculum;
+    if (pack.unbranded) {
+      brand.isStore = true;
+      brand.sku = "store";
+      isStore = true;
+    }
+  }
+
   var doc = document.documentElement;
-  doc.setAttribute("data-sku", sku);
-  doc.setAttribute("data-app", "legends");
-  doc.classList.toggle("sku-store", isStore);
-  doc.classList.toggle("sku-campus", !isStore);
+  doc.setAttribute("data-sku", brand.sku);
+  var pathName = location.pathname || "";
+  var baseHref = "";
+  try {
+    var baseEl = document.querySelector("base");
+    baseHref = (baseEl && baseEl.getAttribute("href")) || "";
+  } catch (_) {}
+  var isLegends = !!(pack && pack.id === "legends");
+  if (pack && pack.id === "lincoln") isLegends = false;
+  if (/\/allstars(\/|$)/.test(pathName)) isLegends = false;
+  doc.setAttribute("data-app", isLegends ? "legends" : "allstars");
+  brand.trainer = isLegends ? "Hubconnect" : "iConnect";
+  doc.classList.toggle("sku-store", brand.isStore);
+  doc.classList.toggle("sku-campus", !brand.isStore);
 
   var DESK_TOKEN = "instructor";
+  var deskKey = "lt-desk-pass-" + ((pack && pack.id) || "lincoln");
   function deskPass() {
     var ok = false;
     try {
+      if (localStorage.getItem("lt-desk-owner") === "1") ok = true;
+      if (localStorage.getItem("hvac-legends-code") === "FALCON1") ok = true;
       if (params.get("desk") === DESK_TOKEN) {
-        localStorage.setItem("lt-desk-pass-legends", "1");
+        localStorage.setItem(deskKey, "1");
         ok = true;
-      } else {
-        ok = localStorage.getItem("lt-desk-pass-legends") === "1";
-      }
+      } else if (localStorage.getItem(deskKey) === "1") ok = true;
+      else if (pack && pack.id === "lincoln" && localStorage.getItem("lt-desk-pass-allstars") === "1") ok = true;
     } catch (_) {}
+    if (pack && pack.id === "lincoln") ok = true;
+    if (pack && pack.id === "legends") ok = true;
     return ok;
   }
   var deskOk = deskPass();
@@ -44,24 +90,46 @@
     if (desc) {
       desc.setAttribute(
         "content",
-        isStore
-          ? "HVAC Legends — daily vocational trainer. EPA 608, OSHA 30, electrical box, DX sandbox, Professor HUB."
-          : "HVAC Legends — daily vocational trainer. EPA 608, OSHA 30, electrical box, DX sandbox, Professor HUB."
+        brand.title + " — vocational HVAC trainer. Recovery, charging, electrical, the system sandbox, and EPA 608."
       );
     }
     var apple = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-    if (apple) apple.setAttribute("content", "HVAC Legends");
+    if (apple) apple.setAttribute("content", isStore ? "HVAC Allstars" : "HVAC Allstars");
     document.querySelectorAll(".brand-mark").forEach(function (el) {
       el.textContent = brand.mark;
     });
+    document.querySelectorAll(".brand-word strong").forEach(function (el) {
+      el.textContent = brand.org.toUpperCase();
+    });
     var deskLink = document.getElementById("btn-shopschool");
     var deskHead = document.getElementById("hub-desk");
-    [deskLink, deskHead].forEach(function (el) {
+    var deskBay = document.getElementById("floor-desk");
+    [deskLink, deskHead, deskBay].forEach(function (el) {
       if (!el) return;
-      el.setAttribute("href", "desk.html?desk=instructor");
+      var lincoln = (pack && pack.id === "lincoln") || /\/allstars(\/|$)/.test(pathName);
+      var deskHref = lincoln
+        ? "/allstars/desk.html?sku=campus&desk=" + DESK_TOKEN
+        : "/legends/desk.html?sku=" + encodeURIComponent(sku) + "&desk=" + DESK_TOKEN;
+      el.setAttribute("href", deskHref);
+      el.hidden = !deskOk;
+      if (deskOk) el.removeAttribute("hidden");
+      else el.setAttribute("hidden", "");
     });
+    var tip = document.querySelector("#hub-tip p");
+    if (tip && !deskOk) {
+      tip.textContent = "Shop floor is the map. Manifold school is hookup and superheat. Sandbox is a live system. Pick a lab.";
+    }
     var kick = document.getElementById("cut-kicker");
     if (kick) kick.textContent = brand.roof;
+    if (pack && pack.wordmark) {
+      var h1 = document.querySelector(".title-hero h1");
+      if (h1) h1.innerHTML = pack.wordmark;
+    }
+    if (pack && pack.eyebrow) {
+      var eye = document.querySelector(".title-hero .eyebrow");
+      if (eye) eye.textContent = pack.eyebrow;
+    }
+    if (!isStore) return;
     var other = document.querySelector('#campus option[value="other"]');
     if (other) other.textContent = "Other shop";
   }

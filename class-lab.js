@@ -175,7 +175,10 @@
       lastLab = r.lab || "hub";
       applyRoom(r);
       startPoll();
-      return r;
+      return api("/api/class-lab", { action: "bots", pin: pin }).then(function (b) {
+        applyRoom(b);
+        return b;
+      }).catch(function () { return r; });
     });
   }
 
@@ -226,6 +229,7 @@
     isIn: function () { return !!pin; },
     pin: function () { return pin; },
     room: function () { return room; },
+    ingest: function (next) { if (next && next.pin) applyRoom(next); },
     labs: LABS,
     stop: stopPoll,
   };

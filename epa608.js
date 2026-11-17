@@ -231,7 +231,7 @@
       { q: "Very-high-pressure appliances (R-13 / R-23 class) recover to:", choices: ["10\" Hg", "15\" Hg", "0\" (0 psig)", "25 mm Hg abs"], a: 2, why: "Very-high: 0\" Hg either side of the 1993 date." },
       { q: "Pre-1993 recovery machine, high-pressure, 250 lb. Pull to:", choices: ["0\"", "4\" Hg", "10\" Hg", "15\" Hg"], a: 1, why: "Old machine, high-pressure ≥ 200 lb = 4\". Today's truck is post-1993 = 10\"." },
       { q: "The 200 lb cut is based on:", choices: ["What is left in the system today", "The full nameplate charge of the appliance", "The recovery tank size", "Whatever the customer says"], a: 1, why: "Full charge on the nameplate — not the puddle you found." },
-      { q: "A tech who will only work house splits should sit:", choices: ["Core only", "Type I only", "Core + Type II (Universal if they might see a chiller later)", "Type III only"], a: 2, why: "HVAC truck is Type II. Core is required. Universal is Core+I+II+III — worth it if they might work a plant." },
+      { q: "A Lincoln student who will only work house splits should sit:", choices: ["Core only", "Type I only", "Core + Type II (Universal if they might see a chiller later)", "Type III only"], a: 2, why: "HVAC truck is Type II. Core is required. Universal is Core+I+II+III — worth it if they might work a plant." },
       { q: "The inches in the recovery table are read:", choices: ["While the machine is still pulling hard", "On the system after the machine is off and the needle settles", "On the micron gauge", "On the tank only"], a: 1, why: "Settle the gauge on the appliance. Don't cheat with a running pump." },
     ],
     type3: [
@@ -245,6 +245,14 @@
       { q: "A purge unit on a low-pressure chiller:", choices: ["Is how you legally vent the charge", "Removes non-condensables (air) that leaked in", "Replaces recovery", "Makes it Type II"], a: 1, why: "Purge dumps a little refrigerant with the air — keep it maintained. It is not a license to vent the charge." },
     ],
   };
+
+  function e608Drip(item) {
+    var q = (item && item.q) || "";
+    if (q.indexOf("80% by weight") !== -1) return "epa.80";
+    if (q.indexOf("R-454B") !== -1) return "pt.glide";
+    if (q.indexOf("Before opening a system") === 0) return "epa.recover";
+    return "";
+  }
 
   function load() {
     try {
@@ -320,6 +328,14 @@
   }
 
   function start(host, opts) {
+    if (!document.getElementById("e608-scroll")) {
+      const st = document.createElement("style");
+      st.id = "e608-scroll";
+      document.head.appendChild(st);
+    }
+    const e608Fit = document.getElementById("e608-scroll");
+    e608Fit.textContent = "#screen-epa608.screen.active{display:block!important;overflow-x:hidden!important;overflow-y:auto!important;height:100%!important;max-height:100dvh!important;-webkit-overflow-scrolling:touch}#epa608-root{height:auto!important;max-height:none!important;overflow:visible!important;flex:none!important;padding-bottom:28px!important}@media (max-width:720px){#screen-epa608.screen.active{padding-top:52px!important;box-sizing:border-box!important}body:has(#screen-epa608.active) #drip-ear{top:auto!important;bottom:8px!important;left:8px!important;right:auto!important;width:min(210px,54vw)!important;max-height:48px!important;z-index:35!important}body:has(#screen-epa608.active) .ld-replay{top:6px!important;right:8px!important;bottom:auto!important;left:auto!important;z-index:40!important}body:has(#screen-epa608.active) #toast-host{top:6px!important;left:8px!important;right:auto!important;bottom:auto!important;width:min(150px,42vw)!important;max-height:40px!important;overflow:hidden!important;z-index:40!important}#epa608-root{padding-bottom:16px!important}}@media (min-width:721px){body:has(#screen-epa608.active) .ld-replay{right:156px!important;bottom:16px!important;top:auto!important;left:auto!important;z-index:30!important}}";
+    document.head.appendChild(e608Fit);
     const hooks = opts || {};
     let view = "home";
     let sec = "core";
@@ -370,48 +386,20 @@
               <p>608 is the appliance, not the jug. Read the pass guide. Walk Core, then Type II if you're HVAC. Stamp at 80% on the longer drills. Then sit the All-Star Exam — that's a study pack, not the live federal bank.</p>
             </div>
           </div>
-          <figure class="e608-film" style="margin:0 0 14px">
-            <video src="career-paths.mp4?v=5" poster="career-paths.jpg?v=5" controls playsinline preload="metadata" style="width:100%;border-radius:12px;background:#0b1218"></video>
-            <figcaption style="color:#a8b0b8;font-size:14px;margin-top:8px">The four gates, then the path reel. School, the 608 card, OSHA, NATE, and the permit are not the same thing.</figcaption>
-          </figure>
-          <div id="path-reel" style="margin:0 0 14px;border-radius:12px;background:#10161c;border:1px solid #2a3644;overflow:hidden">
-            <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 12px;background:#CE0034;color:#fff">
-              <strong id="path-kicker">Path 1 / 5</strong>
-              <span style="font-size:12px">Plays with the career film</span>
-            </div>
-            <div style="min-height:168px;padding:16px 16px 8px">
-              <h3 id="path-title" style="margin:0 0 8px;font-size:28px;line-height:1">Four ways in</h3>
-              <p id="path-body" style="margin:0;color:#e8edf2;font-size:16px;line-height:1.45"></p>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center;padding:8px 12px 12px">
-              <button type="button" class="btn" id="path-prev">Back</button>
-              <button type="button" class="btn primary" id="path-next">Next</button>
-            </div>
-          </div>
-          <figure class="e608-film" style="margin:0 0 14px">
-            <video src="films/shop-loop.mp4?v=4" poster="films/shop-loop.jpg?v=2" controls playsinline preload="metadata" style="width:100%;border-radius:12px;background:#0b1218"></video>
-            <figcaption style="color:#a8b0b8;font-size:14px;margin-top:8px">One film. The loop, then the ghost-shell parts, then the gases. R-410A is the house air conditioner, about 200 psig at 70°F. R-134a is the reach-in and the car, about 70 psig. R-22 is legacy, recover it, do not mix it into 410A. R-32 is an A2L on some new mini-splits. It is not a drop-in. Match the nameplate.</figcaption>
-          </figure>
-          <div class="e608-gates" style="display:grid;gap:14px;margin:0 0 14px">
-            <figure class="e608-film" style="margin:0">
-              <video src="gate-608.mp4?v=2" poster="gate-608.jpg?v=2" controls playsinline preload="metadata" style="width:100%;border-radius:12px;background:#0b1218"></video>
-              <figcaption style="color:#a8b0b8;font-size:14px;margin-top:8px">EPA 608. Federal. About 18 of 25 on each section. Type II is the house unit. Universal adds the chiller. The card does not expire. It lets you buy refrigerant. It does not put your name on a permit.</figcaption>
-            </figure>
-            <figure class="e608-film" style="margin:0">
-              <video src="gate-osha.mp4?v=2" poster="gate-osha.jpg?v=2" controls playsinline preload="metadata" style="width:100%;border-radius:12px;background:#0b1218"></video>
-              <figcaption style="color:#a8b0b8;font-size:14px;margin-top:8px">OSHA 10 is the job-site card. OSHA 30 is the lead course. Philadelphia commercial work wants 30 on the supervisor. Neither one is the 608 card.</figcaption>
-            </figure>
-            <figure class="e608-film" style="margin:0">
-              <video src="gate-nate.mp4?v=2" poster="gate-nate.jpg?v=2" controls playsinline preload="metadata" style="width:100%;border-radius:12px;background:#0b1218"></video>
-              <figcaption style="color:#a8b0b8;font-size:14px;margin-top:8px">NATE is after time on the truck. Voluntary. It can raise the rate. It is not a license, and it does not replace 608.</figcaption>
-            </figure>
-            <figure class="e608-film" style="margin:0">
-              <video src="gate-license.mp4?v=2" poster="gate-license.jpg?v=2" controls playsinline preload="metadata" style="width:100%;border-radius:12px;background:#0b1218"></video>
-              <figcaption style="color:#a8b0b8;font-size:14px;margin-top:8px">Pennsylvania has no state HVAC license and no journeyman card. The license is the contractor registration and the city's mechanical permit. Philadelphia does not issue a master HVAC card. A diploma does not replace the hours.</figcaption>
-            </figure>
-          </div>
           <p class="e608-progress">${stamps} / 4 sections stamped${stamps === 4 ? " · Universal track complete" : ""}</p>
-          <div class="e608-actions" style="margin-bottom:12px">
+          <div class="e608-secs">
+            ${SECTIONS.map((s) => {
+              const st = p[s.id];
+              const badge = s.id === "core" ? "Core" : s.n;
+              return `<button type="button" class="e608-sec${st.stamped ? " stamped" : ""}" data-sec="${s.id}">
+                <b>${badge}</b>
+                <strong>${s.name}</strong>
+                <span>${s.blurb}</span>
+                <em>${st.stamped ? "STAMPED " + st.drillBest + "%" : st.lesson ? "Lesson " + st.lesson : "Not started"}</em>
+              </button>`;
+            }).join("")}
+          </div>
+          <div class="e608-actions" style="margin:12px 0">
             <button class="btn primary" id="e608-guide">Study-and-pass guide</button>
             <button class="btn primary" id="e608-exam">All-Star Exam · 608 pack</button>
             <button class="btn" id="e608-lab-type">Lab · which card</button>
@@ -420,17 +408,49 @@
             <button class="btn" id="e608-lab-rrr">Lab · three R's</button>
             <button class="btn" id="e608-print-all">Print all drills + key</button>
           </div>
-          <div class="e608-secs">
-            ${SECTIONS.map((s) => {
-              const st = p[s.id];
-              return `<button type="button" class="e608-sec${st.stamped ? " stamped" : ""}" data-sec="${s.id}">
-                <b>Type ${s.n}</b>
-                <strong>${s.name}</strong>
-                <span>${s.blurb}</span>
-                <em>${st.stamped ? "STAMPED " + st.drillBest + "%" : st.lesson ? "Lesson " + st.lesson : "Not started"}</em>
-              </button>`;
-            }).join("")}
+          <details class="e608-films">
+            <summary>Watch the gates and the loop</summary>
+            <div class="e608-films-body">
+          <figure class="e608-film" style="margin:0">
+            <video src="career-paths.mp4?v=5" poster="career-paths.jpg?v=5" controls playsinline preload="none" style="width:100%;border-radius:12px;background:#0b1218"></video>
+            <figcaption style="color:#a8b0b8;font-size:14px;margin-top:8px">School, the 608 card, OSHA, NATE, and the permit are not the same thing.</figcaption>
+          </figure>
+          <div id="path-reel" style="margin:0;border-radius:12px;background:#10161c;border:1px solid #2a3644;overflow:hidden">
+            <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 12px;background:#CE0034;color:#fff">
+              <strong id="path-kicker">Path 1 / 5</strong>
+              <span style="font-size:12px">Career path</span>
+            </div>
+            <div style="min-height:120px;padding:16px 16px 8px">
+              <h3 id="path-title" style="margin:0 0 8px;font-size:28px;line-height:1">Four ways in</h3>
+              <p id="path-body" style="margin:0;color:#e8edf2;font-size:16px;line-height:1.45"></p>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;padding:8px 12px 12px">
+              <button type="button" class="btn" id="path-prev">Back</button>
+              <button type="button" class="btn primary" id="path-next">Next</button>
+            </div>
           </div>
+          <figure class="e608-film" style="margin:0">
+            <video src="films/shop-loop.mp4?v=5" poster="films/shop-loop.jpg?v=3" controls playsinline preload="none" style="width:100%;border-radius:12px;background:#0b1218"></video>
+            <figcaption style="color:#a8b0b8;font-size:14px;margin-top:8px">The loop, then the parts, then the gases. R-410A is the house air conditioner, about 200 psig at 70°F. R-134a is the reach-in and the car, about 70 psig. R-22 is legacy. Do not mix it into 410A. R-32 is an A2L. It is not a drop-in. Match the nameplate.</figcaption>
+          </figure>
+          <figure class="e608-film" style="margin:0">
+              <video src="gate-608.mp4?v=2" poster="gate-608.jpg?v=2" controls playsinline preload="none" style="width:100%;border-radius:12px;background:#0b1218"></video>
+              <figcaption style="color:#a8b0b8;font-size:14px;margin-top:8px">EPA 608. Federal. 18 of 25 on each section. Type II is the house unit. Universal adds the chiller. The card does not expire. It lets you buy refrigerant. It does not put your name on a permit.</figcaption>
+          </figure>
+          <figure class="e608-film" style="margin:0">
+              <video src="gate-osha.mp4?v=2" poster="gate-osha.jpg?v=2" controls playsinline preload="none" style="width:100%;border-radius:12px;background:#0b1218"></video>
+              <figcaption style="color:#a8b0b8;font-size:14px;margin-top:8px">OSHA 10 is the job-site card. OSHA 30 is the lead course. Neither one is the 608 card.</figcaption>
+          </figure>
+          <figure class="e608-film" style="margin:0">
+              <video src="gate-nate.mp4?v=2" poster="gate-nate.jpg?v=2" controls playsinline preload="none" style="width:100%;border-radius:12px;background:#0b1218"></video>
+              <figcaption style="color:#a8b0b8;font-size:14px;margin-top:8px">NATE is after time on the truck. Voluntary. It is not a license, and it does not replace 608.</figcaption>
+          </figure>
+          <figure class="e608-film" style="margin:0">
+              <video src="gate-license.mp4?v=2" poster="gate-license.jpg?v=2" controls playsinline preload="none" style="width:100%;border-radius:12px;background:#0b1218"></video>
+              <figcaption style="color:#a8b0b8;font-size:14px;margin-top:8px">Pennsylvania has no state HVAC license. Philadelphia does not issue a master HVAC card. A diploma does not replace the hours.</figcaption>
+          </figure>
+            </div>
+          </details>
           <p class="e608-fine">Training aid from EPA published test topics and 40 CFR 82. Not a substitute for an EPA-approved certifying organization. Does not dump the live federal question bank. Penalty amounts index. Door card / CFR wins.</p>
         </div>`;
       host.querySelector("#e608-hub").onclick = goHub;
@@ -640,6 +660,8 @@
           why.textContent = (ok ? "Why it's right: " : "Why it's wrong: ") + item.why;
           why.classList.remove("hidden");
           next.classList.remove("hidden");
+          var dripId = e608Drip(item);
+          if (dripId && global.LtDrip) global.LtDrip.say(dripId);
         };
       });
       next.onclick = () => {

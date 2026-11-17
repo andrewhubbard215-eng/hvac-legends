@@ -82,6 +82,12 @@
       icon: "⚖️",
     },
     {
+      id: "voltmeter_of_zeus",
+      name: "Voltmeter of Zeus",
+      desc: "Finished the meter lesson. Thor seated the meter.",
+      icon: "⚡",
+    },
+    {
       id: "allstar_rank",
       name: "All-Star Rank",
       desc: "Reached 2000 XP All-Star rank.",

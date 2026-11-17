@@ -1,4 +1,4 @@
-# HVAC Legends HVAC Allstars
+# Lincoln Tech HVAC Allstars
 
 Play now: **https://andrewhubbard215-eng.github.io/**
 

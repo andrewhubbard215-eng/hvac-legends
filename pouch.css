@@ -1,0 +1,239 @@
+/* Truck pouch — dark shop, gold numbers, one thumb. No sideways scroll. */
+#pouch-root {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 8000;
+  width: auto;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  color-scheme: dark;
+  background:
+    repeating-linear-gradient(0deg, #16130f 0 28px, #100e0b 28px 29px);
+  color: #f4efe4;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  padding: 10px 12px calc(20px + env(safe-area-inset-bottom));
+}
+#pouch-root[hidden] { display: none !important; }
+#pouch-root *,
+#pouch-root *::before,
+#pouch-root *::after { box-sizing: border-box; }
+#pouch-root button,
+#pouch-root input { font-family: inherit; max-width: 100%; }
+#pouch-root button { white-space: normal; }
+
+.pouch-top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "close hint"
+    "title title";
+  gap: 6px 8px;
+  align-items: start;
+  margin-bottom: 8px;
+}
+.pouch-x {
+  grid-area: close;
+  min-height: 48px;
+  min-width: 72px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #e8c450;
+  color: #1a1408;
+  font-weight: 700;
+  font-size: 16px;
+}
+.pouch-title {
+  grid-area: title;
+  margin: 0;
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 0.9;
+  color: #f4efe4;
+}
+.pouch-hint {
+  grid-area: hint;
+  margin: 0;
+  max-width: 100%;
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: right;
+  color: #c8b88a;
+  pointer-events: none;
+}
+.pouch-live {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #e8c450;
+  background: transparent;
+  color: #e8c450;
+  font-weight: 700;
+  font-size: 16px;
+}
+.pouch-tabs,
+.pouch-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+.pouch-tabs button,
+.pouch-chips button,
+.pouch-stack button,
+.pouch-preset {
+  min-height: 48px;
+  border-radius: 10px;
+  border: 1px solid #4a4030;
+  background: #1c1914;
+  color: #f4efe4;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 8px 10px;
+}
+.pouch-tabs button { flex: 1 1 30%; min-width: 0; }
+.pouch-chips button { flex: 1 1 30%; min-width: 0; }
+.pouch-tabs button.on,
+.pouch-chips button.on,
+.pouch-stack button.on,
+.pouch-preset.on {
+  background: #e8c450;
+  border-color: #e8c450;
+  color: #1a1408;
+}
+.pouch-stack { display: flex; flex-direction: column; gap: 6px; margin: 0 0 8px; }
+.pouch-stack button { width: 100%; text-align: left; }
+.pouch-panel[hidden] { display: none !important; }
+.pouch-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 8px;
+  min-width: 0;
+}
+.pouch-field span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #c8beb0;
+}
+#pouch-root input {
+  display: block;
+  width: 100%;
+  height: 72px;
+  margin: 0;
+  padding: 0 10px;
+  border-radius: 12px;
+  border: 1px solid #4a4030;
+  background: #0c0b09;
+  color: #e8c450;
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: 48px;
+  line-height: 72px;
+  letter-spacing: 0.03em;
+  appearance: none;
+  -webkit-appearance: none;
+}
+#pouch-root input:focus {
+  outline: 2px solid #e8c450;
+  outline-offset: 1px;
+}
+#pouch-root input::placeholder { color: #5c5140; }
+.pouch-outs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+.pouch-out {
+  min-width: 0;
+  background: #1a1713;
+  border: 1px solid #3a3428;
+  border-radius: 12px;
+  padding: 8px;
+}
+.pouch-out.wide { grid-column: 1 / -1; }
+.pouch-out i {
+  display: block;
+  font-style: normal;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #b7a98a;
+}
+.pouch-out b {
+  display: block;
+  margin-top: 2px;
+  color: #e8c450;
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: 56px;
+  font-weight: 400;
+  line-height: 0.9;
+  overflow-wrap: anywhere;
+}
+.pouch-out b small {
+  font-size: 0.42em;
+  margin-left: 3px;
+  color: #e8c450;
+}
+.pouch-line {
+  margin: 10px 0 0;
+  font-size: 18px;
+  line-height: 1.3;
+  color: #f4efe4;
+  overflow-wrap: break-word;
+}
+.pouch-tag {
+  margin: 12px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e8c450;
+}
+.pouch-ex {
+  margin-top: 8px;
+  padding: 8px;
+  border-left: 3px solid #e8c450;
+  background: #1a1713;
+  border-radius: 0 10px 10px 0;
+}
+.pouch-ex p { margin: 0 0 6px; font-size: 15px; line-height: 1.3; }
+.pouch-ex p:last-child { margin-bottom: 0; }
+.pouch-preset { width: 100%; margin: 0 0 8px; }
+
+#floor-tech > button.shop-bay[data-mode="pouch"] {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+  box-shadow: inset 3px 0 0 #e8c450;
+}
+#floor-tech > button.shop-bay[data-mode="pouch"] img {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  object-fit: contain;
+  background: #070b10;
+  border-radius: 8px;
+  border: 1px solid #2a3440;
+  padding: 4px;
+  filter: invert(1);
+}
+
+@media (max-width: 390px) {
+  #pouch-root { padding-left: 10px; padding-right: 10px; }
+  .pouch-out b { font-size: 44px; }
+  .pouch-title { font-size: 28px; }
+}

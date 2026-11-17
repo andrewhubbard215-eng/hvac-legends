@@ -1,0 +1,78 @@
+HVAC LEGENDS — Google Play listing
+Package: com.hvaclegends.app
+Version: 1.0.0 (versionCode 1)
+This is a new app. Upload package com.hvaclegends.app only.
+Do not upload a different package or a campus package.
+
+SHORT DESCRIPTION (80 characters max — paste the next line only)
+Vocational HVAC trainer for the shop floor. Offline after a save.
+
+FULL DESCRIPTION
+HVAC Legends is a vocational HVAC trainer. Clock in on your phone and work the shop floor. The labs are the lesson.
+
+System sandbox. Run the refrigeration cycle and watch the system respond.
+
+Manifold school. Hook the manifold. Read superheat and subcooling. Call the charge from the numbers, not from a guess.
+
+Recovery hookup. Set the tank, the recovery machine, the hoses, and the core tool before you pull refrigerant.
+
+Mini-split install. Flare, vacuum, weigh-in, and the line-set path. Do the steps in order.
+
+Compressor change-out. Recover, lock out, braze in the new compressor, fit a new drier, evacuate, and weigh in.
+
+Flaring lab and Brazing lab. Nut on the tube first. Make a clean flare. Flow nitrogen while you braze.
+
+Land lugs. Hot, neutral, and ground go on the screws they belong on.
+
+Saturday callback. A no-cool. Meter first and isolate the open. This is a service ticket, not a weapon.
+
+EPA 608 tutor. Practice for Core, Type I, Type II, and Type III. This is not the official exam and it does not issue a certification card.
+
+Furnace sequence. Call for heat through inducer, pressure switch, ignitor, gas valve, flame signal, and blower.
+
+iConnect lab. An iConnect-style fault board. Find the fault. Do not jump a safety. HVAC Legends is not an official iConnect product.
+
+Curriculum. Six shop courses: the call, copper, the board, the charge, heat, and the card.
+
+Professor HUB coaches while you work. Optional lines can be blunt shop talk. Turn the roast down in class.
+
+Works offline after a save. No ads. Progress stays on the phone. You do not need an account to run the labs.
+
+For apprentices and working techs. Not directed at children under 13.
+
+CATEGORY
+Education
+ADS
+No
+CONTENT RATING
+Not for children under 13. No Designed for Families. Mild shop talk. No violence. No weapons. "Saturday callback" is a no-cool service ticket, not an explosive. Let the questionnaire score it.
+
+PRIVACY
+Paste this URL into Play Console:
+https://andrewhubbard215-eng.github.io/legends-privacy.html
+That page is HVAC Legends, package com.hvaclegends.app.
+Do not use https://andrewhubbard215-eng.github.io/privacy.html — that page still says HVAC Allstars.
+
+DATA SAFETY
+See DATA-SAFETY.md. Answer Yes to collection only because class chat, a class PIN, and review notes can leave the phone if the user opens them. Labs do not. Not shared. Not sold. No ads.
+
+BUILD
+The Android flavor is already named legends.
+applicationId com.hvaclegends.app
+App name HVAC Legends
+versionName 1.0.0
+On a machine with the Android SDK:
+  gradle :app:bundleLegendsRelease
+from public/allstars/native/android
+The web assets are the Legends floor.
+The upload key in this project is a placeholder. Replace it with your Play upload key before a listing you will keep.
+
+YOU STILL CLICK BEFORE OCTOBER 15
+1. Google Play Developer account ($25) if you do not have one.
+2. Create the app HVAC Legends. Package com.hvaclegends.app. Category Education. Ads No.
+3. Publish privacy.html to the public site so the URL says HVAC Legends. Paste that URL.
+4. Build and upload the legends AAB only. Not a different package. Not a campus package.
+5. Paste the short and full descriptions above. Upload store/icon-512.png and store/feature-graphic.png.
+6. Phone screenshots from this Legends floor. Minimum two. The shots in store/shots are a start.
+7. Data safety from DATA-SAFETY.md. Content rating questionnaire. Not Designed for Families.
+8. Closed test if Play still requires one, then production.

@@ -1,8 +1,8 @@
 {
   "id": "./desk.html",
-  "name": "HVAC Legends Desk",
-  "short_name": "Legends Desk",
-  "description": "Instructor Desk for HVAC Legends.",
+  "name": "Instructor Desk",
+  "short_name": "Desk",
+  "description": "Instructor Desk for HVAC Allstars. Today, labs, keys, and the course. The student trainer is a separate app.",
   "start_url": "./desk.html",
   "scope": "./",
   "display": "standalone",

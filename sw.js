@@ -1,6 +1,6 @@
-/* HVAC Legends — offline copy. Network first for labs. Pictures can come from the phone. */
-const APP = "lt-legends";
-const VER = APP;
+/* HVAC Allstars — offline copy. Network first for labs. Pictures can come from the phone. */
+const APP = "lt-allstars";
+const VER = "lt-allstars-floor-25";
 
 function localFiles(html) {
   const urls = new Set();
@@ -15,8 +15,8 @@ function localFiles(html) {
 }
 
 async function fillCore(cache) {
-  const pages = ["./index.html", "./desk.html"];
-  const urls = new Set(["./", "./index.html", "./desk.html"]);
+  const pages = ["./index.html", "./desk.html", "./qr.html"];
+  const urls = new Set(["./", "./index.html", "./desk.html", "./qr.html"]);
   await Promise.all(pages.map(async (page) => {
     try {
       const res = await fetch(page, { cache: "no-cache" });

@@ -9,49 +9,81 @@
       id: "cycle",
       title: "Refrigeration cycle",
       sub: "Outdoor unit on the left. Indoor coil on the right.",
-      src: "cutaway/cycle.mp4?v=10",
-      poster: "cutaway/cycle-reel.jpg?v=1",
-      say: "The compressor takes in cool low-pressure vapor and discharges hot high-pressure vapor. The condenser rejects that heat and turns the vapor into warm liquid. The metering device drops the pressure. The evaporator boils the mix and takes heat out of the air. Cool vapor goes back to the compressor.",
+      src: "cutaway/cycle.mp4?v=16",
+      poster: "cutaway/cycle-reel.jpg?v=16",
+      say: "Compressor, condenser, TXV, evaporator.",
     },
     {
       id: "compressor",
       title: "Scroll compressor",
       sub: "Low-pressure vapor in · high-pressure vapor out",
-      src: "cutaway/compressor.mp4?v=10",
-      poster: "cutaway/compressor.jpg?v=10",
-      say: "A scroll compressor pumps vapor only. Suction gas enters the outer pockets. The crank walks one scroll around the fixed scroll, the pockets close, and the gas leaves hot at the center. It does not compress liquid. A weak pump lets the high and low side walk together, and the amp draw stays light.",
+      src: "cutaway/compressor.mp4?v=16",
+      poster: "cutaway/compressor.jpg?v=16",
+      say: "Scroll pumps vapor. Not liquid.",
     },
     {
       id: "condenser",
       title: "Condenser",
       sub: "Reject heat · vapor becomes liquid",
-      src: "cutaway/condenser.mp4?v=10",
-      poster: "cutaway/condenser.jpg?v=10",
-      say: "Hot discharge vapor enters the top. Air across the coil pulls the heat out. The vapor condenses and warm liquid leaves the bottom. That liquid is still warm, not cold. A dirty coil raises head pressure. Subcooling stays about normal. That is not an overcharge.",
+      src: "cutaway/condenser.mp4?v=16",
+      poster: "cutaway/condenser.jpg?v=16",
+      say: "Hot vapor in. Warm liquid out.",
     },
     {
       id: "txv",
       title: "TXV",
       sub: "Meters liquid · holds superheat",
-      src: "cutaway/txv.mp4?v=10",
-      poster: "cutaway/txv.jpg?v=10",
-      say: "High-pressure liquid comes in. The pin meters it. The pressure drop at the seat flashes part of the liquid into a cold mix. The bulb is strapped to the suction line. High superheat opens the pin. Low superheat lets the spring close it. Do not turn the stem to fix a charge problem.",
+      src: "cutaway/txv.mp4?v=16",
+      poster: "cutaway/txv.jpg?v=16",
+      say: "The pin meters. Bulb holds superheat.",
     },
     {
       id: "evaporator",
       title: "Evaporator",
       sub: "Boils the refrigerant · cools the air",
-      src: "cutaway/evaporator.mp4?v=10",
-      poster: "cutaway/evaporator.jpg?v=10",
-      say: "Cold refrigerant enters and boils in the coil. That boiling takes heat from the room air. The liquid should be gone before the outlet, so the vapor going home is superheated. Water on the fins is moisture from the air, not refrigerant. High superheat means the coil is starved. Near-zero superheat with ice is airflow first. Do not add gas.",
+      src: "cutaway/evaporator.mp4?v=16",
+      poster: "cutaway/evaporator.jpg?v=16",
+      say: "It boils. The room gets cold.",
     },
     {
       id: "drier",
       title: "Filter-drier",
       sub: "Passes liquid · keeps trash and moisture",
-      src: "cutaway/drier.mp4?v=10",
-      poster: "cutaway/drier.jpg?v=10",
-      say: "The filter-drier sits in the liquid line. Refrigerant passes through. The screens and desiccant hold solid trash and moisture. Inlet and outlet should both be warm liquid at about the same temperature. A cold outlet means the core is plugged. That is a fault, not the job.",
+      src: "cutaway/drier.mp4?v=16",
+      poster: "cutaway/drier.jpg?v=16",
+      say: "Liquid through. Trash stays here.",
+    },
+    {
+      id: "reversing",
+      title: "Reversing valve",
+      sub: "HVAC Simulator · slider and pilot",
+      yt: "C_bkJ6yVcA4",
+      poster: "https://i.ytimg.com/vi/C_bkJ6yVcA4/hqdefault.jpg",
+      say: "Top pipe is always discharge.",
+    },
+    {
+      id: "txv3d",
+      title: "TXV, 3D",
+      sub: "HVAC Simulator · bulb, pin, superheat",
+      yt: "-JgOVuM20-Y",
+      poster: "https://i.ytimg.com/vi/-JgOVuM20-Y/hqdefault.jpg",
+      say: "Bulb pressure moves the pin.",
+    },
+    {
+      id: "pswitch",
+      title: "Pressure switch",
+      sub: "HVAC Simulator · diaphragm and contacts",
+      yt: "excVWYuKITI",
+      poster: "https://i.ytimg.com/vi/excVWYuKITI/hqdefault.jpg",
+      say: "No draft. The switch stays open.",
+    },
+    {
+      id: "limit",
+      title: "Limit switch",
+      sub: "HVAC Simulator · snap disc",
+      yt: "w7zG92kxt80",
+      poster: "https://i.ytimg.com/vi/w7zG92kxt80/hqdefault.jpg",
+      say: "Too hot. The burners stop.",
     },
   ];
 
@@ -1162,6 +1194,12 @@
 
   function start(host, opts) {
     if (!host) return { stop: function () {} };
+    if (!document.getElementById("ca-phone-fit")) {
+      var fit = document.createElement("style");
+      fit.id = "ca-phone-fit";
+      fit.textContent = "@media (max-width:720px){body:has(#screen-cutaway.active) #drip-ear{top:8px!important;bottom:auto!important;left:auto!important;right:8px!important;width:min(148px,40vw)!important;max-height:40px!important;z-index:30!important}}#cutaway-root #ca-next{animation:ca-next-glow .7s ease-in-out infinite}#cutaway-root .ca-clip.on{box-shadow:0 0 0 3px #e8c450}#cutaway-root .ca-how{margin:4px 12px;font-size:16px;color:#f6f1e6}@keyframes ca-next-glow{50%{box-shadow:0 0 0 8px rgba(232,196,80,.55)}}";
+      document.head.appendChild(fit);
+    }
     let i = 0;
     if (opts && opts.clip) {
       const n = CLIPS.findIndex(function (c) { return c.id === opts.clip; });
@@ -1207,16 +1245,37 @@
       if (play && play.catch) play.catch(function () {});
     }
 
+    function filmHtml(c) {
+      if (c.yt) {
+        return '<iframe id="ca-yt" class="ca-film" data-yt="' + c.yt + '" title="' + c.title + '" src="https://www.youtube-nocookie.com/embed/' + c.yt + '?rel=0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+      }
+      return '<video id="ca-film" class="ca-film" src="' + c.src + '" playsinline loop muted poster="' + c.poster + '"></video><canvas id="ca-canvas" style="display:none"></canvas>';
+    }
+
     function syncFilm() {
       var stage = host.querySelector("#ca-stage");
-      var film = host.querySelector("#ca-film");
-      var canvas = host.querySelector("#ca-canvas");
-      var reel = clip().id === "cycle";
-      if (stage) stage.classList.toggle("is-reel", reel);
-      if (canvas) canvas.style.display = reel ? "none" : "block";
+      var playBtn = host.querySelector("#ca-play");
+      if (!stage) return;
+      stage.classList.add("is-reel");
+      var c = clip();
+      if (playBtn) playBtn.style.display = c.yt ? "none" : "";
+      if (c.yt) {
+        var frame = stage.querySelector("#ca-yt");
+        if (!frame || frame.getAttribute("data-yt") !== c.yt) stage.innerHTML = filmHtml(c);
+        return;
+      }
+      if (!stage.querySelector("#ca-film")) stage.innerHTML = filmHtml(c);
+      var film = stage.querySelector("#ca-film");
+      var canvas = stage.querySelector("#ca-canvas");
+      if (canvas) canvas.style.display = "none";
       if (!film) return;
-      film.style.display = reel ? "block" : "none";
-      if (reel && !hold) {
+      film.style.display = "block";
+      if (film.getAttribute("src") !== c.src) {
+        film.poster = c.poster;
+        film.src = c.src;
+        film.load();
+      }
+      if (!hold) {
         var p = film.play();
         if (p && p.catch) p.catch(function () {});
       } else film.pause();
@@ -1238,10 +1297,9 @@
         '<button type="button" class="btn" id="ca-fs">Full screen</button>' +
         '<button type="button" class="btn" id="ca-hub">Shop floor</button>' +
         "</div></header>" +
-        '<p class="ca-how">Pick a part. Pause if you want to look. Red and orange are heat. Blue is cold. Nothing leaves the pipe.</p>' +
-        '<div class="ca-stage' + (c.id === "cycle" ? " is-reel" : "") + '" id="ca-stage">' +
-        '<video id="ca-film" class="ca-film" src="cutaway/cycle-reel.mp4?v=1" playsinline loop muted poster="cutaway/cycle-reel.jpg?v=1"></video>' +
-        '<canvas id="ca-canvas"></canvas>' +
+        '<p class="ca-how">Tap the glowing Next part.</p>' +
+        '<div class="ca-stage is-reel" id="ca-stage">' +
+        filmHtml(c) +
         "</div>" +
         '<div class="hub-chip ca-coach">' +
         '<img src="hub-portrait.jpg?v=3" alt="" class="hub-chip-av photo" />' +

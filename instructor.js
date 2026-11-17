@@ -29,19 +29,32 @@
       "I know I'm an NPC. I still won't let you ohm a live circuit.",
       "Red suit optional. Safety glasses not optional. That's the joke and the law.",
       "If this were a Marvel movie I'd regenerate. Your compressor will not. LOTO.",
-      "EPA 608, OSHA 30, and the shop. That's the holy trinity. Everything else is DLC.",
+      "EPA 608, OSHA 30, and the shop book. That's the holy trinity. Everything else is DLC.",
       "Occasional dirty joke: LOTO isn't a kink. Tag it, then eat your sandwich.",
     ],
 
     // Curriculum unit openers keyed loosely by id
     unitOpen: {
-      bench: "The bench. The meter first. The story second.",
-      copper: "Flares and torches. Slide the nut on first or I will narrate your failure in slow motion.",
-      charge: "Read both numbers. Superheat without subcooling is a guess.",
-      controls: "The call has a path. Do not jump a safety to make it go.",
-      install: "Commission it. The vacuum is not optional.",
-      card: "EPA 608. Venting is illegal. So is my patience for people who still do it.",
-      default: "Pick a course. Practice here. Fail here. Succeed on the truck. That's the deal.",
+      hcr101:
+        "HCR101. Heat moves. Copper bends. You will too. Let's pretend this is a montage.",
+      hcr102:
+        "Electricity. It bites. Multimeters don't lie — people do. Especially DIY Dave.",
+      hcr105:
+        "Refrigeration cycle. Four components, infinite ways to mess it up. Charming.",
+      hcr117:
+        "Air conditioning. Making rich air for people who set it to 68 in February.",
+      hcr108:
+        "Design class. Numbers on paper. In the field those numbers become tears.",
+      hcr109:
+        "Commercial refrigeration. Walk-ins: where food and your patience go to die.",
+      hcr110:
+        "Troubleshooting. Systematic. Unlike your sleep schedule.",
+      epa608:
+        "EPA 608. Venting is illegal. So is my patience for people who still do it.",
+      piping:
+        "Flares and torches. Slide the nut on first or I will narrate your failure in slow motion.",
+      default:
+        "Pick a unit. Practice here. Fail here. Succeed in lab. That's the deal.",
     },
 
     // After correct / wrong service answers

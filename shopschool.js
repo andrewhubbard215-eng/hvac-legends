@@ -1,5 +1,5 @@
-/* HVAC Legends — Shop School. Public trainer desk + Instructor toggle.
-   Industry modules. Printable student copy / key. Not a school catalog. Not ESCO IP. */
+/* HVAC Allstars — Shop School. Public trainer desk + Instructor toggle.
+   Industry modules. Printable student copy / key. Not Lincoln catalog. Not ESCO IP. */
 (function (global) {
   "use strict";
 
@@ -14,17 +14,25 @@
     { id: "ctrl", name: "Controls" },
   ];
 
-  /* Day-by-day shop beats. Not a school catalog. */
+  /* Canvas HVAC is day-by-day. These are OUR trainer beats, not a cloned catalog. */
+  function campusOn() {
+    try {
+      return window.SchoolPack && window.SchoolPack.id === "lincoln";
+    } catch (e) {
+      return false;
+    }
+  }
   function COURSES() {
+    var c = campusOn();
     return [
       { id: "safety", days: 6, name: "Safety & tools", label: "Safety & tools", mod: "safety" },
-      { id: "elec", days: 20, name: "Electrical", label: "Electrical", mod: "elec" },
-      { id: "ref", days: 20, name: "Refrigeration", label: "Refrigeration", mod: "ref" },
-      { id: "ac", days: 16, name: "Air conditioning", label: "Air conditioning", mod: "hp" },
+      { id: "elec", days: 20, name: "Electrical", label: c ? "HCR102 · Electrical" : "Electrical", mod: "elec" },
+      { id: "ref", days: 20, name: "Refrigeration", label: c ? "HCR105 · Refrigeration" : "Refrigeration", mod: "ref" },
+      { id: "ac", days: 16, name: "Air conditioning", label: c ? "HCR117 · Air conditioning" : "Air conditioning", mod: "hp" },
       { id: "epa", days: 8, name: "EPA 608", label: "EPA 608", mod: "epa" },
-      { id: "hp", days: 12, name: "Heat pumps", label: "Heat pumps", mod: "hp" },
-      { id: "air", days: 10, name: "Airflow", label: "Airflow", mod: "air" },
-      { id: "ctrl", days: 12, name: "Controls", label: "Controls", mod: "ctrl" },
+      { id: "hp", days: 12, name: "Heat pumps", label: c ? "HCR117 · Heat pumps" : "Heat pumps", mod: "hp" },
+      { id: "air", days: 10, name: "Airflow", label: c ? "HCR108 · Airflow" : "Airflow", mod: "air" },
+      { id: "ctrl", days: 12, name: "Controls", label: c ? "HCR110 · Controls" : "Controls", mod: "ctrl" },
       { id: "pipe", days: 10, name: "Brazing & pipe", label: "Brazing & pipe", mod: "safety" },
     ];
   }
@@ -666,6 +674,73 @@
     },
   };
 
+  /* Days that burn or wear something. Any day not listed uses nothing up.
+     Quantities are per student, once for that day, from MATS. */
+  var MOD_DAYS = {
+    safety: [
+      { day: 3, name: "Meter and tools", use: [], wear: [{ id: "leads", item: "Meter leads", note: "Order when a lead is cracked or the probe is gone." }] },
+    ],
+    elec: [
+      { day: 5, name: "Meter the string", use: [], wear: [{ id: "leads", item: "Meter leads", note: "Order when a lead is cracked or the probe is gone." }] },
+      { day: 9, name: "Land lugs", use: [
+        { item: "#10 THHN black", size: "#10", qty: 3, unit: "ft", shelf: "blk", roll: 50 },
+        { item: "#10 THHN red", size: "#10", qty: 3, unit: "ft", shelf: "red", roll: 50 },
+        { item: "#10 THHN green", size: "#10", qty: 3, unit: "ft", shelf: "grn", roll: 50 },
+        { item: "Electrical tape", size: "", qty: 2, unit: "ft", shelf: "tape", roll: 66 },
+      ], wear: [] },
+    ],
+    ref: [
+      { day: 5, name: "Hang the manifold", use: [
+        { item: "Refrigerant lost purging a live hose", size: "R-410A", qty: 0.1, unit: "lb", shelf: "ref410" },
+        { item: "Spare valve cores", size: "", qty: 2, unit: "ea", shelf: "" },
+      ], wear: [{ id: "gaskets", item: "Hose gaskets", note: "Order when a gasket is torn or the hose will not seal." }] },
+      { day: 13, name: "Recover, then pull a vacuum", use: [
+        { item: "Nitrogen, break and purge", size: "", qty: 15, unit: "cu ft", shelf: "nitrogen" },
+        { item: "Spare valve cores", size: "", qty: 2, unit: "ea", shelf: "" },
+        { item: "Filter-drier, only if the loop is opened", size: "", qty: 1, unit: "ea", shelf: "driers" },
+      ], wear: [{ id: "recoil", item: "Recovery-machine oil", note: "Order when the oil is milky or the sight glass is low." }] },
+    ],
+    ac: [
+      { day: 5, name: "Mini-split flare", use: [
+        { item: '1/4" ACR copper', size: "1/4", qty: 3, unit: "ft", shelf: "cu14", roll: 25 },
+        { item: '3/8" ACR copper', size: "3/8", qty: 3, unit: "ft", shelf: "cu38", roll: 25 },
+        { item: "Flare nuts, 1/4", size: "1/4", qty: 2, unit: "ea", shelf: "" },
+        { item: "3/8 flare nuts", size: "3/8", qty: 2, unit: "ea", shelf: "nut38" },
+        { item: "3/8 flare caps", size: "3/8", qty: 1, unit: "ea", shelf: "cap38" },
+        { item: "3/8 flare couplings", size: "3/8", qty: 1, unit: "ea", shelf: "coup38" },
+        { item: "Nitrogen, pressure test and purge", size: "", qty: 10, unit: "cu ft", shelf: "nitrogen" },
+        { item: "Line insulation", size: "", qty: 4, unit: "ft", shelf: "insul" },
+        { item: "Nylog or POE", size: "", qty: 1, unit: "drop", shelf: "" },
+      ], wear: [{ id: "flareblock", item: "Flare block", note: "Order when the cone is scored or the block slips." }] },
+    ],
+    epa: [],
+    hp: [
+      { day: 9, name: "Heat-pump manifold", use: [
+        { item: "Refrigerant lost purging a live hose", size: "R-410A", qty: 0.1, unit: "lb", shelf: "ref410" },
+      ], wear: [{ id: "gaskets", item: "Hose gaskets", note: "Order when a gasket is torn or the hose will not seal." }] },
+    ],
+    air: [],
+    ctrl: [
+      { day: 5, name: "Meter the safeties", use: [], wear: [{ id: "leads", item: "Meter leads", note: "Order when a lead is cracked or the probe is gone." }] },
+    ],
+    pipe: [
+      { day: 1, name: "Flare and torque", use: [
+        { item: '1/4" ACR copper', size: "1/4", qty: 3, unit: "ft", shelf: "cu14", roll: 25 },
+        { item: '3/8" ACR copper', size: "3/8", qty: 3, unit: "ft", shelf: "cu38", roll: 25 },
+        { item: "Flare nuts, 1/4", size: "1/4", qty: 2, unit: "ea", shelf: "" },
+        { item: "3/8 flare nuts", size: "3/8", qty: 2, unit: "ea", shelf: "nut38" },
+        { item: "Nitrogen, pressure test and purge", size: "", qty: 10, unit: "cu ft", shelf: "nitrogen" },
+      ], wear: [{ id: "flareblock", item: "Flare block", note: "Order when the cone is scored or the block slips." }] },
+      { day: 5, name: "Braze with nitrogen", use: [
+        { item: "Nitrogen, pressure test and purge", size: "", qty: 10, unit: "cu ft", shelf: "nitrogen" },
+      ], wear: [{ id: "tips", item: "Torch tips", note: "Order when the tip is clogged or the flame will not settle." }] },
+    ],
+  };
+
+  function campusMats() {
+    return true;
+  }
+
   var FILMS = [
     { id: "f-ohm", title: "Ohm's law — drag the kink", mode: "ohms", ticket: "What happens to amps when R drops? Why does a 40 VA die at 4 Ω?" },
     { id: "f-lug", title: "Land lugs — left-rail chips", mode: "electrical", ticket: "Which stamp is ground? Why is there no N on this disconnect?" },
@@ -673,7 +748,7 @@
     { id: "f-ms", title: "Mini-split 11 steps", mode: "minisplit", ticket: "When do you open service valves? What if decay climbs without bound?" },
     { id: "f-608", title: "608 vacuum table", mode: "epa608", ticket: "3-ton 410A, modern machine: what inches? Is that microns?" },
     { id: "f-cut", title: "See inside — TXV cutaway", mode: "cutaway", ticket: "Where does liquid flash? What does the bulb do with superheat?" },
-    { id: "f-ic", title: "iConnect lab — HUB walks the three trainers", mode: "iconnect", ticket: "TU-522: what is open? TU-601: what refrigerant? TU-210G: what is in the pipe?" },
+    { id: "f-ic", title: ((window.LtBrand && window.LtBrand.trainer) || "Hubconnect") + " lab — HUB walks the three trainers", mode: "iconnect", ticket: "TU-522: what is open? TU-601: what refrigerant? TU-210G: what is in the pipe?" },
   ];
 
   function load() {
@@ -696,6 +771,13 @@
     s.instructor = !!on;
     save(s);
   }
+  function studentHome() {
+    var pack = global.SchoolPack;
+    if ((pack && pack.id === "lincoln") || /\/allstars(\/|$)/.test(location.pathname || "")) {
+      return "/allstars/index.html";
+    }
+    return "/legends/index.html";
+  }
   function goMode(mode) {
     if (!mode) return;
     if (typeof global.ltPlay === "function") {
@@ -703,7 +785,7 @@
       return;
     }
     var sku = (global.LtBrand && global.LtBrand.sku) || "";
-    var u = "index.html?open=" + encodeURIComponent(mode);
+    var u = studentHome() + "?play=1&open=" + encodeURIComponent(mode);
     if (sku) u += "&sku=" + encodeURIComponent(sku);
     location.href = u;
   }
@@ -748,7 +830,7 @@
     var student =
       '<div class="page"><h1>' +
       sh.title +
-      "</h1><p class='muted'>" + ((global.LtBrand && global.LtBrand.title) || "HVAC Legends") + " · Shop School · " +
+      "</h1><p class='muted'>HVAC Allstars · Shop School · " +
       modName(sh.mod) +
       " · " +
       sh.kind +
@@ -805,7 +887,7 @@
     return (
       '<div class="page"><h1>' +
       title +
-      "</h1><p class='muted'>STUDENT COPY · " + ((global.LtBrand && global.LtBrand.title) || "HVAC Legends") + " training bank — not the live EPA/ESCO form.</p>" +
+      "</h1><p class='muted'>STUDENT COPY · HVAC Allstars training bank — not the live EPA/ESCO form.</p>" +
       student +
       "</div><div class='page'><h1>" +
       title +
@@ -823,7 +905,7 @@
     return (
       '<div class="page"><h1>' +
       lab.title +
-      "</h1><p class='muted'>" + ((global.LtBrand && global.LtBrand.title) || "HVAC Legends") + " · Shop School lab · " +
+      "</h1><p class='muted'>HVAC Allstars · Shop School lab · " +
       modName(lab.mod) +
       "</p><h2>Safety</h2><p>" +
       lab.safety +
@@ -842,7 +924,7 @@
   function courseHtml() {
     var track = (window.CurriculumTrain && window.CurriculumTrain.view && window.CurriculumTrain.view()) || (window.CurriculumTrain && window.CurriculumTrain.TRACK) || [];
     var prog = { done: {}, xp: 0 };
-    try { prog = JSON.parse(localStorage.getItem("lt-legends-course-v1") || "{}"); } catch (e) {}
+    try { prog = JSON.parse(localStorage.getItem("lt-course-v1") || "{}"); } catch (e) {}
     var done = prog.done || {};
     var rows = track.map(function (c) {
       var labs = c.labs.map(function (l) {
@@ -856,10 +938,10 @@
       return "<div class='card'><h3>" + c.code + " · " + c.title + "</h3><p>" + c.blurb + "</p><ul>" + labs + "</ul></div>";
     }).join("");
     return (
-      "<p>Same shop courses as the student app. Experience posts when the lab is finished, not when it is opened. This desk shows the progress stored on this device.</p>" +
+      "<p>Same five courses as the student app. Experience posts when the lab is finished, not when it is opened. This desk shows the progress stored on this device.</p>" +
       "<p><strong>" + (prog.xp || 0) + " course XP</strong> on this device.</p>" +
       rows +
-      '<p><a class="btn primary" id="ss-open-course" href="index.html?play=1&sku=' + ((global.LtBrand && global.LtBrand.sku) || "campus") + '&course=1">Open the course</a></p>'
+      '<p><a class="btn primary" id="ss-open-course" href="' + studentHome() + '?play=1&sku=' + ((global.LtBrand && global.LtBrand.sku) || "campus") + '&course=1">Open the course</a></p>'
     );
   }
 
@@ -869,9 +951,106 @@
     var viewSheet = null;
     var viewLab = null;
     var showKey = false;
+    var gClass = "hcr200";
+    var gStudent = null;
+    var gScore = 100;
+    var gSharp = 10;
+    var gNotes = "";
+    var gOpen = "";
+    var gScanning = false;
+    var gScanFor = "";
+    var gKeepScan = false;
+    var gPicture = "";
+    var gStatus = "";
+    var gStatusBad = false;
+    var scanTimer = null;
+    var scanStream = null;
+    var GRADE_BUILTIN = {
+      hcr200: {
+        name: "HCR200 Morning – Advanced Electrical",
+        roster: {
+          "hcr200-01": "Gray Alcide",
+          "hcr200-02": "Mohammed Alshehari",
+          "hcr200-03": "Amneyll Estevez",
+          "hcr200-04": "Dalonte Jackson",
+          "hcr200-05": "Mohammad Kanan",
+          "hcr200-06": "Eugene Martin",
+          "hcr200-07": "Tyler Moore",
+          "hcr200-08": "Joshua Pintella",
+          "hcr200-09": "Rashone Stevenson"
+        }
+      },
+      hcr101: {
+        name: "HCR101 Night",
+        roster: {
+          "hcr101-01": "Iyanna Austin",
+          "hcr101-02": "Samir Austin",
+          "hcr101-03": "Aidan Buckley",
+          "hcr101-04": "Janelies Casiano",
+          "hcr101-05": "Christopher Colon",
+          "hcr101-06": "Travis Crosby",
+          "hcr101-07": "Anthony Deleon",
+          "hcr101-08": "Isaiah Gallashaw",
+          "hcr101-09": "Amiir Griffin",
+          "hcr101-10": "Hyzear Henry",
+          "hcr101-11": "Michael Hillian",
+          "hcr101-12": "Javian McKnight",
+          "hcr101-13": "Tycorie McKnight",
+          "hcr101-14": "Andrew Melnyk",
+          "hcr101-15": "Angel Pena-Perez",
+          "hcr101-16": "Vincent Perkins",
+          "hcr101-17": "Chaz Sterling Jr",
+          "hcr101-18": "Izale Thomas",
+          "hcr101-19": "Corey Worthy",
+          "hcr101-20": "Zackary Wynne"
+        }
+      }
+    };
+
+    function releaseCam() {
+      if (scanTimer) clearInterval(scanTimer);
+      scanTimer = null;
+      if (scanStream) {
+        scanStream.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} });
+        scanStream = null;
+      }
+    }
+    function stopScan() {
+      gScanning = false;
+      releaseCam();
+    }
+    function customClasses() {
+      try { return JSON.parse(localStorage.getItem("customClasses") || "{}"); }
+      catch (e) { return {}; }
+    }
+    function saveCustomMap(map) {
+      localStorage.setItem("customClasses", JSON.stringify(map));
+    }
+    function gradeMeta(id) {
+      if (GRADE_BUILTIN[id]) return GRADE_BUILTIN[id];
+      var c = customClasses()[id];
+      if (!c) return null;
+      return { name: c.name || "Class", roster: c.roster || {} };
+    }
+    function gradeRoster(id) {
+      var m = gradeMeta(id);
+      return (m && m.roster) || {};
+    }
+    function gradeDay() {
+      return new Date().toISOString().slice(0, 10);
+    }
+    function gradeKey() {
+      return "grades_" + gClass + "_" + gradeDay();
+    }
+    function loadGradeLog() {
+      try { return JSON.parse(localStorage.getItem(gradeKey()) || "[]"); }
+      catch (e) { return []; }
+    }
 
     function paint() {
+      releaseCam();
       try {
+        if (tab === "materials" && !campusMats()) tab = "today";
         if (viewSheet) return paintSheet(viewSheet);
         if (viewLab) return paintLab(viewLab);
         if (tab === "today") paintToday();
@@ -881,11 +1060,14 @@
         else if (tab === "film") paintFilm();
         else if (tab === "gauges") paintGauges();
         else if (tab === "course") paintCourse();
+        else if (tab === "trainers" && opts && opts.desk) paintTrainers();
         else if (tab === "class") paintClass();
+        else if (tab === "extra") paintExtra();
         else if (tab === "materials") paintMaterials();
+        else if (tab === "grades" && opts && opts.desk) paintGrades();
       } catch (err) {
         if (!host) return;
-        host.innerHTML = "<div class='ss-shell'><p>Shop School hit a snag. The desk is still here.</p><button type='button' class='btn' id='ss-hub'>Shop floor</button></div>";
+        host.innerHTML = "<div class='ss-shell'><p>Shop School hit a snag. The desk is still here.</p><p class='ss-fine'>" + esc(err && err.message) + "</p><button type='button' class='btn' id='ss-hub'>Shop floor</button></div>";
         var back = host.querySelector("#ss-hub");
         if (back) back.onclick = function () { try { if (onHub) onHub(); } catch (e) {} };
       }
@@ -898,13 +1080,15 @@
         '<header class="ss-head">' +
         '<button type="button" class="btn" id="ss-hub">' + ((opts && opts.hubLabel) || "Shop floor") + "</button>" +
         '<button type="button" class="btn" id="ss-hear">Hear HUB</button>' +
+        (opts && opts.desk ? '<button type="button" class="btn" id="ss-pass">Password</button><button type="button" class="btn" id="ss-logout">Log out</button>' : "") +
         '<audio id="ss-hub-voice" preload="none" src="hub-desk.mp3?v=1"></audio>' +
         "<h2>" + (title === "Shop School" ? "Instructor desk" : title) + "</h2>" +
-        "<p class='ss-fine'>" + ((global.LtBrand && global.LtBrand.title) || "HVAC Legends") + "</p>" +
+        "<p class='ss-fine'>" + ((global.LtBrand && global.LtBrand.title) || "HVAC Allstars") + "</p>" +
         '<label class="ss-toggle"><input type="checkbox" id="ss-inst"' +
         (inst ? " checked" : "") +
         "/> Show keys and class</label></header>" +
         '<nav class="ss-tabs" id="ss-tabs">' +
+        (opts && opts.desk ? btn("grades", "Grade scanner") : "") +
         btn("today", "Today") +
         btn("sheets", "Sheets") +
         btn("labs", "Labs") +
@@ -912,7 +1096,9 @@
         btn("film", "Film") +
         btn("gauges", "Gauges") +
         btn("course", "Course") +
-        (inst ? btn("materials", "Materials") : "") +
+        (opts && opts.desk ? btn("trainers", "Trainers") : "") +
+        (opts && opts.desk ? btn("materials", "Materials used") : (inst && campusMats() ? btn("materials", "Materials used") : "")) +
+        (opts && opts.desk ? btn("extra", "Extra labs") : "") +
         (inst ? btn("class", "Class") : "") +
         "</nav>" +
         (extra || "")
@@ -935,15 +1121,33 @@
       var hear = host.querySelector("#ss-hear");
       if (hear) hear.onclick = function () {
         var a = host.querySelector("#ss-hub-voice");
-        if (!a) return;
-        if (!a.paused) { a.pause(); a.currentTime = 0; return; }
-        a.play();
+        var chip = host.querySelector(".hub-chip p");
+        var line = chip ? chip.textContent.replace(/\s+/g, " ").trim() : "";
+        if (!line) line = "Set the Canvas day for this class. Then open today's lab. The answer key stays on this desk.";
+        function speak() {
+          if (!global.speechSynthesis) return;
+          global.speechSynthesis.cancel();
+          var u = new SpeechSynthesisUtterance(line);
+          u.rate = 0.96;
+          global.speechSynthesis.speak(u);
+        }
+        if (!a) { speak(); return; }
+        a.onerror = speak;
+        var played = a.play();
+        if (played && played.catch) played.catch(speak);
       };
+      var passBtn = host.querySelector("#ss-pass");
+      if (passBtn) passBtn.onclick = function () { if (global.LtDesk) global.LtDesk.change(); };
+      var outBtn = host.querySelector("#ss-logout");
+      if (outBtn) outBtn.onclick = function () { if (global.LtDesk) global.LtDesk.logout(); };
       var inst = host.querySelector("#ss-inst");
       if (inst) {
         inst.onchange = function () {
           setInstructor(inst.checked);
-          if ((tab === "class" || tab === "materials") && !inst.checked) tab = "today";
+          if (tab === "class" && !inst.checked) tab = "today";
+          if (tab === "materials" && !inst.checked && !(opts && opts.desk)) tab = "today";
+          if (tab === "extra" && !(opts && opts.desk)) tab = "today";
+          if (tab === "trainers" && !(opts && opts.desk)) tab = "today";
           paint();
         };
       }
@@ -1163,6 +1367,9 @@
           ? "Canvas is day-by-day. Correct the number for this class. Snow day? Don't bump it. Doubled a lab? Jump two."
           : "Print the sheet. Run the lab. Sit 608 when the table is in your sleep. I will not hand you the live federal form.") +
         "</p></div></div>" +
+        (opts && opts.desk
+          ? '<button type="button" class="btn primary" id="ss-grade-scan">Grade scanner</button>'
+          : "") +
         (inst ? dayBoardHtml() : "") +
         (inst
           ? "<p class='eyebrow'>" +
@@ -1184,7 +1391,7 @@
             m.id +
             '"><strong>' +
             m.name +
-            "</strong><span>Sheets + labs</span></button>"
+            "</strong> <span>Sheets + labs</span></button>"
           );
         }).join("") +
         "</div>" +
@@ -1193,6 +1400,8 @@
       bindChrome();
       if (inst && global.LtCache) global.LtCache.mount(host);
       if (inst) bindDayBoard();
+      var openScan = host.querySelector("#ss-grade-scan");
+      if (openScan) openScan.onclick = function () { tab = "grades"; paint(); };
       host.querySelectorAll("[data-mod]").forEach(function (b) {
         b.onclick = function () {
           tab = "sheets";
@@ -1317,10 +1526,10 @@
         "<h3>608 labs — finish the call</h3>" +
         "<p>Four shop labs, then the 80% drill. A wrong call does not advance. Not the live exam bank.</p>" +
         '<div class="ss-actions">' +
-        '<a class="btn" href="index.html?play=1&sku=campus&lab=e608type">Which card</a>' +
-        '<a class="btn" href="index.html?play=1&sku=campus&lab=e608vac">How empty</a>' +
-        '<a class="btn" href="index.html?play=1&sku=campus&lab=e608cyl">Cylinder</a>' +
-        '<a class="btn" href="index.html?play=1&sku=campus&lab=e608rrr">Three R\'s</a>' +
+        '<a class="btn" href="' + studentHome() + '?play=1&sku=campus&lab=e608type">Which card</a>' +
+        '<a class="btn" href="' + studentHome() + '?play=1&sku=campus&lab=e608vac">How empty</a>' +
+        '<a class="btn" href="' + studentHome() + '?play=1&sku=campus&lab=e608cyl">Cylinder</a>' +
+        '<a class="btn" href="' + studentHome() + '?play=1&sku=campus&lab=e608rrr">Three R\'s</a>' +
         "</div>" +
         (isInstructor()
           ? "<table class='ss-table'><tr><th>Lab</th><th>Right call</th></tr>" +
@@ -1417,6 +1626,12 @@
           goMode(f.mode);
         };
       });
+    }
+
+    function paintTrainers() {
+      host.innerHTML = chrome("Trainers") + '<div class="ss-body" id="it-host"></div></div>';
+      bindChrome();
+      if (global.IConnectTeach) global.IConnectTeach.mount(host.querySelector("#it-host"));
     }
 
     function paintGauges() {
@@ -1751,15 +1966,939 @@
       });
     }
 
+    function wearGet() {
+      try {
+        var w = JSON.parse(localStorage.getItem("lt-mat-wear-v1") || "{}");
+        return w && typeof w === "object" ? w : {};
+      } catch (e) {
+        return {};
+      }
+    }
+    function shelfOf(key) {
+      if (!key) return 0;
+      var s = stockGet();
+      if (key === "nitrogen") return Number(s.nitrogen) || 0;
+      if (key === "driers") return Number(s.driers) || 0;
+      if (key === "ref410") return Number(s.ref410) || 0;
+      if (key === "insul") return Number(s.insul) || 0;
+      if (key === "nut38") return Number(s.nut38) || 0;
+      if (key === "cap38") return Number(s.cap38) || 0;
+      if (key === "coup38") return Number(s.coup38) || 0;
+      var spec = ROLLS.filter(function (r) { return r.id === key; })[0];
+      if (!spec) return 0;
+      return (Number(s.rolls[spec.id]) || 0) * spec.ft;
+    }
+    function ariBuild(courseId, heads, throughDay) {
+      var co = courseOf(courseId);
+      var days = MOD_DAYS[courseId] || [];
+      var bag = {};
+      var shelfUsed = {};
+      days.forEach(function (d) {
+        if (d.day > throughDay) return;
+        (d.use || []).forEach(function (u) {
+          var k = u.item + "|" + (u.size || "") + "|" + u.unit;
+          if (!bag[k]) bag[k] = { item: u.item, size: u.size || "", unit: u.unit, qty: 0, shelf: u.shelf || "", roll: u.roll || 0, mod: co.label || co.name };
+          bag[k].qty += u.qty * heads;
+        });
+      });
+      var buy = Object.keys(bag).map(function (k) {
+        var row = bag[k];
+        var shelf = 0;
+        if (row.shelf && !shelfUsed[row.shelf]) {
+          shelf = shelfOf(row.shelf);
+          shelfUsed[row.shelf] = true;
+        }
+        var order = Math.max(0, Math.round((row.qty - shelf) * 10) / 10);
+        return { item: row.item, size: row.size, qty: order, unit: row.unit, mod: row.mod, roll: row.roll, shelf: shelf };
+      }).filter(function (r) { return r.qty > 0; });
+      var wearOn = wearGet();
+      var wear = [];
+      days.forEach(function (d) {
+        if (d.day > throughDay) return;
+        (d.wear || []).forEach(function (w) {
+          if (!wearOn[w.id]) return;
+          if (wear.some(function (x) { return x.id === w.id; })) return;
+          wear.push({ id: w.id, item: w.item, size: "", qty: 1, unit: "ea", mod: co.label || co.name });
+        });
+      });
+      return { course: co, buy: buy, wear: wear, through: throughDay, heads: heads };
+    }
+    var CAMPUSES = [
+      ["levittown", "Levittown, PA"],
+      ["mahwah", "Mahwah, NJ"],
+      ["union", "Union, NJ"],
+      ["moorestown", "Moorestown, NJ"],
+      ["eastwindsor", "East Windsor, CT"],
+      ["newbritain", "New Britain, CT"],
+      ["shelton", "Shelton, CT"],
+      ["lincolnri", "Lincoln, RI"],
+      ["columbia", "Columbia, MD"],
+      ["indianapolis", "Indianapolis, IN"],
+      ["melrose", "Melrose Park, IL"],
+      ["denver", "Denver, CO"],
+      ["nashville", "Nashville, TN"],
+      ["houston", "Houston, TX"],
+      ["grandprairie", "Grand Prairie, TX"],
+      ["other", "Other shop"],
+    ];
+    function campusId() {
+      var id = localStorage.getItem("lt-desk-campus") || "levittown";
+      return CAMPUSES.some(function (c) { return c[0] === id; }) ? id : "levittown";
+    }
+    function campusLabel() {
+      var id = campusId();
+      var row = CAMPUSES.filter(function (c) { return c[0] === id; })[0];
+      return row ? row[1] : "Levittown, PA";
+    }
+    function supplierBook() {
+      var raw = localStorage.getItem("lt-suppliers-v1");
+      if (raw == null) return {};
+      try {
+        var data = JSON.parse(raw);
+        if (Array.isArray(data)) {
+          var old = data.filter(function (s) { return s && s.name; });
+          if (!old.some(function (s) { return s.id === "amazon"; })) old = old.concat(supplierSeed("levittown").filter(function (s) { return s.id === "amazon"; }));
+          if (!old.some(function (s) { return s.id === "ari"; })) old = supplierSeed("levittown").filter(function (s) { return s.id === "ari"; }).concat(old);
+          return { levittown: old };
+        }
+        return data && typeof data === "object" ? data : {};
+      } catch (e) {
+        return {};
+      }
+    }
+    function supplierSeed(campus) {
+      if (campus === "levittown") {
+        return [
+          { id: "ari", name: "Associate Refrigeration Inc.", email: "", phone: "", sells: "Refrigerant, copper, fittings" },
+          { id: "amazon", name: "Amazon", email: "", phone: "", sells: "Tools and small parts" },
+        ];
+      }
+      return [];
+    }
+    function cleanSup(s) {
+      return {
+        id: String(s.id || ""),
+        name: String(s.name).slice(0, 60),
+        email: String(s.email || "").slice(0, 80),
+        phone: String(s.phone || "").slice(0, 24),
+        sells: String(s.sells || "").slice(0, 80),
+      };
+    }
+    function suppliersGet() {
+      var campus = campusId();
+      var book = supplierBook();
+      if (!Object.prototype.hasOwnProperty.call(book, campus)) return supplierSeed(campus);
+      var list = book[campus];
+      if (!Array.isArray(list)) return supplierSeed(campus);
+      return list.filter(function (s) { return s && s.name; }).map(cleanSup);
+    }
+    function suppliersSave(list) {
+      var book = supplierBook();
+      book[campusId()] = list;
+      localStorage.setItem("lt-suppliers-v1", JSON.stringify(book));
+    }
+    function supplierPick() {
+      var list = suppliersGet();
+      var id = localStorage.getItem("lt-supplier-pick-" + campusId()) || "";
+      return list.filter(function (s) { return s.id === id; })[0] || list[0] || { id: "", name: "the supplier", email: "", phone: "", sells: "" };
+    }
+    function suppliersHtml() {
+      var list = suppliersGet();
+      var pick = supplierPick();
+      var campus = campusId();
+      var options = CAMPUSES.map(function (c) {
+        return "<option value='" + c[0] + "'" + (c[0] === campus ? " selected" : "") + ">" + esc(c[1]) + "</option>";
+      }).join("");
+      var rows = list.length
+        ? list.map(function (s) {
+            var on = s.id === pick.id;
+            return "<li><label><input type='radio' name='ss-sup' data-sup-pick='" + esc(s.id) + "'" + (on ? " checked" : "") + "/> <b>" + esc(s.name) + "</b>" +
+              (s.email ? " · " + esc(s.email) : "") +
+              (s.phone ? " · " + esc(s.phone) : "") +
+              (s.sells ? " · " + esc(s.sells) : "") +
+              "</label> <button type='button' class='btn' data-sup-del='" + esc(s.id) + "'>Remove</button></li>";
+          }).join("")
+        : "<li>No suppliers yet. Add the houses this campus orders from.</li>";
+      var note = campus === "levittown"
+        ? "Levittown orders from ARI and Amazon. Select the one this email goes to. Add another house if the campus uses it."
+        : "This campus starts empty. Add the houses it orders from. The email goes to the one you select.";
+      return (
+        '<div class="card" id="ss-suppliers">' +
+        "<h3>Suppliers</h3>" +
+        '<label>Campus <select id="ss-campus">' + options + "</select></label>" +
+        "<p class='ss-fine'>" + note + "</p>" +
+        "<ul class='ss-roster'>" + rows + "</ul>" +
+        '<div class="ss-add" style="flex-wrap:wrap;gap:8px">' +
+        '<label>Name <input id="ss-sup-name" maxlength="60" placeholder="Supply house"/></label>' +
+        '<label>Email <input id="ss-sup-email" maxlength="80" placeholder="orders@"/></label>' +
+        '<label>Phone <input id="ss-sup-phone" maxlength="24" placeholder="Phone"/></label>' +
+        '<label>What they send <input id="ss-sup-sells" maxlength="80" placeholder="Wire, tape, fittings"/></label>' +
+        '<button type="button" class="btn primary" id="ss-sup-add">Add supplier</button>' +
+        "</div></div>"
+      );
+    }
+    function bindSuppliers() {
+      var campusSel = host.querySelector("#ss-campus");
+      if (campusSel) campusSel.onchange = function () {
+        localStorage.setItem("lt-desk-campus", campusSel.value);
+        paint();
+      };
+      host.querySelectorAll("[data-sup-pick]").forEach(function (el) {
+        el.onchange = function () {
+          localStorage.setItem("lt-supplier-pick-" + campusId(), el.getAttribute("data-sup-pick"));
+          paint();
+        };
+      });
+      host.querySelectorAll("[data-sup-del]").forEach(function (btn) {
+        btn.onclick = function () {
+          var id = btn.getAttribute("data-sup-del");
+          var next = suppliersGet().filter(function (s) { return s.id !== id; });
+          suppliersSave(next);
+          var key = "lt-supplier-pick-" + campusId();
+          if (!next.some(function (s) { return s.id === localStorage.getItem(key); })) {
+            localStorage.setItem(key, next[0] ? next[0].id : "");
+          }
+          paint();
+        };
+      });
+      var add = host.querySelector("#ss-sup-add");
+      if (!add) return;
+      add.onclick = function () {
+        var name = ((host.querySelector("#ss-sup-name") || {}).value || "").trim().slice(0, 60);
+        if (!name) return;
+        var email = ((host.querySelector("#ss-sup-email") || {}).value || "").trim().slice(0, 80);
+        var phone = ((host.querySelector("#ss-sup-phone") || {}).value || "").trim().slice(0, 24);
+        var sells = ((host.querySelector("#ss-sup-sells") || {}).value || "").trim().slice(0, 80);
+        var list = suppliersGet();
+        var id = "s" + Date.now();
+        list.push({ id: id, name: name, email: email, phone: phone, sells: sells });
+        suppliersSave(list);
+        localStorage.setItem("lt-supplier-pick-" + campusId(), id);
+        paint();
+      };
+    }
+    function ariText(built) {
+      var who = supplierPick();
+      var school = (global.SchoolPack && (global.SchoolPack.school || global.SchoolPack.org)) || "the campus";
+      var mod = built.course.label || built.course.name;
+      var lines = [
+        "To: " + who.name + (who.email ? " <" + who.email + ">" : ""),
+        "Subject: Lab materials — " + mod + " — " + school,
+        "",
+        who.name + ",",
+        "",
+        "Please ship the materials below for our HVAC lab.",
+        "",
+        "School: " + school,
+        "Campus: " + campusLabel(),
+        "Ship to:",
+        "Attention:",
+        "Phone:",
+        "Needed by:",
+        "",
+        "Item | size | quantity | unit | mod",
+      ];
+      if (!built.buy.length && !built.wear.length && !extrasGet().length) lines.push("Nothing to order. The days that ran did not use anything up, or the shelf still covers it.");
+      built.buy.forEach(function (r) {
+        var rolls = r.roll ? Math.ceil(r.qty / r.roll) : 0;
+        var roll = rolls ? " (" + rolls + " × " + r.roll + " " + r.unit + (rolls === 1 ? " roll)" : " rolls)") : "";
+        lines.push(r.item + " | " + (r.size || "—") + " | " + r.qty + " | " + r.unit + " | " + r.mod + roll);
+      });
+      built.wear.forEach(function (r) {
+        lines.push(r.item + " | — | " + r.qty + " | " + r.unit + " | " + r.mod + " (wear, marked done)");
+      });
+      extrasGet().forEach(function (p) {
+        lines.push(p.item + " | " + (p.size || "—") + " | " + p.qty + " | " + p.unit + " | " + mod);
+      });
+      lines.push("");
+      lines.push("The shelf is already subtracted. Please ship only the quantities on the list.");
+      lines.push("");
+      lines.push("Thank you,");
+      return lines.join("\n");
+    }
+    function extrasGet() {
+      try {
+        var book = JSON.parse(localStorage.getItem("lt-order-extras-v1") || "{}");
+        var list = book && book[campusId()];
+        if (!Array.isArray(list)) return [];
+        return list.filter(function (p) { return p && p.item; }).map(function (p) {
+          return {
+            id: String(p.id || ""),
+            item: String(p.item).slice(0, 60),
+            size: String(p.size || "").slice(0, 24),
+            qty: Math.max(0, Number(p.qty) || 0),
+            unit: String(p.unit || "ea").slice(0, 12),
+          };
+        }).filter(function (p) { return p.qty > 0; });
+      } catch (e) {
+        return [];
+      }
+    }
+    function extrasSave(list) {
+      var book = {};
+      try { book = JSON.parse(localStorage.getItem("lt-order-extras-v1") || "{}") || {}; } catch (e) {}
+      book[campusId()] = list;
+      localStorage.setItem("lt-order-extras-v1", JSON.stringify(book));
+    }
+    function extrasHtml() {
+      var list = extrasGet();
+      var rows = list.map(function (p) {
+        return "<li><b>" + p.qty + " " + esc(p.unit) + "</b> " + esc(p.item) + (p.size ? " · " + esc(p.size) : "") +
+          " <button type='button' class='btn' data-extra-del='" + esc(p.id) + "'>Remove</button></li>";
+      }).join("");
+      return (
+        "<h3>Add a product</h3>" +
+        "<p class='ss-fine'>Something this order needs that a class day does not already count. The quantity is what you type. It is not multiplied by the class.</p>" +
+        (rows ? "<ul class='ss-roster'>" + rows + "</ul>" : "") +
+        '<div class="ss-add" style="flex-wrap:wrap;gap:8px">' +
+        '<label>Product <input id="ss-extra-item" maxlength="60" placeholder="Coil cleaner"/></label>' +
+        '<label>Size <input id="ss-extra-size" maxlength="24" placeholder="1 gal"/></label>' +
+        '<label>Qty <input id="ss-extra-qty" type="number" min="1" step="1" value="1"/></label>' +
+        '<label>Unit <select id="ss-extra-unit"><option>ea</option><option>ft</option><option>lb</option><option>roll</option><option>box</option></select></label>' +
+        '<button type="button" class="btn primary" id="ss-extra-add">Add product</button>' +
+        "</div>"
+      );
+    }
+    function bindExtras() {
+      host.querySelectorAll("[data-extra-del]").forEach(function (btn) {
+        btn.onclick = function () {
+          var id = btn.getAttribute("data-extra-del");
+          extrasSave(extrasGet().filter(function (p) { return p.id !== id; }));
+          paint();
+        };
+      });
+      var add = host.querySelector("#ss-extra-add");
+      if (!add) return;
+      add.onclick = function () {
+        var item = ((host.querySelector("#ss-extra-item") || {}).value || "").trim().slice(0, 60);
+        var qty = Math.max(0, Number((host.querySelector("#ss-extra-qty") || {}).value) || 0);
+        if (!item || !qty) return;
+        var size = ((host.querySelector("#ss-extra-size") || {}).value || "").trim().slice(0, 24);
+        var unit = ((host.querySelector("#ss-extra-unit") || {}).value || "ea").slice(0, 12);
+        var list = extrasGet();
+        list.push({ id: "p" + Date.now(), item: item, size: size, qty: qty, unit: unit });
+        extrasSave(list);
+        paint();
+      };
+    }
+
+    function dayCardsHtml(courseId, throughDay) {
+      var days = MOD_DAYS[courseId] || [];
+      var co = courseOf(courseId);
+      var shown = days.filter(function (d) { return d.day <= co.days; });
+      if (!shown.length) return "<p>Nothing is used up in this mod. The trainer stays.</p>";
+      return shown.map(function (d) {
+        var ran = d.day <= throughDay ? "In this class day." : "Not yet. The class is not on this day.";
+        var use = (d.use || []).length
+          ? "<ul class='ss-roster'>" + d.use.map(function (u) {
+              var q = u.qty % 1 ? u.qty : String(u.qty);
+              return "<li><b>" + q + " " + u.unit + "</b> " + esc(u.item) + (u.size ? " · " + esc(u.size) : "") + " · per student</li>";
+            }).join("") + "</ul>"
+          : "<p>Nothing is used up.</p>";
+        var wear = (d.wear || []).map(function (w) {
+          var on = !!wearGet()[w.id];
+          return "<label class='ss-toggle'><input type='checkbox' data-wear='" + w.id + "'" + (on ? " checked" : "") + "/> " + esc(w.item) + " is done. " + esc(w.note) + "</label>";
+        }).join("");
+        return "<article class='card'><h3>Day " + d.day + " · " + esc(d.name) + "</h3><p class='ss-fine'>" + ran + "</p>" + use + wear + "</article>";
+      }).join("");
+    }
+
+    function paintExtra() {
+      var lincoln = window.SchoolPack && window.SchoolPack.id === "lincoln";
+      var trainer = (window.LtBrand && window.LtBrand.trainer) || "Hubconnect";
+      var labs = [
+        { mode: "recover", title: "Recovery bench", why: "The book says recover it. They weigh the tank." },
+        { mode: "gauges", title: "Manifold school", why: "The day names superheat and never hangs a hose." },
+        { mode: "sandbox", title: "System sandbox", why: "The fault is one sentence. They build it and read the needles." },
+        { mode: "iconnect", title: trainer + " trainers", why: "TU-522, TU-601, and the boiler. The picture is not the machine." },
+        { mode: "service", title: "Service call", why: "The lab ended early. A customer is still on the phone." },
+        { mode: "braze", title: "Braze bench", why: "Copper day was a video. Nitrogen, then the torch." },
+        { mode: "flare", title: "Flare station", why: "The mini-split lab skipped the nut." },
+        { mode: "elguide", title: "Land the lugs", why: "Electricity day never touched a disconnect." },
+        { mode: "defusal", title: "Saturday callback", why: "They need a live 24-volt string and the book is done." },
+        { mode: "cutaway", title: "See inside", why: "The cycle lecture has no part to point at." },
+        { mode: "epa608", title: "608 drill", why: "Card day is short. Core, Type II, the vacuum table." },
+      ];
+      host.innerHTML =
+        chrome("Extra labs") +
+        '<div class="ss-body">' +
+        "<p>" +
+        (lincoln
+          ? "Lincoln's lab is the course. These fill the block when that lab is light."
+          : "The course lab is first. These fill the block when that lab is light.") +
+        " Open one. The written sheet is under Labs.</p>" +
+        "<ul class='ss-list'>" +
+        labs.map(function (lab) {
+          return "<li><button type='button' class='ss-row' data-extra='" + lab.mode + "'><strong>" +
+            esc(lab.title) + "</strong><span>" + esc(lab.why) + "</span></button></li>";
+        }).join("") +
+        "</ul></div></div>";
+      bindChrome();
+      host.querySelectorAll("[data-extra]").forEach(function (b) {
+        b.onclick = function () { goMode(b.getAttribute("data-extra")); };
+      });
+    }
+
     function paintMaterials() {
+      if (!opts || !opts.desk) {
+        if (!isInstructor()) {
+          tab = "today";
+          paintToday();
+          return;
+        }
+      }
+      var c = activeCls();
+      var ariView = {};
+      try { ariView = JSON.parse(sessionStorage.getItem("lt-ari-view") || "{}"); } catch (e) {}
+      var courseId = ariView.course || c.course || "elec";
+      var co = courseOf(courseId);
+      var classDay = courseId === (c.course || "elec") ? Math.max(1, Math.min(co.days, Number(c.day) || 1)) : co.days;
+      var through = Math.max(1, Math.min(co.days, Number(ariView.day) || classDay));
+      var heads = Math.max(1, Number(localStorage.getItem("lt-mat-heads") || "1") || 1);
+      var built = ariBuild(courseId, heads, through);
+      var options = COURSES().map(function (x) {
+        return "<option value='" + x.id + "'" + (x.id === courseId ? " selected" : "") + ">" + esc(x.label || x.name) + "</option>";
+      }).join("");
       host.innerHTML =
         chrome("Materials") +
         '<div class="ss-body">' +
-        "<p>Each card is one lab. Per student is the estimate. The running tab is what that lab actually used.</p>" +
+        "<p>Suppliers are the houses this campus orders from. The order is class size times the days that already ran, minus what is still on the shelf. Wear items go on the list only when you mark them done.</p>" +
+        suppliersHtml() +
+        '<div class="card" id="ss-ari">' +
+        "<h3>End of mod</h3>" +
+        "<p class='ss-fine'>Copy the email. It is addressed to the supplier you selected. Fill the blanks, then send it. No account.</p>" +
+        '<label>Mod <select id="ss-ari-mod">' + options + "</select></label>" +
+        '<label>Students <input id="ss-ari-heads" type="number" min="1" step="1" value="' + heads + '"/></label>' +
+        '<label>Through day <input id="ss-ari-day" type="number" min="1" max="' + co.days + '" step="1" value="' + through + '"/> of ' + co.days + "</label>" +
+        dayCardsHtml(courseId, through) +
+        extrasHtml() +
+        '<textarea id="ss-ari-out" readonly rows="16"></textarea>' +
+        '<button type="button" class="btn primary" id="ss-ari-copy">Copy the email</button>' +
+        '<p class="ss-fine" id="ss-ari-status"></p>' +
+        "</div>" +
+        "<p>Each card below is one lab. Per student is the estimate. The running tab is what that lab actually used.</p>" +
         LABS.map(matCard).join("") +
         "</div></div>";
       bindChrome();
       bindMatCards();
+      bindSuppliers();
+      bindExtras();
+      var out = host.querySelector("#ss-ari-out");
+      if (out) out.value = ariText(built);
+      var modSel = host.querySelector("#ss-ari-mod");
+      if (modSel) modSel.onchange = function () {
+        var next = courseOf(modSel.value);
+        sessionStorage.setItem("lt-ari-view", JSON.stringify({ course: modSel.value, day: next.days }));
+        paint();
+      };
+      var headsIn = host.querySelector("#ss-ari-heads");
+      if (headsIn) headsIn.onchange = function () {
+        var n = Math.max(1, Number(headsIn.value) || 1);
+        if (String(n) === (localStorage.getItem("lt-mat-heads") || "1")) return;
+        localStorage.setItem("lt-mat-heads", String(n));
+        paint();
+      };
+      var dayIn = host.querySelector("#ss-ari-day");
+      if (dayIn) dayIn.onchange = function () {
+        var n = Math.max(1, Math.min(co.days, Number(dayIn.value) || 1));
+        var prev = {};
+        try { prev = JSON.parse(sessionStorage.getItem("lt-ari-view") || "{}"); } catch (e) {}
+        if (prev.course === courseId && Number(prev.day) === n) return;
+        sessionStorage.setItem("lt-ari-view", JSON.stringify({ course: courseId, day: n }));
+        paint();
+      };
+      host.querySelectorAll("[data-wear]").forEach(function (box) {
+        box.onchange = function () {
+          var w = wearGet();
+          w[box.getAttribute("data-wear")] = !!box.checked;
+          localStorage.setItem("lt-mat-wear-v1", JSON.stringify(w));
+          paint();
+        };
+      });
+      var copyBtn = host.querySelector("#ss-ari-copy");
+      if (copyBtn) copyBtn.onclick = function () {
+        var text = host.querySelector("#ss-ari-out").value;
+        var status = host.querySelector("#ss-ari-status");
+        function ok() { if (status) status.textContent = "Copied. Paste it into the email to " + supplierPick().name + "."; }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(ok).catch(function () { ok(); });
+        } else ok();
+      };
+    }
+
+    function paintGrades() {
+      var meta = gradeMeta(gClass) || gradeMeta("hcr200");
+      if (!gradeMeta(gClass)) gClass = "hcr200";
+      var roster = gradeRoster(gClass);
+      var ids = Object.keys(roster);
+      var classes = []
+        .concat(Object.keys(GRADE_BUILTIN).map(function (id) { return { id: id, name: GRADE_BUILTIN[id].name }; }))
+        .concat(Object.keys(customClasses()).map(function (id) {
+          var c = customClasses()[id];
+          return { id: id, name: (c && c.name) || "Class" };
+        }));
+      var classOpts = classes.map(function (c) {
+        return '<option value="' + esc(c.id) + '"' + (c.id === gClass ? " selected" : "") + ">" + esc(c.name) + "</option>";
+      }).join("");
+      var log = loadGradeLog();
+      var byId = {};
+      log.forEach(function (g) { byId[g.id] = g; });
+      var logHtml = log.length
+        ? log.map(function (g) {
+            return "<div><strong>" + esc(g.name) + "</strong><br><span>Lab " + esc(g.grade) + " · Sharp " + esc(g.sharp) + (g.notes ? " · " + esc(g.notes) : "") + "</span></div>";
+          }).join("")
+        : "<div>No grades yet today</div>";
+      var rosterHtml = ids.length
+        ? ids.map(function (id) {
+            var last = byId[id];
+            var on = gScanFor === id && gScanning ? " lg-on" : "";
+            var label = gScanning && gScanFor === id ? "Stop" : "Scan";
+            return (
+              '<div class="lg-person' + on + '"><div><strong>' + esc(roster[id]) + "</strong><p>" +
+              (last ? "Lab " + esc(last.grade) + " · Sharp " + esc(last.sharp) : "No grade today") +
+              '</p></div><div class="lg-btns">' +
+              '<button type="button" class="btn" data-pic="' + esc(id) + '">Picture</button>' +
+              '<button type="button" class="btn primary" data-scan="' + esc(id) + '">' + label + "</button></div></div>"
+            );
+          }).join("")
+        : "<p>No names in this class.</p>";
+      host.innerHTML =
+        chrome("Grade scanner") +
+        '<div class="ss-body" id="lg">' +
+        '<p class="lg-label">Class</p>' +
+        '<div class="lg-row"><select id="lg-class">' + classOpts + '</select>' +
+        '<button type="button" class="btn" id="lg-del">Delete</button></div>' +
+        '<button type="button" class="btn primary lg-bigscan" id="lg-any">' +
+        (gScanning && !gScanFor ? "Close camera" : "Scan whoever is ready") +
+        "</button>" +
+        '<div class="lg-actions">' +
+        '<button type="button" class="btn" id="lg-print">Print cards</button>' +
+        '<button type="button" class="btn" id="lg-new">New class</button>' +
+        "</div>" +
+        '<div class="lg-scan">' +
+        '<video id="lg-video" class="' + (gScanning ? "" : "is-off") + '" autoplay playsinline muted></video>' +
+        '<div class="lg-frame' + (gScanning ? " on" : "") + '"></div></div>' +
+        (gStatus ? '<p class="lg-status' + (gStatusBad ? " bad" : "") + '">' + esc(gStatus) + "</p>" : "") +
+        '<p class="lg-label">Roster</p>' +
+        '<div class="lg-roster">' + rosterHtml + "</div>" +
+        (gOpen === "create"
+          ? '<div class="lg-card"><strong>New class</strong>' +
+            '<input id="lg-cname" maxlength="48" placeholder="Class or program name"/>' +
+            '<p class="lg-label">Student names, one per line</p>' +
+            '<textarea id="lg-cnames" rows="6" placeholder="First Last"></textarea>' +
+            '<div class="lg-actions"><button type="button" class="btn primary" id="lg-save-class">Save class</button>' +
+            '<button type="button" class="btn" id="lg-close-create">Close</button></div></div>'
+          : "") +
+        (gStudent
+          ? '<div class="lg-card"><h3>' + esc(gStudent.name) + "</h3>" +
+            '<p class="lg-label">Lab grade</p><p class="lg-grade" id="lg-num">' + gScore + "</p>" +
+            '<input id="lg-score" type="range" min="0" max="100" step="1" value="' + gScore + '"/>' +
+            '<p class="lg-label">Sharp points</p><p class="lg-grade lg-sharp" id="lg-sharp">' + gSharp + "</p>" +
+            '<input id="lg-sharpin" type="range" min="0" max="10" step="1" value="' + gSharp + '"/>' +
+            '<textarea id="lg-note" rows="2" maxlength="240" placeholder="Notes, optional">' + esc(gNotes) + "</textarea>" +
+            '<div class="lg-actions"><button type="button" class="btn primary" id="lg-save">Save</button>' +
+            '<button type="button" class="btn" id="lg-cancel">Cancel</button></div></div>'
+          : "") +
+        '<div class="lg-card"><strong>Today’s grades</strong><div class="lg-log">' + logHtml + "</div>" +
+        '<button type="button" class="btn" id="lg-csv">Export CSV</button></div>' +
+        '<p class="lg-fine">Picture saves a clear code on their phone. Do not crop the white border.</p>' +
+        "</div></div>" +
+        (gPicture && roster[gPicture]
+          ? '<div class="lg-shot"><canvas id="lg-shot-canvas" width="1080" height="1440"></canvas>' +
+            "<p>Press and hold the picture. Save it to Photos. Leave the white border.</p>" +
+            '<button type="button" class="btn primary" id="lg-shot-save">Save picture</button>' +
+            '<button type="button" class="btn" id="lg-shot-close">Close</button></div>'
+          : "");
+      bindChrome();
+      var classSel = host.querySelector("#lg-class");
+      if (classSel) classSel.onchange = function () {
+        gClass = classSel.value;
+        gStudent = null;
+        gOpen = "";
+        gStatus = "";
+        gScanning = false;
+        gScanFor = "";
+        gKeepScan = false;
+        gPicture = "";
+        paint();
+      };
+      var del = host.querySelector("#lg-del");
+      if (del) del.onclick = function () {
+        if (GRADE_BUILTIN[gClass]) {
+          gStatus = "Those two classes stay.";
+          gStatusBad = true;
+          paint();
+          return;
+        }
+        if (!window.confirm("Delete this class and today’s grades for it?")) return;
+        var map = customClasses();
+        delete map[gClass];
+        saveCustomMap(map);
+        try { localStorage.removeItem(gradeKey()); } catch (e) {}
+        gClass = "hcr200";
+        gStudent = null;
+        gStatus = "";
+        paint();
+      };
+      var studentSel = host.querySelector("#lg-student");
+      if (studentSel) studentSel.onchange = function () {
+        var id = studentSel.value;
+        if (!id || !roster[id]) {
+          gStudent = null;
+          paint();
+          return;
+        }
+        gScanning = false;
+        gScanFor = "";
+        gStudent = { id: id, name: roster[id] };
+        gScore = 100;
+        gSharp = 10;
+        gNotes = "";
+        gStatus = "";
+        gOpen = "";
+        paint();
+      };
+      host.querySelectorAll("[data-pic]").forEach(function (b) {
+        b.onclick = function () {
+          gPicture = b.getAttribute("data-pic") || "";
+          gScanning = false;
+          gScanFor = "";
+          paint();
+        };
+      });
+      var shotClose = host.querySelector("#lg-shot-close");
+      if (shotClose) shotClose.onclick = function () { gPicture = ""; paint(); };
+      var shotSave = host.querySelector("#lg-shot-save");
+      if (shotSave) shotSave.onclick = function () {
+        var canvas = host.querySelector("#lg-shot-canvas");
+        if (!canvas) return;
+        var fileName = String(roster[gPicture] || "student").replace(/[^\w]+/g, "-").replace(/^-|-$/g, "") + ".png";
+        canvas.toBlob(function (blob) {
+          if (!blob) return;
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }, "image/png");
+      };
+      if (gPicture && roster[gPicture]) {
+        var shot = host.querySelector("#lg-shot-canvas");
+        var metaName = (gradeMeta(gClass) && gradeMeta(gClass).name) || "";
+        cardCanvas(roster[gPicture], metaName, gPicture).then(function (drawn) {
+          if (!shot || !drawn) return;
+          shot.getContext("2d").drawImage(drawn, 0, 0);
+        }).catch(function () {});
+      }
+      host.querySelectorAll("[data-scan]").forEach(function (b) {
+        b.onclick = function () {
+          var id = b.getAttribute("data-scan");
+          if (gScanning && gScanFor === id) {
+            gScanning = false;
+            gScanFor = "";
+            gKeepScan = false;
+            gStatus = "";
+            paint();
+            return;
+          }
+          gScanFor = id;
+          gKeepScan = false;
+          gScanning = true;
+          gStudent = null;
+          gOpen = "";
+          gStatus = "Point at " + (roster[id] || "their") + "’s picture.";
+          gStatusBad = false;
+          paint();
+        };
+      });
+      var anyBtn = host.querySelector("#lg-any");
+      if (anyBtn) anyBtn.onclick = function () {
+        if (gScanning && !gScanFor) {
+          gScanning = false;
+          gKeepScan = false;
+          gStatus = "";
+          paint();
+          return;
+        }
+        gScanFor = "";
+        gKeepScan = true;
+        gScanning = true;
+        gStudent = null;
+        gOpen = "";
+        gStatus = "Point at whoever is ready.";
+        gStatusBad = false;
+        paint();
+      };
+      var printBtn = host.querySelector("#lg-print");
+      if (printBtn) printBtn.onclick = function () { printGradeCards(); };
+      var newBtn = host.querySelector("#lg-new");
+      if (newBtn) newBtn.onclick = function () {
+        gScanning = false;
+        gOpen = gOpen === "create" ? "" : "create";
+        paint();
+      };
+      var closeCreate = host.querySelector("#lg-close-create");
+      if (closeCreate) closeCreate.onclick = function () { gOpen = ""; paint(); };
+      var saveClass = host.querySelector("#lg-save-class");
+      if (saveClass) saveClass.onclick = function () {
+        var nameEl = host.querySelector("#lg-cname");
+        var listEl = host.querySelector("#lg-cnames");
+        var name = ((nameEl && nameEl.value) || "").trim().slice(0, 48);
+        var lines = ((listEl && listEl.value) || "").split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
+        if (!name || !lines.length) {
+          gStatus = "Put a class name and at least one student.";
+          gStatusBad = true;
+          paint();
+          return;
+        }
+        var id = "custom_" + Date.now().toString(36);
+        var next = {};
+        lines.forEach(function (n, i) {
+          next[id + "-" + String(i + 1).padStart(2, "0")] = n.slice(0, 40);
+        });
+        var map = customClasses();
+        map[id] = { name: name, roster: next };
+        saveCustomMap(map);
+        gClass = id;
+        gOpen = "";
+        gStudent = null;
+        gStatus = "Class saved. Show the codes when you are ready.";
+        gStatusBad = false;
+        paint();
+      };
+      var score = host.querySelector("#lg-score");
+      var sharp = host.querySelector("#lg-sharpin");
+      var num = host.querySelector("#lg-num");
+      var sharpEl = host.querySelector("#lg-sharp");
+      var note = host.querySelector("#lg-note");
+      if (score) score.oninput = function () {
+        gScore = Math.max(0, Math.min(100, parseInt(score.value, 10) || 0));
+        if (num) num.textContent = String(gScore);
+      };
+      if (sharp) sharp.oninput = function () {
+        gSharp = Math.max(0, Math.min(10, parseInt(sharp.value, 10) || 0));
+        if (sharpEl) sharpEl.textContent = String(gSharp);
+      };
+      if (note) note.oninput = function () { gNotes = note.value.slice(0, 240); };
+      var saveBtn = host.querySelector("#lg-save");
+      if (saveBtn) saveBtn.onclick = function () {
+        if (!gStudent) return;
+        var entry = {
+          id: gStudent.id,
+          name: gStudent.name,
+          grade: gScore,
+          sharp: gSharp,
+          notes: gNotes.trim(),
+          time: new Date().toLocaleTimeString()
+        };
+        var data = loadGradeLog();
+        var idx = -1;
+        data.forEach(function (g, i) { if (g.id === entry.id) idx = i; });
+        if (idx >= 0) data[idx] = entry;
+        else data.push(entry);
+        localStorage.setItem(gradeKey(), JSON.stringify(data));
+        gStudent = null;
+        gNotes = "";
+        gScore = 100;
+        gSharp = 10;
+        gStatus = gKeepScan ? "Saved. Point at the next picture." : "Saved";
+        gStatusBad = false;
+        if (gKeepScan) {
+          gScanning = true;
+          gScanFor = "";
+        }
+        paint();
+      };
+      var cancel = host.querySelector("#lg-cancel");
+      if (cancel) cancel.onclick = function () {
+        gStudent = null;
+        gStatus = gKeepScan ? "Point at whoever is ready." : "";
+        gStatusBad = false;
+        if (gKeepScan) {
+          gScanning = true;
+          gScanFor = "";
+        }
+        paint();
+      };
+      var csvBtn = host.querySelector("#lg-csv");
+      if (csvBtn) csvBtn.onclick = function () {
+        var data = loadGradeLog();
+        if (!data.length) {
+          gStatus = "No grades to export.";
+          gStatusBad = true;
+          paint();
+          return;
+        }
+        var csv = "ID,Name,Lab Grade,Sharp Points,Notes,Time\n" + data.map(function (g) {
+          return '"' + String(g.id).replace(/"/g, '""') + '","' + String(g.name).replace(/"/g, '""') + '",' +
+            g.grade + "," + g.sharp + ',"' + String(g.notes || "").replace(/"/g, '""') + '","' + String(g.time || "") + '"';
+        }).join("\n");
+        var blob = new Blob([csv], { type: "text/csv" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "grades_" + gClass + "_" + gradeDay() + ".csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      };
+      if (gScanning) startGradeScan(roster);
+    }
+
+    function cardCanvas(name, className, code) {
+      return new Promise(function (ok, fail) {
+        if (!global.QRCode || !global.QRCode.toCanvas) { fail(); return; }
+        var qr = document.createElement("canvas");
+        global.QRCode.toCanvas(qr, code, {
+          width: 860,
+          margin: 1,
+          errorCorrectionLevel: "H",
+          color: { dark: "#14181c", light: "#ffffff" }
+        }).then(function () {
+          var canvas = document.createElement("canvas");
+          canvas.width = 1080;
+          canvas.height = 1440;
+          var ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, 1080, 1440);
+          ctx.textAlign = "center";
+          ctx.fillStyle = "#C8102E";
+          ctx.font = "700 40px Arial, sans-serif";
+          ctx.fillText("LINCOLN TECH", 540, 110);
+          ctx.fillStyle = "#14181c";
+          var size = 78;
+          ctx.font = "700 " + size + "px Arial, sans-serif";
+          while (size > 40 && ctx.measureText(name).width > 960) {
+            size -= 4;
+            ctx.font = "700 " + size + "px Arial, sans-serif";
+          }
+          ctx.fillText(name, 540, 210);
+          ctx.font = "36px Arial, sans-serif";
+          var words = String(className || "").split(" ");
+          var lines = [];
+          var line = "";
+          words.forEach(function (w) {
+            var next = line ? line + " " + w : w;
+            if (line && ctx.measureText(next).width > 960) {
+              lines.push(line);
+              line = w;
+            } else line = next;
+          });
+          if (line) lines.push(line);
+          lines.slice(0, 2).forEach(function (ln, i) { ctx.fillText(ln, 540, 280 + i * 46); });
+          ctx.drawImage(qr, 110, 390);
+          ctx.font = "32px Arial, sans-serif";
+          ctx.fillText("Save this picture. Do not crop the white.", 540, 1340);
+          ok(canvas);
+        }).catch(fail);
+      });
+    }
+
+    function printGradeCards() {
+      var meta = gradeMeta(gClass);
+      var roster = gradeRoster(gClass);
+      var ids = Object.keys(roster);
+      if (!meta || !ids.length) {
+        gStatus = "The cards did not draw.";
+        gStatusBad = true;
+        paint();
+        return;
+      }
+      Promise.all(ids.map(function (id) {
+        return cardCanvas(roster[id], meta.name, id).then(function (canvas) {
+          return { url: canvas.toDataURL("image/png") };
+        });
+      })).then(function (rows) {
+        var cards = rows.map(function (r) {
+          return '<section class="card"><img alt="" src="' + r.url + '"/></section>';
+        }).join("");
+        printBlock(
+          "<style>@page{size:letter;margin:0.35in}body{max-width:none!important;padding:0!important}" +
+          ".card{page-break-after:always;text-align:center}" +
+          ".card img{width:7.2in;height:auto}</style>" + cards
+        );
+      }).catch(function () {
+        gStatus = "The cards did not draw.";
+        gStatusBad = true;
+        paint();
+      });
+    }
+
+    function startGradeScan(roster) {
+      var video = host.querySelector("#lg-video");
+      if (!video || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        gScanning = false;
+        gStatus = "This phone has no camera here. Choose the name instead.";
+        gStatusBad = true;
+        paint();
+        return;
+      }
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false }).then(function (stream) {
+        if (!gScanning) {
+          stream.getTracks().forEach(function (t) { t.stop(); });
+          return;
+        }
+        scanStream = stream;
+        video.srcObject = stream;
+        video.classList.remove("is-off");
+        var play = video.play();
+        if (play && play.catch) play.catch(function () {});
+        if (!("BarcodeDetector" in window)) {
+          gStatus = "This browser cannot read a code in the app. Choose the name, or use Chrome.";
+          gStatusBad = true;
+          var say = host.querySelector(".lg-status");
+          if (!say) {
+            var p = document.createElement("p");
+            p.className = "lg-status bad";
+            p.textContent = gStatus;
+            video.parentNode.appendChild(p);
+          }
+          return;
+        }
+        var det = new BarcodeDetector({ formats: ["qr_code"] });
+        scanTimer = setInterval(function () {
+          if (!gScanning) return;
+          det.detect(video).then(function (codes) {
+            if (!gScanning || !codes || !codes[0] || !codes[0].rawValue) return;
+            var id = String(codes[0].rawValue).trim();
+            var say = host.querySelector(".lg-status");
+            if (gScanFor && id !== gScanFor) {
+              gStatus = roster[id]
+                ? "That’s " + roster[id] + ", not " + roster[gScanFor] + "."
+                : "That code is not " + (roster[gScanFor] || "this student") + ".";
+              gStatusBad = true;
+              if (say) {
+                say.textContent = gStatus;
+                say.className = "lg-status bad";
+              }
+              return;
+            }
+            if (!roster[id]) {
+              gStatus = "That code is not in this class.";
+              gStatusBad = true;
+              if (say) {
+                say.textContent = gStatus;
+                say.className = "lg-status bad";
+              }
+              return;
+            }
+            gScanning = false;
+            gScanFor = "";
+            gStudent = { id: id, name: roster[id] };
+            gScore = 100;
+            gSharp = 10;
+            gNotes = "";
+            gStatus = "";
+            gOpen = "";
+            paint();
+          }).catch(function () {});
+        }, 350);
+      }).catch(function () {
+        gScanning = false;
+        gStatus = "Camera blocked. Choose the name instead.";
+        gStatusBad = true;
+        paint();
+      });
     }
 
     function paintClass() {
@@ -1853,12 +2992,63 @@
     }
 
     paint();
-    return { stop: function () {} };
+    return { stop: function () { stopScan(); } };
   }
 
   global.ShopSchool = {
     start: function (root, opts) {
       if (!root) return { stop: function () {} };
+      if (!document.getElementById("ss-phone-fit")) {
+        var fit = document.createElement("style");
+        fit.id = "ss-phone-fit";
+        fit.textContent = [
+          "#desk .ss-head h2{flex:1 0 100%;margin:4px 0 0}",
+          "#desk .ss-row{display:flex;flex-direction:column;align-items:flex-start;text-align:left;width:100%;white-space:normal;gap:2px}",
+          "#desk .ss-row strong,#desk .ss-row span{display:block;white-space:normal}",
+          "@media (max-width:720px){#desk .ss-table,#desk .ss-table tr,#desk .ss-table th,#desk .ss-table td{display:block;width:100%;text-align:left}#desk .ss-table td:first-child,#desk .ss-table th:first-child{font-weight:700;padding-top:10px}}",
+          "#desk #ss-ari-out{width:100%;max-width:100%;box-sizing:border-box;white-space:pre-wrap}",
+          "#desk #ss-ari label{display:block;margin:8px 0}",
+          "#desk #ss-grade-scan,#desk #lg .lg-bigscan{width:100%;min-height:64px;font-size:1.15rem;margin:0 0 14px}",
+          "#desk #lg .lg-label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#9aa3ad;font-weight:700;margin:14px 0 6px}",
+          "#desk #lg select,#desk #lg textarea{width:100%;box-sizing:border-box;margin:0 0 10px;padding:12px 14px;border-radius:12px;border:1px solid #3a4654;background:#1b2229;color:#f4efe6;font:500 16px/1.3 'IBM Plex Sans',system-ui,sans-serif}",
+          "#desk #lg video{width:100%;border-radius:16px;background:#000;margin:0 0 10px;max-height:240px;object-fit:cover}",
+          "#desk #lg video.is-off{display:none}",
+          "#desk #lg .lg-card{background:#161b21;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px;margin-top:12px}",
+          "#desk #lg .lg-grade{font-size:64px;font-weight:700;text-align:center;line-height:1;margin:0}",
+          "#desk #lg .lg-letter{text-align:center;font-weight:700;margin:4px 0 8px}",
+          "#desk #lg input[type=range]{width:100%;margin:0 0 10px;accent-color:#CE0034}",
+          "#desk #lg .lg-person{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid rgba(255,255,255,.12)}",
+          "#desk #lg .lg-person .btn{width:auto;min-width:72px;flex:0 0 auto}",
+          "#desk #lg .lg-btns{display:flex;gap:6px;flex:0 0 auto}",
+          "#desk .lg-shot{position:fixed;inset:0;z-index:80;background:#fff;color:#14181c;overflow:auto;text-align:center;padding:12px 16px 28px}",
+          "#desk .lg-shot canvas{width:min(100%,440px);height:auto;background:#fff}",
+          "#desk .lg-shot p{margin:10px auto;max-width:440px;font-size:16px}",
+          "#desk .lg-shot .btn{display:block;width:min(100%,440px);margin:8px auto;min-height:48px;background:#1c1c1e;color:#fff}",
+          "#desk .lg-shot .btn.primary{background:#C8102E}",
+          "#desk #lg .lg-person.lg-on{outline:2px solid #d4b45a;border-radius:12px;padding:10px}",
+          "#desk #lg .lg-qr{width:96px;height:96px;background:#fff;border-radius:8px;flex:0 0 auto}",
+          "#desk #lg .lg-person p{margin:2px 0 6px;color:#c9d0d6;font-size:14px}",
+          "#desk #lg .lg-log{max-height:240px;overflow:auto}",
+          "#desk #lg .lg-log div{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:14px}",
+          "#desk #lg .lg-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}",
+          "#desk #lg .lg-actions .btn{flex:1 1 120px;min-height:44px}",
+          "#desk #lg .lg-row{display:flex;gap:8px;align-items:center}",
+          "#desk #lg .lg-row select{flex:1;margin:0}",
+          "#desk #lg .lg-row .btn{width:auto;min-height:44px}",
+          "#desk #lg .lg-qrs{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-top:10px}",
+          "#desk #lg .lg-qrwrap{text-align:center}",
+          "#desk #lg .lg-qrwrap span{display:block;font-size:12px;color:#9aa3ad;margin-top:4px}",
+          "#desk #lg .lg-sharp{font-size:40px}",
+          "#desk #lg .lg-status{text-align:center;font-weight:650;color:#30d158;min-height:1.2em}",
+          "#desk #lg .lg-status.bad{color:#ff6b6b}",
+          "#desk #lg .lg-fine{color:#9aa3ad;font-size:12px;text-align:center;margin-top:16px}",
+          "#desk #lg .lg-scan{position:relative}",
+          "#desk #lg .lg-frame{display:none;position:absolute;left:50%;top:50%;width:180px;height:180px;transform:translate(-50%,-50%);border:2px solid #CE0034;border-radius:16px;pointer-events:none}",
+          "#desk #lg .lg-frame.on{display:block}",
+          "#desk #lg input[type=text],#desk #lg input:not([type]){width:100%;box-sizing:border-box;margin:0 0 10px;padding:12px 14px;border-radius:12px;border:1px solid #3a4654;background:#1b2229;color:#f4efe6;font:500 16px/1.3 inherit}",
+        ].join("");
+        document.head.appendChild(fit);
+      }
       try {
         root.innerHTML = "";
         return ShopSchool(root, opts || {});

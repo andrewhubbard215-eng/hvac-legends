@@ -3,18 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>HVAC Legends · The Pitch</title>
+  <title>HVAC Allstars · The Pitch</title>
+  <script src="gate-hvac1.js?v=6"></script>
   <link rel="icon" type="image/png" href="icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --red: #CE0034;
-      --red-dark: #8e0024;
       --ink: #0c1014;
       --char: #161b21;
       --paper: #f4efe6;
-      --cream: #efe6d4;
       --gold: #d4b45a;
       --muted: #9aa3ad;
       --line: rgba(255,255,255,.12);
@@ -26,98 +25,118 @@
     .slide {
       position: absolute; inset: 0;
       display: none;
-      padding: 28px 32px 72px;
-      overflow: hidden;
+      padding: 32px 40px 80px;
+      overflow: auto;
+      background:
+        linear-gradient(#CE0034, #CE0034) top / 100% 3px no-repeat,
+        var(--ink);
     }
-    .slide.on { display: grid; align-content: start; }
-    .slide.cover.on, .slide.split.on { display: grid; }
-    .bg {
-      position: absolute; inset: 0;
-      background: #0c1014 center/cover no-repeat;
-      filter: saturate(.85);
+    .slide.cover { background: var(--ink); }
+    .speaker { display: none; }
+    body.notes .speaker {
+      display: block; position: relative; margin-top: 10px;
+      color: var(--gold); font-size: 13px; max-width: 68ch; line-height: 1.4;
     }
+    .slide.on { display: block; }
+    .slide.split.on { display: grid; align-content: center; }
+    .bg { position: absolute; inset: 0; background: #0c1014 center/cover no-repeat; }
     .bg::after {
       content: ""; position: absolute; inset: 0;
-      background: linear-gradient(90deg, rgba(12,16,20,.94) 0%, rgba(12,16,20,.72) 42%, rgba(12,16,20,.35) 100%);
+      background: linear-gradient(90deg, rgba(12,16,20,.94) 0%, rgba(12,16,20,.78) 48%, rgba(12,16,20,.45) 100%);
     }
     .slide.dark .bg::after {
-      background: linear-gradient(180deg, rgba(12,16,20,.55) 0%, rgba(12,16,20,.88) 100%);
+      background: linear-gradient(180deg, rgba(12,16,20,.45) 0%, rgba(12,16,20,.82) 70%, rgba(12,16,20,.94) 100%);
     }
     .kicker {
       position: relative;
-      font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
-      color: var(--gold); font-weight: 700; margin-bottom: 10px;
+      font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--gold); font-weight: 700; margin-bottom: 8px;
     }
-    h1, h2 { font-family: "Bebas Neue", Impact, sans-serif; letter-spacing: .02em; line-height: .92; }
-    h1 { font-size: clamp(52px, 10vw, 108px); }
+    h1, h2 { position: relative; z-index: 1; font-family: "Bebas Neue", Impact, sans-serif; letter-spacing: .02em; line-height: .94; font-weight: 400; }
+    h1 { font-size: clamp(56px, 8vw, 92px); }
     h1 span { color: var(--red); }
-    h2 { font-size: clamp(36px, 6.4vw, 72px); max-width: 16ch; }
-    .lede { position: relative; max-width: 36ch; font-size: clamp(16px, 2.1vw, 22px); line-height: 1.45; color: #d8dde3; margin-top: 16px; font-weight: 500; }
-    .meta { position: relative; margin-top: 22px; color: var(--muted); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+    h2 { font-size: clamp(30px, 4vw, 48px); max-width: 22ch; }
+    .lede { position: relative; max-width: 46ch; font-size: clamp(16px, 1.6vw, 20px); line-height: 1.45; color: #d8dde3; margin-top: 12px; }
+    .meta { position: relative; margin-top: 18px; color: var(--muted); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
     .shot {
-      position: relative;
-      margin-top: 22px;
-      max-width: min(720px, 92vw);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 24px 60px rgba(0,0,0,.45);
+      position: relative; margin-top: 0;
+      border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+      box-shadow: 0 18px 40px rgba(0,0,0,.4);
     }
     .shot img { display: block; width: 100%; height: auto; }
-    .grid2 { position: relative; display: grid; gap: 14px; margin-top: 22px; grid-template-columns: 1fr; }
-    @media (min-width: 820px) {
-      .grid2 { grid-template-columns: 1fr 1fr; }
-      .slide.split.on { grid-template-columns: 1.05fr .95fr; gap: 28px; align-items: center; }
+    ul.prove, ul.agenda { position: relative; margin-top: 14px; list-style: none; max-width: 70ch; }
+    ul.prove li, ul.agenda li {
+      padding: 7px 0 7px 16px; position: relative;
+      font-size: 16px; line-height: 1.4; color: #e6eaee;
+      border-top: 1px solid var(--line);
     }
-    .card {
-      background: rgba(22,27,33,.82);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 16px 18px;
+    ul.prove li::before {
+      content: ""; position: absolute; left: 0; top: 16px;
+      width: 8px; height: 2px; background: var(--red);
     }
-    .card h3 { font-family: "Bebas Neue", Impact, sans-serif; font-size: 28px; color: #fff; margin-bottom: 6px; }
-    .card p { color: #c9d0d6; font-size: 15px; line-height: 1.45; }
-    .card b { color: var(--gold); font-weight: 600; }
-    ul.prove { position: relative; margin-top: 18px; list-style: none; max-width: 42ch; }
-    ul.prove li { padding: 8px 0 8px 22px; position: relative; font-size: 17px; line-height: 1.4; color: #e6eaee; }
-    ul.prove li::before { content: ""; position: absolute; left: 0; top: 16px; width: 10px; height: 2px; background: var(--red); }
-    .sku { display: grid; gap: 12px; margin-top: 20px; }
-    @media (min-width: 720px) { .sku { grid-template-columns: 1fr 1fr; } }
-    .sku article { border-radius: 14px; padding: 18px; border: 1px solid var(--line); }
+    ul.agenda li { padding-left: 0; }
+    ul.agenda b {
+      display: block; color: #fff; font-weight: 600; font-size: 14px;
+      letter-spacing: .04em; text-transform: uppercase; margin-bottom: 2px;
+    }
+    .sku { position: relative; display: grid; gap: 10px; margin-top: 14px; max-width: 920px; }
+    .sku article { border-radius: 12px; padding: 14px 16px; border: 1px solid var(--line); }
     .sku .campus { background: #CE0034; color: #fff; }
     .sku .store { background: #1b2229; }
-    .sku h3 { font-family: "Bebas Neue", Impact, sans-serif; font-size: 32px; margin-bottom: 8px; }
-    .sku p { font-size: 15px; line-height: 1.45; opacity: .95; }
+    .sku h3 { font-family: "Bebas Neue", Impact, sans-serif; font-size: 28px; font-weight: 400; margin-bottom: 6px; }
+    .sku p { font-size: 14px; line-height: 1.4; }
+    .sku p + p { margin-top: 6px; }
     .face {
-      position: absolute; right: 6%; bottom: 70px;
-      width: min(280px, 34vw); border-radius: 8px;
+      position: absolute; right: 7%; bottom: 78px;
+      width: min(240px, 28vw); border-radius: 8px;
       border: 1px solid var(--line);
-      box-shadow: 0 18px 50px rgba(0,0,0,.5);
     }
-    @media (max-width: 700px) { .face { display: none; } }
     .nav {
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
       display: flex; align-items: center; justify-content: space-between;
       gap: 10px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-      background: linear-gradient(180deg, transparent, rgba(12,16,20,.92));
+      background: rgba(12,16,20,.94);
+      border-top: 1px solid var(--line);
     }
     .dots { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; flex: 1; }
-    .dots button {
-      width: 8px; height: 8px; border-radius: 99px; border: 0; background: #44505a;
-    }
+    .dots button { width: 8px; height: 8px; border-radius: 99px; border: 0; background: #44505a; }
     .dots button.on { width: 22px; background: var(--red); }
     .nav .btn {
       height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line);
       background: #1c232b; color: #fff; font: 600 13px/1 "IBM Plex Sans", sans-serif;
     }
     .nav .btn.primary { background: var(--red); border-color: var(--red); }
-    .count { position: relative; color: var(--muted); font-size: 12px; letter-spacing: .14em; }
+    .count { color: var(--muted); font-size: 12px; letter-spacing: .14em; }
     a.play {
-      display: inline-flex; margin-top: 22px; height: 44px; align-items: center;
+      position: relative; display: inline-flex; margin-top: 18px; height: 44px; align-items: center;
       padding: 0 18px; background: var(--red); color: #fff; text-decoration: none;
-      font-weight: 700; border-radius: 8px; letter-spacing: .04em;
+      font-weight: 700; border-radius: 8px;
     }
-    .tiny { position: relative; margin-top: 14px; font-size: 12px; color: var(--muted); max-width: 48ch; line-height: 1.4; }
+    .tiny { position: relative; margin-top: 12px; font-size: 12px; color: var(--muted); max-width: 54ch; line-height: 1.4; }
+    @media (min-width: 820px) {
+      .sku { grid-template-columns: 1fr 1fr; }
+      .slide.split.on { grid-template-columns: 1.1fr .9fr; gap: 28px; align-items: center; padding-right: 36px; }
+    }
+    @media (max-width: 819px) {
+      .shot, .face { display: none; }
+      .slide.split.on { display: block; }
+    }
+    @media (max-width: 720px) {
+      .slide { padding: 18px 16px 84px; }
+      h1 { font-size: 56px; }
+      h2 { font-size: 34px; max-width: none; }
+      .lede { max-width: none; font-size: 16px; }
+      ul.prove li, ul.agenda li { font-size: 15px; }
+    }
+    @media (max-height: 700px) {
+      .slide { padding: 16px 20px 72px; }
+      h1 { font-size: 48px; }
+      h2 { font-size: 30px; }
+      .lede, ul.prove li, ul.agenda li, .sku p { font-size: 14px; }
+      ul.prove li, ul.agenda li { padding-top: 4px; padding-bottom: 4px; }
+      .sku article { padding: 10px 12px; }
+      .sku h3 { font-size: 24px; }
+    }
   </style>
 </head>
 <body>
@@ -125,123 +144,144 @@
 
     <section class="slide cover dark on" data-slide>
       <div class="bg" style="background-image:url(pitch/media/wife-title.png)"></div>
-      <p class="kicker">Vocational HVAC trainer</p>
-      <h1>HVAC <span>Legends</span></h1>
-      <p class="lede">A first-year tech learns a prove path — not a video-game trick. Clock in. Run the floor. Leave knowing why the gauges said what they said.</p>
-      <p class="meta">Professor Andrew Hubbard · HVAC Legends</p>
-      <img class="face" src="pitch/media/hub-portrait.jpg?v=3" alt="Professor HUB" />
+      <p class="kicker">Lincoln Tech · HVAC program</p>
+      <h1>HVAC <span>Allstars</span></h1>
+      <p class="lede">Laboratory practice on the phone students already carry, and on the computer in the classroom.</p>
+      <p class="meta">Professor Andrew Hubbard · A program briefing</p>
+      <img class="face" src="pitch/media/hub-portrait.jpg?v=3" alt="Professor Hubbard" />
     </section>
 
     <section class="slide" data-slide>
-      <div class="bg" style="background-image:url(pitch/media/lincoln-tech.jpg)"></div>
-      <p class="kicker">The hole in the shop</p>
-      <h2>They shotgun parts. Then they sit 608.</h2>
+      <p class="kicker">01 · The problem</p>
+      <h2>Access ends when class ends.</h2>
       <ul class="prove">
-        <li>Add gas to a dirty filter because the suction looked low.</li>
-        <li>Replace a pressure switch because the LED said so — trap was full.</li>
-        <li>Pass a cram test and still cannot walk a 24-volt string.</li>
+        <li>Current trainers require a desktop, a login, and a scheduled laboratory period.</li>
+        <li>Students will not open that software on a phone.</li>
+        <li>The hours between classes go unused. That is where additional practice belongs.</li>
       </ul>
-      <p class="lede">School needs a floor they can run every morning. Same jobs as the truck. No combat. No driving game.</p>
+      <p class="lede">Allstars is that phone laboratory. The full lab still runs on the classroom computer.</p>
     </section>
 
     <section class="slide split" data-slide>
       <div>
-        <p class="kicker">Clock in</p>
-        <h2>Shop floor is the map.</h2>
-        <p class="lede">Tap Clock In. Labs are full screen — phone or desk. Locker is optional. HUB talks shop-floor, not a textbook.</p>
+        <p class="kicker">02 · The laboratories</p>
+        <h2>Three labs. One program.</h2>
+        <p class="lede">Sized for a phone. Available in the classroom while class is in session.</p>
+        <ul class="prove">
+          <li>System sandbox. A live refrigeration cycle. Faults behave as they do in the field.</li>
+          <li>Recovery. Recover, pressure-test with nitrogen, evacuate, weigh the charge, and leak-check.</li>
+          <li>Section 608. Core and Types I, II, and III, then a practice exam that explains each answer.</li>
+        </ul>
       </div>
-      <div class="shot"><img src="pitch/media/tablet-hub.png" alt="Shop floor" /></div>
+      <div class="shot"><img src="pitch/media/tablet-hub.png" alt="Allstars on a tablet" /></div>
+    </section>
+
+    <section class="slide" data-slide>
+      <p class="kicker">03 · A week of practice</p>
+      <h2>Work they can repeat.</h2>
+      <ul class="agenda">
+        <li><b>System sandbox</b>Superheat, subcooling, pressure, and temperature respond to the change. High head pressure shuts the compressor off.</li>
+        <li><b>Recovery</b>Five stations: a DOT cylinder, a nitrogen test, vacuum decay, the ounces on the data tag, and the flare.</li>
+        <li><b>Electrical</b>A 24-volt ladder, then the meter on the component. The open is the first dead reading after a live one.</li>
+        <li><b>Service calls</b>A customer, the readings, and a diagnosis. Refrigerant handling is part of the grade.</li>
+        <li><b>The cycle</b>Discharge stays on the high side. The refrigerant flashes on the low side.</li>
+      </ul>
     </section>
 
     <section class="slide split" data-slide>
       <div>
-        <p class="kicker">System sandbox</p>
-        <h2>Live SH, SC, P and T.</h2>
-        <p class="lede">Four-part diamond: compressor, condenser, metering, evaporator. Parts tray stays left so a tech can drag them onto the boxes. Faults fingerprint like the real system — HPC actually cuts the compressor.</p>
+        <p class="kicker">04 · Instruction</p>
+        <h2>Procedure, then the drill.</h2>
+        <p class="lede">How-to videos with Dave LoBuono sit on the laboratory. Students hear the procedure, then perform it. They do not leave the program to find a video.</p>
+        <ul class="prove">
+          <li>The podcast is the same lesson when they are not looking at a screen.</li>
+          <li>The drill is the assignment. The video and the podcast are a second hearing.</li>
+          <li>Shop iConnect trainers are virtual units. The card lists the steps and plays the video.</li>
+        </ul>
       </div>
-      <div class="shot"><img src="pitch/media/gauges-healthy.png" alt="Healthy R-410A gauges" /></div>
-    </section>
-
-    <section class="slide" data-slide>
-      <p class="kicker">Electrical</p>
-      <h2>Follow the call. Then land the lugs.</h2>
-      <div class="grid2">
-        <article class="card">
-          <h3>24-volt ladder</h3>
-          <p>R through the safeties into the coil. <b>Gold is live. Dark is dead.</b> The first dark node after a gold one is the open.</p>
-        </article>
-        <article class="card">
-          <h3>Land lugs</h3>
-          <p>Zoomed close-up of the device. <b>Black = hot. Off-white = neutral. Green = ground.</b> Drag onto the matching screw.</p>
-        </article>
-        <article class="card">
-          <h3>Saturday callback</h3>
-          <p>Timed no-cool. Meter the open, then replace. <b>Not a movie bomb.</b></p>
-        </article>
-        <article class="card">
-          <h3>No-cool sheet</h3>
-          <p>Call → 240 → disconnect → R–C → Y → HPC → LPC → float → coil → T1 → compressor.</p>
-        </article>
-      </div>
+      <div class="shot"><img src="pitch/media/gauges-healthy.png" alt="Healthy gauges" /></div>
     </section>
 
     <section class="slide split" data-slide>
       <div>
-        <p class="kicker">EPA Section 608</p>
-        <h2>Tutor, then the exam.</h2>
-        <p class="lede">Core, Type I, II, III. Vacuum table you can run — house 410A is 0 psig, a 200 lb rack is 10 inches. Stamp at 80%, then sit the All-Star Exam with why-right and why-wrong.</p>
-        <p class="tiny">Training aid. Official card is still an EPA-approved proctor. Door card / CFR wins.</p>
+        <p class="kicker">05 · EPA Section 608</p>
+        <h2>Study, then the practice exam.</h2>
+        <p class="lede">Core, Type I, Type II, and Type III. Students work the vacuum chart until they can use it. At 80 percent on the lessons, the practice exam opens. Each item explains the correct answer and the wrong ones.</p>
+        <p class="tiny">Practice only. The certification card is issued by an EPA-approved proctor.</p>
       </div>
-      <div class="shot"><img src="pitch/media/qa-open-epa608.png" alt="608 tutor" /></div>
+      <div class="shot"><img src="pitch/media/qa-open-epa608.png" alt="Section 608 tutor" /></div>
     </section>
 
     <section class="slide" data-slide>
-      <p class="kicker">The rest of the week</p>
-      <h2>Same week a shop actually has.</h2>
-      <div class="grid2">
-        <article class="card"><h3>Service calls</h3><p>Customer talk. Gauges. Diagnose. HUB grades the call — venting still costs you.</p></article>
-        <article class="card"><h3>Mini-split lab</h3><p>11-step install: flare, nitrogen, vacuum, valves, commission.</p></article>
-        <article class="card"><h3>HVAC Commandments</h3><p>Ten shop laws. Recover first. Nut on the tube. Microns, not vibes. Airflow before charge.</p></article>
-        <article class="card"><h3>Professor HUB</h3><p>AI helper on every lab. Roast slider for class. 608 answers stay clean.</p></article>
-      </div>
+      <p class="kicker">06 · Instructor desk</p>
+      <h2>The day is prepared.</h2>
+      <ul class="agenda">
+        <li><b>Today's class</b>The current lesson and what follows. A newer instructor does not rebuild the day from a binder.</li>
+        <li><b>Additional labs</b>More recovery, more Section 608, or another fault, assigned without a new login.</li>
+        <li><b>Instructor only</b>Answer keys, the class day, and the materials list. One seat for the class.</li>
+        <li><b>Materials</b>Wire, nitrogen, filter-driers, and flare nuts, totaled for Associate Refrigeration Inc.</li>
+      </ul>
     </section>
 
     <section class="slide" data-slide>
-      <p class="kicker">One trainer</p>
-      <h2>The shop, without a school catalog.</h2>
-      <div class="sku">
-        <article class="store">
-          <h3>HVAC Legends</h3>
-          <p>Same labs, same physics, same 608 tutor. No campus logos and no course-code pack. A tech can buy it and run the floor.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="slide" data-slide>
-      <p class="kicker">What they walk out knowing</p>
-      <h2>A prove path.</h2>
+      <p class="kicker">07 · Campus edition</p>
+      <h2>Student labs. Instructor desk.</h2>
       <ul class="prove">
-        <li>Verify the call. Air first. Then electric. Then refrigerant.</li>
-        <li>SH and SC only together — never one number.</li>
-        <li>Pressure switch: hose, trap, vent, vacuum vs rating. Switch last.</li>
-        <li>Don’t vent. Gray/yellow bottle. 80%. Card to buy gas.</li>
+        <li>HVAC Legends is the student laboratory. It does not include this desk.</li>
+        <li>Allstars adds the instructor seat: the class day, additional labs, and the answer keys.</li>
+        <li>A newer instructor receives the sequence for the day and the materials for it.</li>
+        <li>Students stay on the laboratories. They do not open the desk.</li>
+      </ul>
+      <p class="lede">Begin with one class. The same labs are already on their phones.</p>
+    </section>
+
+    <section class="slide" data-slide>
+      <p class="kicker">08 · Licensing</p>
+      <h2>One seat. One student. One term.</h2>
+      <div class="sku">
+        <article class="campus">
+          <h3>Student seat · $499</h3>
+          <p>The full program. About 1,200 hours across five terms. A named seat, on the student's phone and on the lab computer. The desk is not included.</p>
+          <p>Or $199 for one term. Still one named seat, not a login the class shares.</p>
+        </article>
+        <article class="store">
+          <h3>Instructor seat</h3>
+          <p>One per class. The desk, the class day, additional labs, and the materials list at the end of the module.</p>
+        </article>
+      </div>
+      <ul class="prove">
+        <li>The school leases the seats. Students do not buy the application.</li>
+        <li>One person per seat. Add a seat when the roster grows. Release it when the student leaves.</li>
+        <li>Begin with one instructor seat and one class.</li>
+      </ul>
+      <p class="speaker">Speaker note. $499 sits between a textbook and a tool kit. Program tuition is about $30,630. In the room, a term may be offered at $149. Do not print a lower figure. Above $249 a term, or $699 for the program, the school compares it with the $150 technology fee and declines.</p>
+    </section>
+
+    <section class="slide" data-slide>
+      <p class="kicker">09 · Outcomes</p>
+      <h2>A procedure they can repeat.</h2>
+      <ul class="prove">
+        <li>Begin with the complaint. Check airflow, then electrical, then refrigerant.</li>
+        <li>Read superheat and subcooling together. One number is not a diagnosis.</li>
+        <li>Do not replace a safety until you know what it monitors. A pressure switch: compare the cut-out to the rating. A float switch: check the pan, the trap, and the vent.</li>
+        <li>Recover into the correct cylinder and stop the tank at 80 percent. The Section 608 card authorizes the purchase of refrigerant.</li>
       </ul>
     </section>
 
     <section class="slide cover dark" data-slide>
       <div class="bg" style="background-image:url(pitch/media/jesus.png); background-position: 70% 20%;"></div>
-      <p class="kicker">Ready when you are</p>
-      <h1>Clock <span>in.</span></h1>
-      <p class="lede">The listing pack is written. You still click Publish on your Google account. HVAC Jesus keeps the Gauges of God as DLC. The labs are the product.</p>
-      <a class="play" href="index.html">Open the shop floor</a>
-      <p class="tiny">Professor Andrew Hubbard · HVAC Legends · not an EPA-approved exam · not legal advice</p>
+      <p class="kicker">10 · The request</p>
+      <h1>On their <span>phone.</span></h1>
+      <p class="lede">Lease one student seat for each student, and one instructor seat for the class. The same laboratories run on the phone and on the computer during class.</p>
+      <a class="play" href="index.html">Open the laboratories</a>
+      <p class="tiny">Professor Andrew Hubbard · HVAC Allstars · not an EPA-approved examination · not legal advice</p>
     </section>
   </div>
 
   <nav class="nav">
     <button class="btn" id="prev" type="button">Back</button>
     <div class="dots" id="dots"></div>
-    <span class="count" id="count">1 / 10</span>
+    <span class="count" id="count">1 / 11</span>
     <button class="btn primary" id="next" type="button">Next</button>
   </nav>
 
@@ -264,7 +304,7 @@
         [...dots.children].forEach((d, k) => d.classList.toggle("on", k === i));
         count.textContent = (i + 1) + " / " + slides.length;
         document.getElementById("prev").disabled = i === 0;
-        document.getElementById("next").textContent = i === slides.length - 1 ? "Open shop" : "Next";
+        document.getElementById("next").textContent = i === slides.length - 1 ? "Open labs" : "Next";
       }
       document.getElementById("prev").onclick = () => go(i - 1);
       document.getElementById("next").onclick = () => {
@@ -283,6 +323,7 @@
         if (dx > 40) go(i - 1);
       }, { passive: true });
       go(0);
+      if (new URLSearchParams(location.search).get("notes") === "1") document.body.classList.add("notes");
     })();
   </script>
 </body>

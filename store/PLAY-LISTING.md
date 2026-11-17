@@ -2,7 +2,7 @@
 
 Paste each block into Play Console. Do not paste the character-count line into the short description field.
 
-This is a new app. Package `com.hvaclegends.app`. Not the HVAC Allstars package.
+This is a new app. Package `com.hvaclegends.app` only. Not published. Do not tell Play this version is already live.
 
 ## Store listing
 
@@ -13,7 +13,7 @@ This is a new app. Package `com.hvaclegends.app`. Not the HVAC Allstars package.
 | Default language | English (United States) |
 | Category | Education |
 | Ads | No |
-| Version name | 1.0.0 |
+| Version name | 2.0.0 |
 
 ## Short description
 
@@ -28,6 +28,8 @@ Paste the block below. Limit is 4000 characters.
 
 ```
 HVAC Legends is a vocational HVAC trainer. Clock in on your phone and work the shop floor. The labs are the lesson.
+
+Truck pouch. The card you pull on the job. Pressure-temperature, superheat, subcooling, voltage drop, ohms, a 608 pocket, and airflow. Fat numbers. One thumb. Use it when the call needs a number.
 
 System sandbox. Run the refrigeration cycle and watch the system respond.
 
@@ -62,7 +64,7 @@ Works offline after a save. No ads. Progress stays on the phone. You do not need
 For apprentices and working techs. Not directed at children under 13.
 ```
 
-Full description character count: 2116.
+Full description character count: 2313.
 
 ## Tags / keywords
 
@@ -91,9 +93,7 @@ Developer: Andrew Hubbard.
 
 No email address is listed here. Do not invent one.
 
-The privacy policy ships inside the app at `privacy.html`.
-
-Google Play requires a public https privacy policy URL before you can publish. That URL does not exist yet. Host `privacy.html` yourself at a public https address, then paste that URL into Play Console. Do not submit the listing as if the URL were already live.
+The privacy policy ships inside the app at `privacy.html`. It is not on a public host yet. Play will not take the listing without a public https page. Host that file, then paste the https address you actually published. Do not invent a URL. Do not use a page that still says HVAC Allstars.
 
 ## Content rating
 
@@ -132,10 +132,10 @@ Eight phone screens, portrait, in this order. Clock in (any callsign; it stays o
 7. EPA 608 tutor — a practice item. Not the official exam.
 8. Curriculum — the 6-course shop path on one screen: Bench, Copper, Charge, Circuit, Install, Card.
 
-## What’s new (version 1.0.0)
+## What’s new (version 2.0.0)
 
 Paste this:
 
 ```
-First Google Play release of HVAC Legends.
+Truck pouch for the job: pressure-temperature, superheat, subcooling, voltage drop, ohms, a 608 pocket, and airflow. Same shop-floor labs.
 ```

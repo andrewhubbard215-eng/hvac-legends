@@ -15,7 +15,7 @@
     screen: "title",
     callsign: "",
     spec: "residential",
-    campus: "shop",
+    campus: "levittown",
     classSection: "",
     look: "hardhat",
     photo: "",
@@ -25,6 +25,7 @@
     jobsCompleted: 0,
     lifetimeEarnings: 0,
     gaugesOfGod: false,
+    voltmeterOfZeus: false,
     raptureSeen: false,
     bestStreet: 0,
     bestArena: 0,
@@ -156,6 +157,7 @@
         jobsCompleted: state.jobsCompleted,
         lifetimeEarnings: state.lifetimeEarnings,
         gaugesOfGod: state.gaugesOfGod,
+        voltmeterOfZeus: state.voltmeterOfZeus,
         raptureSeen: state.raptureSeen,
         bestStreet: state.bestStreet,
         bestArena: state.bestArena,
@@ -229,6 +231,7 @@
       jobsCompleted: state.jobsCompleted,
       lifetimeEarnings: state.lifetimeEarnings,
       gaugesOfGod: state.gaugesOfGod,
+      voltmeterOfZeus: state.voltmeterOfZeus,
       raptureSeen: state.raptureSeen,
       spicy: state.spicy,
       extraSpicy: !!state.extraSpicy,
@@ -246,7 +249,7 @@
     state.callsign = rec.callsign || "";
     state.passHash = rec.passHash || "";
     state.spec = rec.spec || "residential";
-    state.campus = rec.campus || "shop";
+    state.campus = rec.campus || "levittown";
     state.classSection = rec.classSection || "";
     state.look = rec.look || "hardhat";
     state.photo = rec.photo || "";
@@ -255,6 +258,7 @@
     state.jobsCompleted = rec.jobsCompleted || 0;
     state.lifetimeEarnings = rec.lifetimeEarnings || 0;
     state.gaugesOfGod = !!rec.gaugesOfGod;
+    state.voltmeterOfZeus = !!rec.voltmeterOfZeus;
     state.raptureSeen = !!rec.raptureSeen;
     state.spicy = !!rec.spicy;
     state.extraSpicy = !!rec.extraSpicy;
@@ -276,15 +280,138 @@
     toast("Logged out", "ok");
   }
 
+  function paintXp(pop) {
+    const xpEl = document.getElementById("hub-xp");
+    const rankEl = document.getElementById("hub-rank");
+    const fill = document.getElementById("xp-fill");
+    const next = document.getElementById("xp-next");
+    const rank = rankFor(state.xp);
+    if (xpEl) {
+      xpEl.textContent = state.xp + " XP";
+      if (pop) {
+        xpEl.classList.remove("xp-pop");
+        void xpEl.offsetWidth;
+        xpEl.classList.add("xp-pop");
+      }
+    }
+    if (rankEl) rankEl.textContent = rank.title;
+    const nxt = RANKS.find((r) => r.min > state.xp);
+    const span = Math.max(1, (nxt ? nxt.min : rank.min) - rank.min);
+    if (fill) fill.style.width = (nxt ? Math.max(8, Math.round(((state.xp - rank.min) / span) * 100)) : 100) + "%";
+    if (next) next.textContent = nxt ? (nxt.min - state.xp) + " XP to " + nxt.title : "All-Star";
+    paintGoals(state.xp);
+    return rank;
+  }
+  window.ltPaintXp = paintXp;
+
+  const XP_GOALS = [10, 50, 100, 250];
+  function paintGoals(xp) {
+    document.querySelectorAll("[data-xp-goals]").forEach((bar) => {
+      const fill = bar.querySelector("i");
+      if (fill) fill.style.width = Math.max(0, Math.min(100, (xp / 250) * 100)) + "%";
+      bar.querySelectorAll("[data-at]").forEach((mark) => {
+        mark.classList.toggle("hit", xp >= Number(mark.getAttribute("data-at")));
+      });
+      const label = bar.querySelector("[data-xp-goal-next]");
+      if (!label) return;
+      const goal = XP_GOALS.find((g) => xp < g);
+      label.textContent = goal ? (goal - xp) + " XP to " + goal : "250 XP cleared";
+    });
+  }
+
+  function celebrateRank(title) {
+    let ov = document.getElementById("win-card");
+    if (!ov) {
+      ov = document.createElement("div");
+      ov.id = "win-card";
+      ov.className = "win-card";
+      ov.innerHTML =
+        '<div class="win-card-box"><p class="eyebrow">Rank up</p><h2></h2><p class="win-detail"></p><button type="button" class="btn primary">Keep going</button></div>';
+      document.getElementById("app").appendChild(ov);
+      ov.querySelector("button").onclick = () => ov.classList.remove("show");
+    }
+    ov.querySelector("h2").textContent = title;
+    ov.querySelector(".win-detail").textContent = "The shop saw that. Next rank is on the bar.";
+    ov.classList.add("show");
+    try { if (sfx && sfx.win) sfx.win(); } catch (_) {}
+  }
+
   function addXp(n, label) {
     window.ltAddXp = addXp;
+    const beforeXp = state.xp;
+    const before = rankFor(state.xp).title;
     const v = Math.max(0, Math.round(n));
+    if (!v) return 0;
     state.xp += v;
-    if (v > 0) toast("+" + v + " XP" + (label ? " · " + label : ""), "xp");
     save();
+    const after = paintXp(true);
+    toast("+" + v + " XP" + (label ? " · " + label : ""), "xp");
+    XP_GOALS.forEach((g) => {
+      if (beforeXp < g && state.xp >= g) toast(g + " XP checkpoint", "xp");
+    });
+    if (after.title !== before) celebrateRank(after.title);
+    postBoard();
     return v;
   }
   window.ltAddXp = addXp;
+
+  let boardTimer = 0;
+  function paintBoardChip(scores) {
+    const line = document.getElementById("board-chip-line");
+    if (!line) return;
+    const top = (scores || []).slice(0, 3);
+    line.textContent = top.length
+      ? top.map((row, i) => (i + 1) + " " + row.callsign + " " + row.score).join(" · ")
+      : "No scores yet. Finish a lab.";
+  }
+  function loadBoardChip() {
+    fetch("/api/arena")
+      .then((r) => r.json())
+      .then((j) => paintBoardChip(j.scores || []))
+      .catch(() => {});
+  }
+  function postBoard() {
+    const name = String(state.callsign || "").trim();
+    if (!name || state.xp <= 0) return;
+    clearTimeout(boardTimer);
+    boardTimer = setTimeout(() => {
+      fetch("/api/arena", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          callsign: name,
+          mode: "season",
+          score: state.xp,
+          jobs: state.jobsCompleted,
+        }),
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j) => {
+          if (!j) return;
+          paintBoardChip(j.scores || []);
+          if (j.rank && j.rank !== state.boardRank) {
+            if (!state.boardRank || j.rank < state.boardRank) {
+              toast(
+                j.rank === 1
+                  ? "Board rank 1"
+                  : "Board rank " + j.rank + (j.aheadName ? " · " + j.behind + " XP behind " + j.aheadName : ""),
+                "xp"
+              );
+            }
+            state.boardRank = j.rank;
+          }
+        })
+        .catch(() => {});
+    }, 400);
+  }
+  function setCallsign(name) {
+    state.callsign = String(name || "").trim().slice(0, 16) || "Tech";
+    save();
+    const h = document.getElementById("hub-name");
+    if (h) h.textContent = state.callsign;
+    postBoard();
+  }
+  window.ltSetCallsign = setCallsign;
 
   function pay(amount, reason) {
     const n = Math.max(0, Math.round(amount));
@@ -348,7 +475,7 @@
     }
     ov.classList.remove("hidden");
     const brandLine = document.getElementById("pay-brand");
-    if (brandLine) brandLine.textContent = "Payroll · " + ((window.LtBrand && window.LtBrand.title) || "HVAC Legends");
+    if (brandLine) brandLine.textContent = "Payroll · " + ((window.LtBrand && window.LtBrand.title) || "HVAC Allstars");
     document.getElementById("pay-title").textContent = title;
     document.getElementById("pay-amount").textContent = "+" + money(amount);
     document.getElementById("pay-body").textContent =
@@ -483,7 +610,7 @@
     state.sessionOk = true;
     state.seenTip = true;
     state.seenTutorial = true;
-    if (!state.campus) state.campus = "shop";
+    if (!state.campus) state.campus = "levittown";
     if (!state.spec) state.spec = "residential";
     try {
       save();
@@ -501,6 +628,22 @@
     }
     el.classList.add("active");
     el.classList.add("screen-in");
+    if (id !== "pouch" && window.TruckPouch && window.TruckPouch.close) window.TruckPouch.close();
+    if (id !== "sandbox") {
+      var sbTour = document.getElementById("sb-tour");
+      var sbFab = document.getElementById("sb-tour-fab");
+      var sbHome = document.getElementById("screen-sandbox");
+      if (sbTour) {
+        sbTour.hidden = true;
+        if (sbHome && sbTour.parentNode === document.body) sbHome.appendChild(sbTour);
+      }
+      if (sbFab) sbFab.hidden = true;
+    }
+    var pf = document.getElementById("pf-coach-bar");
+    if (pf) pf.remove();
+    var pfOpen = document.getElementById("pf-coach-open");
+    if (pfOpen) pfOpen.remove();
+    if (window.LessonDemo) window.LessonDemo.mount(el, id);
     setTimeout(() => el.classList.remove("screen-in"), 320);
     state.screen = id;
     if (id !== "rapture") stopChant();
@@ -511,7 +654,7 @@
     // show first-day tip once on hub
     document.body.classList.toggle(
       "lab-open",
-      ["sandbox", "electrical", "quiz", "minisplit", "compchange", "service", "phonetools", "commandments", "epa608", "ptchart", "aihelper", "curriculum", "compete", "furnace", "flare", "braze", "gauges", "ohms", "bible", "factory", "fieldsoft", "voltmeter", "shopschool", "cutaway", "iconnect", "recover", "call"].indexOf(id) >= 0
+      ["sandbox", "electrical", "eleccard", "quiz", "minisplit", "compchange", "service", "trouble", "phonetools", "commandments", "funny", "jobfile", "chargehow", "epa608", "ptchart", "aihelper", "curriculum", "compete", "furnace", "call90", "flare", "braze", "gauges", "ohms", "formulas", "hubref", "bible", "factory", "fieldsoft", "voltmeter", "boardwalk", "shopschool", "cutaway", "iconnect", "recover", "call", "route", "bros"].indexOf(id) >= 0
     );
     if (id === "hub") {
       const tip = document.getElementById("hub-tip");
@@ -535,7 +678,7 @@
         eastwindsor: "East Windsor, CT",
         newbritain: "New Britain, CT",
         shelton: "Shelton, CT",
-        lincolnri: "Rhode Island",
+        lincolnri: "Lincoln, RI",
         columbia: "Columbia, MD",
         indianapolis: "Indianapolis, IN",
         melrose: "Melrose Park, IL",
@@ -545,9 +688,10 @@
         grandprairie: "Grand Prairie, TX",
         other: "Other shop",
       };
-      const store = window.LtBrand && window.LtBrand.isStore;
-      let place = campus[state.campus] || ((window.LtBrand && window.LtBrand.org) || "HVAC Legends");
-      if (store && place === "HVAC Legends") place = "Shop";
+      const lincoln = window.SchoolPack && window.SchoolPack.id === "lincoln";
+      let place = lincoln
+        ? campus[state.campus] || "Lincoln Tech"
+        : (window.SchoolPack && window.SchoolPack.org) || "HVAC Legends";
       const bits = [place];
       if (state.classSection) bits.push(state.classSection);
       if (state.look) bits.push(state.look);
@@ -562,15 +706,12 @@
     }
     document.getElementById("hub-cash").textContent = money(state.cash);
     document.getElementById("hub-jobs").textContent = state.jobsCompleted + " jobs";
-    document.getElementById("hub-xp").textContent = state.xp + " XP";
-    const killsEl = document.getElementById("hub-kills");
-    if (killsEl) killsEl.textContent = "";
-    const rank = rankFor(state.xp);
-    document.getElementById("hub-rank").textContent = rank.title;
+    const rank = paintXp();
+    loadBoardChip();
     const copy = document.getElementById("rapture-copy");
-    if (state.gaugesOfGod) copy.textContent = "Gauges seated. He’ll list the Commandments again anytime.";
-    else if (raptureUnlocked()) copy.textContent = "HVAC Jesus will list the Commandments — and the Gauges of God are yours.";
-    else copy.textContent = "Hear the Commandments from HVAC Jesus. All-Star unlocks the Gauges of God.";
+    if (state.gaugesOfGod) copy.textContent = "Gauges seated. Jesus, God, and Buddha will run it again.";
+    else if (raptureUnlocked()) copy.textContent = "HVAC Jesus, HVAC God, and HVAC Buddha. The rooftop.";
+    else copy.textContent = "HVAC Jesus, HVAC God, and HVAC Buddha. Open the rooftop.";
     if (window.HvacCommandments && window.HvacCommandments.paintHub) {
       window.HvacCommandments.paintHub(document.getElementById("screen-hub"));
     }
@@ -720,6 +861,21 @@
     rapture: () => startChant(),
     win: () => {
       [440, 554, 659, 880].forEach((f, i) => setTimeout(() => beep("sine", f, f, 0.2, 0.045), i * 70));
+    },
+    hose: () => beep("triangle", 680, 240, 0.08, 0.045),
+    valve: () => beep("square", 480, 210, 0.045, 0.04),
+    machineOn: () => {
+      beep("sawtooth", 72, 54, 0.4, 0.05);
+      beep("triangle", 144, 108, 0.32, 0.03);
+    },
+    recoverDone: () => {
+      beep("triangle", 160, 80, 0.1, 0.06);
+      [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep("sine", f, f * 1.01, 0.24, 0.06), 90 + i * 120));
+    },
+    charge: () => {
+      beep("sawtooth", 70, 36, 0.55, 0.05);
+      beep("triangle", 140, 70, 0.7, 0.035);
+      [392, 523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep("sine", f, f * 1.01, 0.22, 0.055), 420 + i * 90));
     },
     setMuted(on) {
       muted = !!on;
@@ -1939,7 +2095,7 @@
       if (q.get("demo") === "1" || q.get("demo") === "lincoln" || q.get("try") === "1") {
         if (!(window.LtBrand && window.LtBrand.isStore)) {
           state.callsign = state.callsign || "Campus demo";
-          state.campus = state.campus || "shop";
+          state.campus = state.campus || "levittown";
         }
         enterShopFloor(state.callsign || "Guest");
       }
@@ -2240,12 +2396,14 @@
     function missingLab(m) {
       const map = {
         service: ["ServiceCalls", "Service calls"],
+        trouble: ["TroubleCourse", "Troubleshooting"],
         sandbox: ["HVACSandbox", "Sandbox"],
         minisplit: ["MiniSplitInstall", "Mini-split lab"],
         compchange: ["CompressorChange", "Compressor change-out"],
         aihelper: ["AIHelper", "AI helper"],
         curriculum: ["CurriculumTrain", "Course"],
         quiz: ["QuizArena", "Quiz Game"],
+        died: ["DiedQuiz", "You Have Died"],
         compete: ["CompeteArena", "Arena"],
         network: ["LtNet", "Classroom Wi-Fi", "mount"],
         electrical: ["ElectricalLab", "Electrical sim"],
@@ -2254,13 +2412,22 @@
         meter: ["VoltMeter", "Voltmeter class"],
         meterfree: ["VoltMeter", "Voltmeter class"],
         voltmeter: ["VoltMeter", "Voltmeter class"],
+        boardwalk: ["BoardWalk", "Board walk"],
         furnace: ["FurnaceLab", "Heat plant"],
+        call90: ["Call90", "90% furnace call"],
+        train: ["Call90", "Training deck"],
         ohms: ["OhmsLab", "Ohm's Law"],
+        eleccard: ["ElecCards", "Line and 24"],
+        formulas: ["FieldFormulas", "Field formulas"],
+        hubref: ["HubRef", "Hubbard's Electrical Reference Guide"],
         bible: ["HvacBible", "HVAC Bible"],
         flare: ["FlareLab", "Flaring lab"],
         braze: ["BrazingLab", "Brazing lab"],
         phonetools: ["PhoneTools", "Phone testers"],
         commandments: ["HvacCommandments", "Commandments"],
+        funny: ["FunnyHvac", "Funny HVAC"],
+        jobfile: ["JobFile", "Job file"],
+        chargehow: ["ChargeHow", "How to charge"],
         epa608: ["Epa608Tutor", "608 tutor"],
         e608type: ["Epa608Labs", "608 labs"],
         e608vac: ["Epa608Labs", "608 labs"],
@@ -2269,10 +2436,12 @@
         shopschool: ["ShopSchool", "Shop School"],
         ptchart: ["PtChart", "P/T chart"],
         gauges: ["GaugeSchool", "Manifold school"],
+        route: ["RouteGame", "Service route"],
+        bros: ["HvacBros", "HVAC Bros"],
         gaugeguide: ["GaugeSchool", "Manifold school"],
         cutaway: ["CutawayLab", "See inside"],
         call: ["TheCall", "Take the call"],
-        iconnect: ["IConnectLab", "iConnect lab"],
+        iconnect: ["IConnectLab", ((window.LtBrand && window.LtBrand.trainer) || "Hubconnect") + " lab"],
         recover: ["RecoverLab", "Recovery lab"],
         tutorial: ["HubTutorial", "Tutorial"],
       };
@@ -2283,38 +2452,8 @@
       if (g && typeof g[method] === "function") return "";
       return spec[1];
     }
-    function studentDock(m) {
-      let dock = document.getElementById("student-dock");
-      const home = !m || m === "hub" || m === "title" || m === "character";
-      if (home) {
-        if (dock) dock.hidden = true;
-        document.body.classList.remove("student-on");
-        return;
-      }
-      if (!dock) {
-        dock = document.createElement("div");
-        dock.id = "student-dock";
-        dock.innerHTML = '<button type="button" class="btn" id="student-home">Shop floor</button><button type="button" class="btn primary" id="student-next">What next</button><span id="student-line">Gold line is the next move. Drag onto the photo.</span>';
-        document.body.appendChild(dock);
-        dock.querySelector("#student-home").onclick = function () {
-          if (window.ltPlay) window.ltPlay("hub");
-        };
-        dock.querySelector("#student-next").onclick = function () {
-          const line = document.querySelector("#rc-guide, #sb-hint, .qa-exam-question, .rc-note, .el-step.now, .now");
-          const span = document.getElementById("student-line");
-          if (line && line.scrollIntoView) line.scrollIntoView({ block: "center", behavior: "smooth" });
-          if (span) span.textContent = line ? String(line.textContent || "").replace(/\s+/g, " ").trim().slice(0, 140) : "Look for the gold outline. That is the next move.";
-        };
-      }
-      dock.hidden = false;
-      document.body.classList.add("student-on");
-      const span = document.getElementById("student-line");
-      if (span) span.textContent = "One next move. Gold outline is the part. Shop floor brings you home.";
-    }
-
     function playMode(m, opts) {
       if (!m) return;
-      studentDock(m);
       try {
         if (window.LtDrip && window.LtDrip.onMode) window.LtDrip.onMode(m);
       } catch (_) {}
@@ -2341,12 +2480,14 @@
           return;
         }
         if (m === "service") startQuiz();
+        else if (m === "trouble") startTrouble();
         else if (m === "sandbox") startSandbox();
         else if (m === "minisplit") startMiniSplit();
         else if (m === "compchange") startCompChange();
         else if (m === "aihelper") startAIHelper();
         else if (m === "curriculum") startCurriculum();
         else if (m === "quiz") startQuizArena();
+        else if (m === "died") startDiedQuiz();
         else if (m === "compete") startCompete();
         else if (m === "network") startNetwork();
         else if (m === "electrical") startElectrical();
@@ -2355,25 +2496,41 @@
         else if (m === "meterfree") startVoltMeter({ unguided: true });
         else if (m === "defusal") startElectrical({ defuse: true });
         else if (m === "furnace") startFurnace();
+        else if (m === "call90") startCall90();
+        else if (m === "train") startCall90({ teach: true });
         else if (m === "ohms") startOhms();
+        else if (m === "eleccard") startElecCard();
+        else if (m === "formulas") startFieldFormulas();
+        else if (m === "hubref") startHubRef();
         else if (m === "bible") startBible();
         else if (m === "factory") startFactory();
         else if (m === "fieldsoft") startFieldSoft();
         else if (m === "voltmeter") startVoltMeter({ guide: true });
+        else if (m === "megger") startVoltMeter({ guide: true, meg: true });
+        else if (m === "boardwalk") startBoardWalk();
         else if (m === "flare") startFlare();
         else if (m === "braze") startBrazing();
         else if (m === "phonetools") startPhoneTools();
         else if (m === "commandments") startCommandments();
+        else if (m === "funny") startFunny();
+        else if (m === "jobfile") startJobFile();
+        else if (m === "chargehow") startChargeHow();
         else if (m === "epa608") startEpa608();
         else if (m === "e608type" || m === "e608vac" || m === "e608cyl" || m === "e608rrr") startE608Lab(m);
         else if (m === "shopschool") startShopSchool();
         else if (m === "ptchart") startPtChart();
         else if (m === "gauges") startGaugeSchool();
+        else if (m === "route") startRoute();
+        else if (m === "bros") startBros();
         else if (m === "gaugeguide") startGaugeSchool({ guide: true });
         else if (m === "cutaway") startCutaway(opts);
         else if (m === "call") startTheCall();
         else if (m === "iconnect") startIConnect();
         else if (m === "recover") startRecover();
+        else if (m === "pouch") {
+          if (window.TruckPouch && window.TruckPouch.open) window.TruckPouch.open();
+          else toast("Truck pouch didn't load. Hard-refresh.", "bad");
+        }
         else if (m === "tutorial") startTutorial();
         else if (m === "character") show("character");
         else if (m === "rapture") openRapture();
@@ -2383,6 +2540,7 @@
         } else {
           toast("Couldn't open " + m + ". That lab isn't on this floor.", "bad");
         }
+        try { if (window.LtWalk && window.LtWalk.onMode) window.LtWalk.onMode(m); } catch (_) {}
       } catch (err) {
         console.warn("playMode", m, err);
         try {
@@ -2420,7 +2578,7 @@
             ? "Chrome menu ⋮ → Install app / Add to Home screen"
             : isIOS
               ? "Share → Add to Home Screen"
-              : "Edge or Chrome: Install HVAC Legends in the address bar. Or run START-WINDOWS-APP.bat",
+              : "Edge or Chrome: Install HVAC Allstars in the address bar. Or run START-WINDOWS-APP.bat",
           "ok"
         );
       };
@@ -2431,7 +2589,7 @@
     if (instHub) instHub.onclick = (e) => { e.preventDefault(); e.stopPropagation(); offerInstall(); };
     if (instBtn) instBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); offerInstall(); };
 
-    document.querySelectorAll(".mode-card, .quiz-launch, .start-door").forEach((card) => {
+    document.querySelectorAll(".mode-card, .quiz-launch, .start-door, .shop-bay, .board-chip").forEach((card) => {
       card.addEventListener("click", () => {
         const m = card.getAttribute("data-mode");
         if (!m || card.tagName === "LABEL") return;
@@ -2448,6 +2606,22 @@
       save();
       sfx.win();
       toast("Gauges of God seated. SH/SC will never be a coin flip again.", "ok");
+      refreshHub();
+      show("hub");
+    };
+    const zeusBtn = document.getElementById("btn-zeus");
+    if (zeusBtn) zeusBtn.onclick = () => {
+      if (!state.voltmeterOfZeus) state.xp += 100;
+      state.voltmeterOfZeus = true;
+      if (window.Badges) window.Badges.unlock("voltmeter_of_zeus");
+      save();
+      sfx.win();
+      toast("Voltmeter of Zeus seated. Live volts will never be a coin flip again.", "ok");
+      refreshHub();
+      show("hub");
+    };
+    const thorHub = document.getElementById("btn-thor-hub");
+    if (thorHub) thorHub.onclick = () => {
       refreshHub();
       show("hub");
     };
@@ -2579,11 +2753,11 @@
       setTimeout(function () {
         if (joinPin.length === 6) startQuizArena({ joinPin: joinPin, nickname: nick || state.callsign || "Student" });
         else if (wantQuiz) playMode("quiz");
-        else if (q.get("desk") === "1") {
-          location.href = "desk.html";
-        }
         else if (q.get("course") === "1") playMode("curriculum");
         else if (/^e608(type|vac|cyl|rrr)$/.test(q.get("lab") || "")) playMode(q.get("lab"));
+        else if (q.get("lab") === "call90") playMode("call90");
+        else if (q.get("lab") === "train") playMode("train");
+        else if (q.get("open")) playMode(q.get("open"));
         else if (wantClass) showClassDoor(roomPin);
         else if (window.LtDrip) window.LtDrip.say("hub.floor");
       }, 80);
@@ -2693,6 +2867,10 @@
         ? "Rooftop · callback defused · the heavens open"
         : ((window.LtBrand && window.LtBrand.roof) || "Rooftop · the heavens open");
     }
+    const winner = document.getElementById("card-winner");
+    if (winner) winner.textContent = state.callsign || "Tech";
+    const cardKind = document.querySelector("#gold-card strong");
+    if (cardKind) cardKind.textContent = state.goldenCard || "EPA 608";
     if (window.HvacCommandments && window.HvacCommandments.playWinCutscene) {
       window.HvacCommandments.playWinCutscene(root, {
         fromQuiz: !!fromQuiz,
@@ -2713,6 +2891,21 @@
       } catch (_) {}
     }
   }
+
+  function grantZeusMeter() {
+    if (state.voltmeterOfZeus) return;
+    const bonus = 100;
+    state.xp += bonus;
+    state.voltmeterOfZeus = true;
+    if (window.Badges) window.Badges.unlock("voltmeter_of_zeus");
+    save();
+    toast("Thor · Voltmeter of Zeus · +" + bonus + " XP", "xp");
+    if (sfx.win) sfx.win();
+    setTimeout(function () {
+      try { show("thor"); } catch (err) { console.warn("thor", err); }
+    }, 700);
+  }
+  window.LtZeus = { grant: grantZeusMeter };
 
   function grantQuizVictory() {
     const bonus = 250;
@@ -2736,7 +2929,7 @@
 
   function grantDefusalVictory() {
     const bonus = 250;
-    if (!state.gaugesOfGod) state.xp += bonus;
+    if (!state.gaugesOfGod) addXp(bonus, "callback defused");
     state.gaugesOfGod = true;
     state.raptureSeen = true;
     if (window.Badges) {
@@ -2745,6 +2938,63 @@
     save();
     toast("Callback defused · HVAC Jesus · Gauges of God", "xp");
     if (sfx.win) sfx.win();
+  }
+
+  function startJobFile() {
+    if (!window.JobFile || !window.JobFile.start) {
+      toast("Job file didn't load. Hard-refresh.", "bad");
+      return;
+    }
+    const root = document.getElementById("jobfile-root");
+    if (!root) {
+      toast("Job file screen missing.", "bad");
+      return;
+    }
+    show("jobfile");
+    window.JobFile.start(root, {
+      onHub() {
+        refreshHub();
+        show("hub");
+      },
+    });
+  }
+
+  function startChargeHow() {
+    if (!window.ChargeHow || !window.ChargeHow.start) {
+      toast("How to charge didn't load. Hard-refresh.", "bad");
+      return;
+    }
+    const root = document.getElementById("chargehow-root");
+    if (!root) {
+      toast("How to charge screen missing.", "bad");
+      return;
+    }
+    show("chargehow");
+    window.ChargeHow.start(root, {
+      onHub() {
+        refreshHub();
+        show("hub");
+      },
+    });
+  }
+
+  function startFunny() {
+    if (!window.FunnyHvac || !window.FunnyHvac.start) {
+      toast("Funny HVAC didn't load. Hard-refresh.", "bad");
+      return;
+    }
+    const root = document.getElementById("funny-root");
+    if (!root) {
+      toast("Funny HVAC screen missing.", "bad");
+      return;
+    }
+    show("funny");
+    window.FunnyHvac.start(root, {
+      onHub() {
+        refreshHub();
+        show("hub");
+      },
+    });
   }
 
   function startCommandments() {
@@ -2801,14 +3051,64 @@
     }
     show("gauges");
     window.__gaugeCtl = window.GaugeSchool.start(root, {
-      unguided: opts && opts.guide ? false : !!(opts && (opts.unguided || opts.practice)) || state.diff !== "easy",
-      guide: !!(opts && opts.guide) || (state.diff === "easy" && !(opts && (opts.unguided || opts.practice))),
+      unguided: !!(opts && (opts.unguided || opts.practice)) && !(opts && opts.guide),
+      guide: !(opts && (opts.unguided || opts.practice)) || !!(opts && opts.guide),
       onXp(n) {
         addXp(n, "manifold school");
       },
       onHub() {
         if (window.__gaugeCtl && window.__gaugeCtl.stop) window.__gaugeCtl.stop();
         window.__gaugeCtl = null;
+        refreshHub();
+        show("hub");
+      },
+    });
+  }
+
+  function startBros() {
+    if (!window.HvacBros || !window.HvacBros.start) {
+      toast("HVAC Bros didn't load. Hard-refresh.", "bad");
+      return;
+    }
+    const root = document.getElementById("bros-root");
+    if (!root) {
+      toast("HVAC Bros screen missing.", "bad");
+      return;
+    }
+    if (window.__brosCtl && window.__brosCtl.stop) window.__brosCtl.stop();
+    show("bros");
+    window.__brosCtl = window.HvacBros.start(root, {
+      onXp(n) {
+        addXp(n, "hvac bros");
+      },
+      onHub() {
+        if (window.__brosCtl && window.__brosCtl.stop) window.__brosCtl.stop();
+        window.__brosCtl = null;
+        refreshHub();
+        show("hub");
+      },
+    });
+  }
+
+  function startRoute() {
+    if (!window.RouteGame || !window.RouteGame.start) {
+      toast("Service route didn't load. Hard-refresh.", "bad");
+      return;
+    }
+    const root = document.getElementById("route-root");
+    if (!root) {
+      toast("Service route screen missing.", "bad");
+      return;
+    }
+    if (window.__routeCtl && window.__routeCtl.stop) window.__routeCtl.stop();
+    show("route");
+    window.__routeCtl = window.RouteGame.start(root, {
+      onXp(n) {
+        addXp(n, "service route");
+      },
+      onHub() {
+        if (window.__routeCtl && window.__routeCtl.stop) window.__routeCtl.stop();
+        window.__routeCtl = null;
         refreshHub();
         show("hub");
       },
@@ -2842,6 +3142,16 @@
         show("hub");
       },
     });
+  }
+
+  function startTrouble() {
+    const root = document.getElementById("trouble-root");
+    if (!root || !window.TroubleCourse) {
+      toast("Troubleshooting didn't load. Hard-refresh.", "bad");
+      return;
+    }
+    show("trouble");
+    window.TroubleCourse.start(root);
   }
 
   function startTheCall() {
@@ -3050,6 +3360,55 @@
     });
   }
 
+  function startCall90(opts) {
+    if (!window.Call90 || !window.Call90.start) {
+      toast("90% call didn't load. Hard-refresh.", "bad");
+      return;
+    }
+    const root = document.getElementById("call90-root");
+    if (!root) {
+      toast("90% call screen missing.", "bad");
+      return;
+    }
+    if (window.__call90Ctl && window.__call90Ctl.stop) {
+      window.__call90Ctl.stop();
+      window.__call90Ctl = null;
+    }
+    show("call90");
+    window.__call90Ctl = window.Call90.start(root, {
+      teach: !!(opts && opts.teach),
+      onHub() {
+        if (window.__call90Ctl && window.__call90Ctl.stop) window.__call90Ctl.stop();
+        window.__call90Ctl = null;
+        refreshHub();
+        show("hub");
+      },
+    });
+  }
+
+  function startElecCard() {
+    if (!window.ElecCards || !window.ElecCards.start) {
+      toast("Line and 24 didn't load. Hard-refresh.", "bad");
+      return;
+    }
+    const root = document.getElementById("eleccard-root");
+    if (!root) {
+      toast("Line and 24 screen missing.", "bad");
+      return;
+    }
+    if (window.__ecCtl && window.__ecCtl.stop) window.__ecCtl.stop();
+    show("eleccard");
+    window.__ecCtl = window.ElecCards.start(root, {
+      onXp(n) { addXp(n, "line and 24"); },
+      onHub() {
+        if (window.__ecCtl && window.__ecCtl.stop) window.__ecCtl.stop();
+        window.__ecCtl = null;
+        refreshHub();
+        show("hub");
+      },
+    });
+  }
+
   function startOhms() {
     if (!window.OhmsLab || !window.OhmsLab.start) {
       toast("Ohm's Law didn't load. Hard-refresh.", "bad");
@@ -3116,6 +3475,44 @@
     });
   }
 
+  function startFieldFormulas() {
+    if (!window.FieldFormulas || !window.FieldFormulas.start) {
+      toast("Field formulas didn't load. Hard-refresh.", "bad");
+      return;
+    }
+    const root = document.getElementById("formulas-root");
+    if (!root) {
+      toast("Field formulas screen missing.", "bad");
+      return;
+    }
+    show("formulas");
+    window.FieldFormulas.start(root, {
+      onHub() {
+        refreshHub();
+        show("hub");
+      },
+    });
+  }
+
+  function startHubRef() {
+    if (!window.HubRef || !window.HubRef.start) {
+      toast("Hubbard's guide didn't load. Hard-refresh.", "bad");
+      return;
+    }
+    const root = document.getElementById("hubref-root");
+    if (!root) {
+      toast("Hubbard's guide screen missing.", "bad");
+      return;
+    }
+    show("hubref");
+    window.HubRef.start(root, {
+      onHub() {
+        refreshHub();
+        show("hub");
+      },
+    });
+  }
+
   function startFieldSoft() {
     if (!window.FieldSoft || !window.FieldSoft.start) {
       toast("Field software didn't load. Hard-refresh.", "bad");
@@ -3128,6 +3525,25 @@
     }
     show("fieldsoft");
     window.FieldSoft.start(root, {
+      onHub() {
+        refreshHub();
+        show("hub");
+      },
+    });
+  }
+
+  function startBoardWalk() {
+    if (!window.BoardWalk || !window.BoardWalk.start) {
+      toast("Board walk didn't load. Hard-refresh.", "bad");
+      return;
+    }
+    const root = document.getElementById("boardwalk-root");
+    if (!root) {
+      toast("Board walk screen missing.", "bad");
+      return;
+    }
+    show("boardwalk");
+    window.BoardWalk.start(root, {
       onHub() {
         refreshHub();
         show("hub");
@@ -3153,6 +3569,7 @@
     window.__vmCtl = window.VoltMeter.start(root, {
       guide: !(opts && opts.unguided),
       unguided: !!(opts && opts.unguided),
+      meg: !!(opts && opts.meg),
       onXp(n) {
         addXp(n, "voltmeter");
       },
@@ -3186,8 +3603,7 @@
         guide: !!(opts && opts.guide),
         meter: !!(opts && opts.meter),
         onXp(n) {
-          state.xp += n;
-          save();
+          addXp(n, opts && opts.defuse ? "saturday call" : "land the lugs");
           postCompete("score", { mode: "electrical", score: 350 + n });
         },
         onWin(info) {
@@ -3230,6 +3646,7 @@
       sandboxCtl = window.HVACSandbox.start(root, {
         nickname: state.callsign || "Tech",
         dispatch: opts && opts.dispatch ? opts.dispatch : null,
+        chargedMini: opts && opts.chargedMini ? opts.chargedMini : null,
         onDispatchGrade(ok) {
           if (serviceCtl && serviceCtl.grade) serviceCtl.grade(ok);
           if (ok) {
@@ -3244,8 +3661,7 @@
           toast("New ticket. Gauges already on. Read it.", "ok");
         },
         onXp(n) {
-          state.xp += n;
-          save();
+          addXp(n, "system sandbox");
           if (window.Badges) window.Badges.unlock("sandbox_tech");
           markDaily("sandbox");
           postCompete("score", { mode: "sandbox", score: 400 + n });
@@ -3306,9 +3722,7 @@
       onDone: function (success) {
         if (success) {
           if (window.CurriculumTrain) window.CurriculumTrain.stamp("compchange");
-          state.xp += 40;
-          save();
-          toast("Compressor change-out done.", "ok");
+          addXp(40, "compressor change-out");
         }
         refreshHub();
         show("hub");
@@ -3328,15 +3742,15 @@
       minisplitCtl.stop();
       minisplitCtl = null;
     }
+    let earned = 0;
     show("minisplit");
     try {
       minisplitCtl = window.MiniSplitInstall.start(root, {
       systemName: "Daikin Aurora · Single-zone mini-split",
       onXp(n) {
-        state.xp += n;
-        save();
+        earned += addXp(n, "mini-split");
       },
-      onDone(success) {
+      onDone(success, info) {
         minisplitCtl = null;
         if (success) {
           if (window.CurriculumTrain) window.CurriculumTrain.stamp("minisplit");
@@ -3357,13 +3771,13 @@
               money(base) +
               " + clean-start bonus " +
               money(bonus) +
-              ".",
+              ". The charged system is on the sandbox.",
             amount: total,
-            xp: 0,
+            xp: earned,
             onClose() {
               postCompete("score", { mode: "minisplit", score: 1000 });
               refreshHub();
-              show("hub");
+              startSandbox({ chargedMini: info || { lineset: 25, extraOz: 0 } });
             },
           });
         } else {
@@ -3452,7 +3866,7 @@
   function startIConnect() {
     const root = document.getElementById("iconnect-root");
     if (!root || !window.IConnectLab) {
-      toast("iConnect lab didn't load. Hard-refresh.", "bad");
+      toast(((window.LtBrand && window.LtBrand.trainer) || "Hubconnect") + " lab didn't load. Hard-refresh.", "bad");
       return;
     }
     show("iconnect");
@@ -3503,6 +3917,12 @@
     }
     show("compete");
     competeCtl = window.CompeteArena.start(root, {
+      callsign() { return state.callsign || ""; },
+      onName(name) { setCallsign(name); },
+      onRun() {
+        competeCtl = null;
+        if (window.ltPlay) window.ltPlay("call");
+      },
       onHub() {
         competeCtl = null;
         refreshHub();
@@ -3523,10 +3943,27 @@
     window.LtNet.mount(root);
   }
 
-  function startBros() {
-    toast("HVAC BROS is retired. Use sandbox, quiz, and AI helper.", "ok");
-    refreshHub();
-    show("hub");
+  function startDiedQuiz() {
+    if (!window.DiedQuiz || !window.DiedQuiz.start) {
+      toast("Death quiz didn't load. Hard-refresh.", "bad");
+      return;
+    }
+    const root = document.getElementById("quiz-root");
+    if (!root) return;
+    if (quizCtl) {
+      quizCtl.stop();
+      quizCtl = null;
+    }
+    show("quiz");
+    quizCtl = window.DiedQuiz.start(root, {
+      onHub() {
+        if (quizCtl) {
+          quizCtl.stop();
+          quizCtl = null;
+        }
+        show("hub");
+      },
+    });
   }
 
   function startQuizArena(opts) {
@@ -3565,18 +4002,34 @@
         refreshHub();
         show("hub");
       },
-      onComplete({ scores, winner, packId }) {
+      onComplete({ scores, winner, packId, marks }) {
         const myName = state.callsign || "Tech";
         const my = scores[myName] != null ? scores[myName] : scores[Object.keys(scores)[0]] || 0;
-        const xp = Math.min(200, Math.round(my / 25) + 40);
-        state.xp += xp;
+        const epa = String(packId || "").indexOf("epa608") === 0;
+        let passedPaper = false;
+        let xp = 0;
+        if (epa && marks) {
+          const rows = Object.keys(marks).map(function (k) { return marks[k]; });
+          const passed = rows.filter(function (m) { return m.right >= 18; }).length;
+          if (packId === "epa608") {
+            passedPaper = ["core", "type1", "type2", "type3"].every(function (s) {
+              return marks[s] && marks[s].right >= 18;
+            });
+          } else {
+            passedPaper = rows.length > 0 && passed === rows.length;
+          }
+          xp = passed * 40 + (passed === 4 ? 40 : 0);
+        } else {
+          xp = Math.min(200, Math.round(my / 25) + 40);
+        }
+        if (xp) addXp(xp, epa ? "608 paper" : "quiz");
         const payAmt = Math.min(300, Math.round(my / 20));
         if (payAmt > 0) {
           state.jobsCompleted += 1;
           pay(payAmt, "quiz");
         }
         save();
-        toast("Quiz done · +" + xp + " XP", "xp");
+        if (!xp) toast(epa ? "Under 18. That section is not stamped." : "Quiz done · +0 XP", epa ? "bad" : "xp");
         if (window.Badges) {
           if (packId === "epa608" || packId === "mixed") window.Badges.unlock("epa_quiz");
           if (packId === "osha30" || packId === "mixed") window.Badges.unlock("osha_quiz");
@@ -3586,7 +4039,10 @@
         const names = Object.keys(scores);
         const winName = winner && winner[0];
         const iWon = !winName || winName === myName || names.length <= 1;
-        if (iWon) grantQuizVictory();
+        if (iWon && (!epa || passedPaper)) {
+          state.goldenCard = packId === "epa608" && passedPaper ? "UNIVERSAL" : "EPA 608";
+          grantQuizVictory();
+        }
         else if (winName) toast("🏆 " + winName + " took first. Run it back.", "ok");
       },
     });

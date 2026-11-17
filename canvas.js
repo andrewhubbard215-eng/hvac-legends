@@ -1,4 +1,4 @@
-/* HVAC Legends. Canvas credit window is off for the first publish and classroom tryout.
+/* Lincoln Tech. Canvas credit window is off for the first publish and classroom tryout.
    The button and the sheet do not mount. Lab credit calls stay quiet until this flag is turned on. */
 (function (global) {
   "use strict";
@@ -109,7 +109,7 @@
       "</div>" +
       '<p id="cv-note"></p>' +
       '<div id="cv-roster"></div>' +
-      "<p>In the course: Modules → add an External URL. Paste the link. Publish it. Until automatic grade passback is on, download the CSV and enter the lab count on the assignment.</p>" +
+      "<p>In Canvas: course → Modules → + → External URL. Paste the link. Publish it. Until Lincoln IT turns on automatic grade passback, download the CSV and enter the lab count on the assignment.</p>" +
       "</div>";
     el.querySelector("#cv-close").onclick = close;
     function paintRoom(room) {
