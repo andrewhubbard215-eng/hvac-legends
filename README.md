@@ -1,9 +1,9 @@
 # HVAC Legends
 
-Shop-floor HVAC trainer. Phone-first. No Lincoln Tech name, logos, or curriculum.
+Phone-first HVAC trade school. Clock in → locker → shop floor.
 
-Play now: open the shop floor.
+System sandbox, recovery, charging, electrical, heat, troubleshooting, and the board.
 
-Clock in → locker → shop floor. System sandbox, recovery, electrical, service calls, mini-split, phone testers.
+No school branding. Practice only. Does not issue a card.
 
-Sister product with Lincoln Tech skin: HVAC Allstars.
+Play: open index.html or use the start scripts.
