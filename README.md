@@ -1,7 +1,9 @@
-# Lincoln Tech HVAC Allstars
+# HVAC Legends
 
-Play now: **https://andrewhubbard215-eng.github.io/**
+Shop-floor HVAC trainer. Phone-first. No Lincoln Tech name, logos, or curriculum.
 
-Classroom / this PC: unzip the folder and double-click `PLAY.bat`.
+Play now: open the shop floor.
 
-Clock in → locker → shop floor. System sandbox, All-Star Exam, electrical, service calls, mini-split, phone testers, HVAC Commandments, Professor HUB.
+Clock in → locker → shop floor. System sandbox, recovery, electrical, service calls, mini-split, phone testers.
+
+Sister product with Lincoln Tech skin: HVAC Allstars.
